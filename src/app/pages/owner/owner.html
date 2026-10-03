@@ -1,0 +1,89 @@
+<h1 class="font-display text-display">Backoffice</h1>
+<p class="mt-3 max-w-[62ch]">Prices, sizes, and every order. The floor password does not grant this to workers.</p>
+@if (errorMessage()) {
+  <p class="mt-4 text-danger" role="alert">{{ errorMessage() }}</p>
+}
+
+<section class="mt-10 overflow-x-auto">
+  <h2 class="font-display text-xl">Every order</h2>
+  <div class="mt-4">
+    <app-staff-orders [orders]="orders()" (changed)="replaceOrder($event)" />
+  </div>
+</section>
+
+<section class="mt-12 grid max-w-xl gap-4">
+  <h2 class="font-display text-xl">Price and sizes</h2>
+  <label>
+    Piece
+    <select class="mt-1 block w-full" [value]="chosenId()" (change)="chooseProduct($event)">
+      @for (product of products(); track product.id) {
+        <option [value]="product.id">{{ product.name }} — {{ product.priceCents | money }}</option>
+      }
+    </select>
+  </label>
+  <form class="grid gap-4" (submit)="savePrice(); $event.preventDefault()">
+    <label>
+      Price in cents
+      <input class="mt-1 block w-40" type="number" aria-label="Price in cents" [formField]="priceForm.priceCents" />
+      @if (priceForm.priceCents().touched() && priceForm.priceCents().errors().length) {
+        <span class="text-danger">{{ priceForm.priceCents().errors()[0].message }}</span>
+      }
+    </label>
+    <button type="submit" [disabled]="priceForm().invalid()">Save price</button>
+  </form>
+  <form class="grid gap-4 border-t border-border pt-4" (submit)="addVariant(); $event.preventDefault()">
+    <h3 class="font-display text-lg">Add a size</h3>
+    <label>
+      Size
+      <input class="mt-1 block w-full" [formField]="variantForm.size" />
+    </label>
+    <label>
+      Color
+      <input class="mt-1 block w-full" [formField]="variantForm.color" />
+    </label>
+    <label>
+      Stock
+      <input class="mt-1 block w-40" type="number" [formField]="variantForm.stock" />
+    </label>
+    <button class="secondary" type="submit" [disabled]="variantForm().invalid()">Add size</button>
+  </form>
+</section>
+
+<section class="mt-12">
+  <h2 class="font-display text-xl">New piece</h2>
+  <form class="mt-4 grid max-w-xl gap-4" (submit)="createPiece(); $event.preventDefault()">
+    <label>
+      Name
+      <input class="mt-1 block w-full" [formField]="pieceForm.name" />
+    </label>
+    <label>
+      Category
+      <select class="mt-1 block w-full" [formField]="pieceForm.category">
+        @for (category of categories; track category.slug) {
+          <option [value]="category.slug">{{ category.name }}</option>
+        }
+      </select>
+    </label>
+    <label>
+      Price in cents
+      <input class="mt-1 block w-40" type="number" [formField]="pieceForm.priceCents" />
+    </label>
+    <label>
+      Description
+      <input class="mt-1 block w-full" [formField]="pieceForm.summary" />
+    </label>
+    <label>
+      First size
+      <input class="mt-1 block w-full" [formField]="pieceForm.size" />
+    </label>
+    <label>
+      First color
+      <input class="mt-1 block w-full" [formField]="pieceForm.color" />
+    </label>
+    <label>
+      Stock
+      <input class="mt-1 block w-40" type="number" [formField]="pieceForm.stock" />
+    </label>
+    <button type="submit" [disabled]="pieceForm().invalid()">Add piece</button>
+  </form>
+</section>

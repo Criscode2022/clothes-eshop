@@ -1,7 +1,11 @@
-import { Component, ElementRef, inject, viewChild } from '@angular/core';
+import { Component, ElementRef, computed, inject, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter, skip } from 'rxjs';
+import { canOpenArea } from '../shop/access';
+import { Bag } from '../shop/bag';
+import { ShopClient } from '../shop/shop-client';
+import { ShopSession } from '../shop/shop-session';
 
 @Component({
   selector: 'app-shell',
@@ -11,6 +15,11 @@ import { filter, skip } from 'rxjs';
 })
 export class Shell {
   private readonly main = viewChild.required<ElementRef<HTMLElement>>('main');
+  private readonly shop = inject(ShopClient);
+  protected readonly bag = inject(Bag);
+  protected readonly session = inject(ShopSession);
+  protected readonly showDesk = computed(() => canOpenArea('desk', this.session.current()));
+  protected readonly showOwner = computed(() => canOpenArea('owner', this.session.current()));
 
   constructor() {
     const router = inject(Router);
@@ -22,7 +31,14 @@ export class Shell {
         skip(router.navigated ? 0 : 1),
         takeUntilDestroyed(),
       )
-      .subscribe(() => this.focusMain());
+      .subscribe(() => {
+        this.bag.clearNotice();
+        this.focusMain();
+      });
+  }
+
+  protected signOut(): void {
+    void this.shop.signOut();
   }
 
   protected skipToMain(event: Event): void {

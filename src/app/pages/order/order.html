@@ -1,0 +1,22 @@
+@if (order.error()) {
+  <h1 class="font-display text-display">That order is not available</h1>
+  <p class="mt-4">{{ order.error()?.message }}</p>
+} @else if (order.value(); as placed) {
+  <p class="text-text-muted">Order reference</p>
+  <h1 class="mt-2 font-display text-display">{{ placed.reference }}</h1>
+  <p class="mt-4">We recorded {{ paymentLabel(placed.paymentMethod) }}.</p>
+  <ul class="mt-8 max-w-[68ch]" role="list">
+    @for (line of placed.lines; track line.variantId) {
+      <li class="border-t border-border py-3">
+        {{ line.name }}, {{ line.color }} {{ line.size }}, {{ line.quantity }} × {{ line.unitPriceCents | money }}
+      </li>
+    }
+  </ul>
+  <p class="mt-4">Shipping {{ placed.shippingCents | money }}</p>
+  <p class="text-lg">Total {{ placed.totalCents | money }}</p>
+  <p class="mt-6">
+    <a routerLink="/">Return to the shop</a>
+  </p>
+} @else {
+  <h1 class="font-display text-display">Finding the order</h1>
+}

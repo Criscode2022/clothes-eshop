@@ -1,10 +1,11 @@
 // Design tokens. Every text and control color pair meets WCAG AA contrast in both themes;
-// re-check contrast when you change a value. System fonts keep the page free of third-party
-// requests. Put your brand typeface in --font-body when you have one.
+// re-check contrast when you change a value. Newsreader is self-hosted for display type.
+// The body face stays a system stack so the page does not wait on a second download.
 :root {
   color-scheme: light dark;
 
-  --font-body: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-body: 'Avenir Next', 'Segoe UI', sans-serif;
+  --font-display: 'Newsreader', 'Iowan Old Style', Palatino, Georgia, serif;
   --font-code: ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, Consolas, monospace;
 
   --text-sm: 0.875rem;
@@ -68,6 +69,128 @@ body {
   background: var(--color-canvas);
 }
 
+::selection {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+
+input,
+select,
+textarea {
+  font: inherit;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-field-border);
+  border-radius: var(--radius-control);
+  min-height: var(--control-height);
+  padding: 0.5rem 0.75rem;
+  caret-color: var(--color-accent);
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+  color: var(--color-on-accent);
+  background: var(--color-accent);
+  border: 0;
+  border-radius: var(--radius-control);
+  min-height: var(--control-height);
+  padding: 0.5rem 1rem;
+}
+
+button.secondary {
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-field-border);
+}
+
+button:disabled {
+  cursor: not-allowed;
+  color: var(--color-text);
+  background: var(--color-border);
+}
+
+main a {
+  text-decoration-line: underline;
+  text-underline-offset: 0.18em;
+}
+
+/* The bag line and the checkout step are the two motions on the floor. */
+@keyframes line-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-0.4rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes line-leave {
+  to {
+    opacity: 0;
+    transform: translateY(-0.25rem);
+  }
+}
+
+@keyframes step-enter {
+  from {
+    opacity: 0;
+    transform: translateX(0.8rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes step-leave {
+  to {
+    opacity: 0;
+    transform: translateX(-0.6rem);
+  }
+}
+
+.portrait {
+  display: block;
+  width: 100%;
+  max-width: 22rem;
+  height: auto;
+  background: var(--color-surface);
+}
+
+.portrait-thumb {
+  display: block;
+  width: 4.5rem;
+  height: 6.75rem;
+  object-fit: cover;
+  background: var(--color-surface);
+}
+
+.line-enter {
+  animation: line-enter 280ms ease-out;
+}
+
+.line-leave {
+  animation: line-leave 160ms ease-in;
+}
+
+.step-enter {
+  animation: step-enter 240ms ease-out;
+}
+
+.step-leave {
+  animation: step-leave 180ms ease-in;
+}
+
 h1,
 h2,
 h3,
@@ -80,6 +203,14 @@ h2,
 h3 {
   line-height: 1.15;
   text-wrap: balance;
+}
+
+h1 {
+  font-size: var(--text-display);
+}
+
+h2 {
+  font-size: var(--text-xl);
 }
 
 code {

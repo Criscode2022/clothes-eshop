@@ -1,0 +1,60 @@
+<h1 class="font-display text-display">Bag</h1>
+
+@if (lines().length === 0) {
+  <p class="mt-4">The bag is empty.</p>
+  <p class="mt-4">
+    <a routerLink="/">Browse the floor</a>
+  </p>
+} @else {
+  <ul class="mt-8 max-w-[70ch]" role="list">
+    @for (line of lines(); track line.variantId) {
+      <li class="border-t border-border py-5" animate.enter="line-enter" animate.leave="line-leave">
+        <h2 class="font-display text-xl">{{ line.name }}</h2>
+        <p class="text-text-muted">{{ line.color }}, size {{ line.size }}</p>
+        <p>{{ line.lineCents | money }}</p>
+        <div class="mt-3 flex flex-wrap items-center gap-3">
+          <button
+            class="secondary"
+            type="button"
+            [attr.aria-label]="'Decrease quantity of ' + line.name"
+            (click)="decrease(line.variantId, line.quantity)"
+          >
+            Decrease
+          </button>
+          <p>
+            <span class="visually-hidden">Quantity of {{ line.name }}</span>
+            {{ line.quantity }}
+          </p>
+          <button
+            class="secondary"
+            type="button"
+            [disabled]="line.quantity >= line.stock"
+            [attr.aria-label]="'Increase quantity of ' + line.name"
+            (click)="increase(line.variantId, line.quantity, line.stock)"
+          >
+            Increase
+          </button>
+        </div>
+      </li>
+    }
+  </ul>
+
+  @if (quote(); as totals) {
+    <dl class="mt-8 grid max-w-sm grid-cols-2 gap-y-2">
+      <dt>Pieces</dt>
+      <dd class="text-end">{{ totals.subtotalCents | money }}</dd>
+      <dt>Shipping</dt>
+      <dd class="text-end">{{ totals.shippingCents | money }}</dd>
+      <dt class="font-semibold">Total</dt>
+      <dd class="text-end font-semibold">{{ totals.totalCents | money }}</dd>
+    </dl>
+    @if (centsUntilFreeShipping(totals.subtotalCents) > 0) {
+      <p class="mt-4">Add {{ centsUntilFreeShipping(totals.subtotalCents) | money }} for free shipping.</p>
+    } @else {
+      <p class="mt-4">Shipping is free on this bag.</p>
+    }
+    <p class="mt-6">
+      <a routerLink="/checkout">Checkout</a>
+    </p>
+  }
+}

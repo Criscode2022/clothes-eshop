@@ -1,0 +1,76 @@
+<div class="grid items-start gap-10 md:grid-cols-[11rem_minmax(0,1fr)]">
+  <div>
+    <nav aria-label="Categories">
+      <ul class="flex gap-x-5 gap-y-2 overflow-x-auto md:flex-col md:overflow-visible" role="list">
+        @for (category of categories; track category.slug) {
+          <li>
+            <a
+              [routerLink]="['/category', category.slug]"
+              routerLinkActive="font-semibold"
+              ariaCurrentWhenActive="page"
+              >{{ category.name }}</a
+            >
+          </li>
+        }
+      </ul>
+    </nav>
+    <p class="mt-6">
+      <a routerLink="/atelier">Atelier</a>
+    </p>
+  </div>
+
+  <div>
+    @if (unknownCategory()) {
+      <h1 class="font-display text-display">That category is not on the floor</h1>
+      <p class="mt-4 text-text-muted">Choose outerwear, knitwear, trousers, or shirts.</p>
+    } @else if (lead(); as piece) {
+      <div class="grid items-end gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(14rem,22rem)]">
+        <div class="max-w-[62ch]">
+          <h1 class="font-display text-display">{{ piece.name }}</h1>
+          <p class="mt-4">{{ piece.summary }}</p>
+          @if (compositionOf(piece); as cloth) {
+            <p class="mt-2 text-text-muted">{{ cloth }}</p>
+          }
+          <p class="mt-3 text-lg">{{ piece.priceCents | money }}</p>
+          <p class="mt-6">
+            <a [routerLink]="['/product', piece.id]">View {{ piece.name }}</a>
+          </p>
+        </div>
+        @if (portraitSrc(piece.id); as src) {
+          <img
+            class="portrait max-w-sm"
+            [ngSrc]="src"
+            width="800"
+            height="1200"
+            priority
+            alt=""
+            animate.enter="line-enter"
+          />
+        }
+      </div>
+
+      <ul class="mt-12" role="list">
+        @for (product of pieces(); track product.id) {
+          <li class="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-4 border-t border-border py-5">
+            @if (portraitSrc(product.id); as src) {
+              <img class="portrait-thumb" [ngSrc]="src" width="160" height="240" alt="" />
+            } @else {
+              <span
+                class="size-4 border border-border"
+                [style.background]="clothColor(product.variants[0].color)"
+                aria-hidden="true"
+              ></span>
+            }
+            <div>
+              <a class="font-display text-xl" [routerLink]="['/product', product.id]">{{ product.name }}</a>
+              <p class="text-text-muted">{{ product.summary }}</p>
+            </div>
+            <p>{{ product.priceCents | money }}</p>
+          </li>
+        }
+      </ul>
+    } @else {
+      <h1 class="font-display text-display">Nothing is cut in this category yet</h1>
+    }
+  </div>
+</div>

@@ -1,3 +1,4 @@
+import { provideHttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
@@ -20,6 +21,7 @@ describe('Shell', () => {
   beforeEach(async () => {
     TestBed.configureTestingModule({
       providers: [
+        provideHttpClient(),
         provideRouter([
           {
             path: '',
@@ -42,7 +44,7 @@ describe('Shell', () => {
   it('marks the current page in the main navigation', () => {
     const current = document.querySelector('nav[aria-label="Main"] [aria-current="page"]');
 
-    expect(current?.textContent?.trim()).toBe('Home');
+    expect(current?.textContent?.trim()).toBe('Shop');
   });
 
   it('moves focus to the main content from the skip link', () => {
