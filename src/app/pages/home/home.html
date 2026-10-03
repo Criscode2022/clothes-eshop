@@ -1,0 +1,43 @@
+<h1 class="home__title">Your Angular app is running</h1>
+<p class="home__lede">
+  This workspace ships Angular’s agent rules, vendored skills, and MCP servers for the Angular CLI
+  and Neon. Nothing connects to a database until you sign in to Neon.
+</p>
+
+<div class="home__columns">
+  <section aria-labelledby="setup-heading">
+    <h2 id="setup-heading" class="home__heading">Connect your agent</h2>
+    <ol class="steps" role="list">
+      <li class="step">
+        <h3 class="step__title">Approve the MCP servers</h3>
+        <p>
+          Your editor asks before it starts <code>angular-cli</code> and <code>Neon</code> from the
+          project config. Approve both.
+        </p>
+      </li>
+      <li class="step">
+        <h3 class="step__title">Sign in to Neon</h3>
+        <p>
+          When your editor first connects to Neon, it opens your browser to sign in with OAuth. No
+          API key goes into the repository.
+        </p>
+      </li>
+      <li class="step">
+        <h3 class="step__title">Ask for a schema</h3>
+        <p>
+          Ask your agent to create a <code>notes</code> table in Neon, with row-level security so
+          each person sees only their own notes.
+        </p>
+      </li>
+      <li class="step">
+        <h3 class="step__title">Swap the data source</h3>
+        <p>
+          Implement <code>NotesRepository</code> with the Neon Data API and return it from the
+          repository factory.
+        </p>
+      </li>
+    </ol>
+  </section>
+
+  <app-notes-panel />
+</div>

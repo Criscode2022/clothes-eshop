@@ -1,0 +1,30 @@
+<a class="skip-link" href="#main-content" (click)="skipToMain($event)">Skip to main content</a>
+
+<header class="site-header">
+  <a class="site-header__brand" routerLink="/">angular-neon-agent-template</a>
+  <nav aria-label="Main">
+    <ul class="site-nav" role="list">
+      <li>
+        <a
+          class="site-nav__link"
+          routerLink="/"
+          routerLinkActive="site-nav__link--active"
+          ariaCurrentWhenActive="page"
+          [routerLinkActiveOptions]="{ exact: true }"
+          >Home</a
+        >
+      </li>
+    </ul>
+  </nav>
+</header>
+
+<main id="main-content" class="site-main" tabindex="-1" #main>
+  <router-outlet />
+</main>
+
+<footer class="site-footer">
+  <p>
+    Guides: <a href="https://angular.dev/ai">Angular and AI</a> and the
+    <a href="https://neon.com/docs/ai/neon-mcp-server">Neon MCP server</a>.
+  </p>
+</footer>

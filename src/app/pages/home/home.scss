@@ -1,0 +1,97 @@
+:host {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.home__title {
+  max-width: 18ch;
+  font-size: var(--text-display);
+  font-weight: 750;
+  letter-spacing: -0.025em;
+}
+
+.home__lede {
+  max-width: var(--measure);
+  font-size: var(--text-lg);
+  color: var(--color-text-muted);
+}
+
+.home__columns {
+  display: grid;
+  gap: var(--space-12);
+  margin-top: var(--space-8);
+
+  @media (min-width: 60rem) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    align-items: start;
+  }
+}
+
+.home__heading {
+  margin-bottom: var(--space-6);
+  font-size: var(--text-xl);
+}
+
+// The setup path is a real sequence, so it gets the page's one strong visual device:
+// numbered markers joined by a rail.
+.steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+}
+
+.step {
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr);
+  column-gap: var(--space-4);
+  counter-increment: step;
+
+  &::before {
+    content: counter(step);
+    grid-area: 1 / 1;
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-on-accent);
+    background: var(--color-accent);
+    border-radius: 50%;
+  }
+
+  &::after {
+    content: '';
+    grid-area: 2 / 1;
+    justify-self: center;
+    width: 2px;
+    margin-block: var(--space-2);
+    background: var(--color-border);
+  }
+
+  &:last-child::after {
+    content: none;
+  }
+
+  p {
+    grid-area: 2 / 2;
+    max-width: 46ch;
+    padding-block: var(--space-1) var(--space-8);
+    color: var(--color-text-muted);
+  }
+
+  &:last-child p {
+    padding-block-end: 0;
+  }
+
+  code {
+    white-space: nowrap;
+  }
+}
+
+.step__title {
+  grid-area: 1 / 2;
+  font-size: var(--text-md);
+  line-height: 2rem;
+}

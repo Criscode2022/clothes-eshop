@@ -1,0 +1,56 @@
+<section class="notes" aria-labelledby="notes-heading">
+  <h2 id="notes-heading" class="notes__heading">Notes</h2>
+  <p class="notes__intro">Placeholder data kept in memory. Reloading the page resets it.</p>
+
+  <form class="note-form" [formRoot]="noteForm">
+    <label class="note-form__label" for="note-title">New note</label>
+    <div class="note-form__row">
+      <input
+        id="note-title"
+        class="note-form__input"
+        type="text"
+        autocomplete="off"
+        [formField]="noteForm.title"
+        [attr.aria-invalid]="titleError() ? 'true' : null"
+        [attr.aria-describedby]="titleError() ? 'note-title-error' : null"
+      />
+      <button class="button" type="submit" [disabled]="noteForm().submitting()">Add note</button>
+    </div>
+    @if (titleError(); as error) {
+      <p id="note-title-error" class="note-form__error">{{ error.message }}</p>
+    }
+    @for (error of noteForm().errors(); track error.kind) {
+      <p class="note-form__error" role="alert">{{ error.message }}</p>
+    }
+  </form>
+
+  <p class="visually-hidden" role="status">{{ announcement() }}</p>
+
+  @switch (notes.status()) {
+    @case ('error') {
+      <p class="notes__status" role="alert">
+        The notes did not load.
+        <button class="button button--quiet" type="button" (click)="notes.reload()">
+          Try again
+        </button>
+      </p>
+    }
+    @case ('loading') {
+      <p class="notes__status">Loading notes…</p>
+    }
+    @default {
+      <ul class="note-list" role="list">
+        @for (note of notes.value(); track note.id) {
+          <li class="note-list__item">
+            <span class="note-list__title">{{ note.title }}</span>
+            <time class="note-list__date" [attr.datetime]="note.createdAt">
+              {{ note.createdAt | date: 'mediumDate' }}
+            </time>
+          </li>
+        } @empty {
+          <li class="note-list__empty">No notes yet. Add the first one above.</li>
+        }
+      </ul>
+    }
+  }
+</section>
