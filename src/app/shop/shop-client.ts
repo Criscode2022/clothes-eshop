@@ -29,7 +29,12 @@ export class ShopClient {
   private readonly catalog = inject(CatalogStore);
 
   async signIn(email: string, password: string): Promise<Actor> {
-    const response = await this.request<SessionResponse>('POST', '/api/session', { email, password }, false);
+    const response = await this.request<SessionResponse>(
+      'POST',
+      '/api/session',
+      { email, password },
+      false,
+    );
     this.session.adopt(response.actor, response.token);
     return response.actor;
   }
@@ -63,12 +68,20 @@ export class ShopClient {
     return this.request<ShopOrder[]>('GET', '/api/orders', null, true);
   }
 
-  loadCatalog(): Promise<Product[]> {
-    return this.request<Product[]>('GET', '/api/catalog', null, false);
+  /** Fetches the floor as the server holds it now, and shows it everywhere the catalog appears. */
+  async loadCatalog(): Promise<Product[]> {
+    const products = await this.request<Product[]>('GET', '/api/catalog', null, false);
+    this.catalog.replaceAll(products);
+    return products;
   }
 
   order(reference: string): Promise<ShopOrder> {
-    return this.request<ShopOrder>('GET', `/api/orders/${encodeURIComponent(reference)}`, null, true);
+    return this.request<ShopOrder>(
+      'GET',
+      `/api/orders/${encodeURIComponent(reference)}`,
+      null,
+      true,
+    );
   }
 
   moveFulfillment(reference: string, fulfillment: Fulfillment): Promise<ShopOrder> {
@@ -116,7 +129,12 @@ export class ShopClient {
     return product;
   }
 
-  async addVariant(productId: string, size: string, color: string, stock: number): Promise<Product> {
+  async addVariant(
+    productId: string,
+    size: string,
+    color: string,
+    stock: number,
+  ): Promise<Product> {
     const product = await this.request<Product>(
       'POST',
       `/api/products/${encodeURIComponent(productId)}/variants`,
@@ -128,7 +146,12 @@ export class ShopClient {
   }
 
   private async adoptNeon(token: string): Promise<Actor> {
-    const response = await this.request<SessionResponse>('POST', '/api/session/neon', { token }, false);
+    const response = await this.request<SessionResponse>(
+      'POST',
+      '/api/session/neon',
+      { token },
+      false,
+    );
     this.session.adopt(response.actor, response.token);
     return response.actor;
   }
@@ -149,7 +172,12 @@ export class ShopClient {
     }
   }
 
-  private async request<T>(method: string, path: string, body: unknown, withSession: boolean): Promise<T> {
+  private async request<T>(
+    method: string,
+    path: string,
+    body: unknown,
+    withSession: boolean,
+  ): Promise<T> {
     try {
       return await firstValueFrom(
         this.http.request<T>(method, path, {
@@ -171,7 +199,12 @@ export class ShopClient {
 function messageFrom(error: unknown): string {
   if (error instanceof HttpErrorResponse) {
     const body = error.error;
-    if (body && typeof body === 'object' && 'message' in body && typeof body['message'] === 'string') {
+    if (
+      body &&
+      typeof body === 'object' &&
+      'message' in body &&
+      typeof body['message'] === 'string'
+    ) {
       return body['message'];
     }
     return 'The shop could not finish that.';

@@ -1,23 +1,37 @@
-<h1 class="font-display text-display">Your orders</h1>
+<div class="account page">
+  <header class="head">
+    <h1 class="title">Your orders</h1>
+    @if (session.current(); as person) {
+      <p class="lede">Signed in as {{ person.name }}, {{ person.email }}.</p>
+    }
+  </header>
 
-@if (orders.error()) {
-  <p class="mt-4" role="alert">{{ orders.error()?.message }}</p>
-  <p class="mt-4">
-    <a routerLink="/sign-in">Sign in</a>
-  </p>
-} @else if (orders.value(); as list) {
-  @if (list.length === 0) {
-    <p class="mt-4">No orders under this name yet.</p>
+  @if (orders.error()) {
+    <div class="state">
+      <p class="notice notice--error" role="alert">{{ orders.error()?.message }}</p>
+      <a class="button button--primary" routerLink="/sign-in">Sign in again</a>
+    </div>
+  } @else if (orders.hasValue()) {
+    @if (newestFirst().length === 0) {
+      <div class="state">
+        <p>No orders under this name yet. Orders you place while signed in appear here.</p>
+        <a class="button button--primary" routerLink="/">Shop the floor</a>
+      </div>
+    } @else {
+      <ul class="orders" role="list">
+        @for (order of newestFirst(); track order.reference) {
+          <li class="order">
+            <a class="order__reference" [routerLink]="['/order', order.reference]">{{
+              order.reference
+            }}</a>
+            <span class="order__meta">{{ summary(order) }}</span>
+            <span class="order__total">{{ order.totalCents | money }}</span>
+            <app-fulfillment-badge [state]="order.fulfillment" />
+          </li>
+        }
+      </ul>
+    }
   } @else {
-    <ul class="mt-8 max-w-[68ch]" role="list">
-      @for (order of list; track order.reference) {
-        <li class="border-t border-border py-4">
-          <a [routerLink]="['/order', order.reference]">{{ order.reference }}</a>
-          <p>{{ order.lines.length }} lines, {{ order.totalCents | money }}, {{ paymentLabel(order.paymentMethod) }}</p>
-        </li>
-      }
-    </ul>
+    <p role="status">Loading your orders.</p>
   }
-} @else {
-  <p class="mt-4">Loading your orders.</p>
-}
+</div>

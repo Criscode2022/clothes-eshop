@@ -1,0 +1,69 @@
+<div class="media">
+  <a class="media__link" [routerLink]="['/product', product().id]" tabindex="-1" aria-hidden="true">
+    <app-piece-photo
+      [pieceId]="product().id"
+      [color]="colors()[0] ?? ''"
+      [priority]="priority()"
+      [transitionName]="'piece-' + product().id"
+    />
+  </a>
+
+  @if (soldOut()) {
+    <p class="media__flag">Sold out</p>
+  } @else {
+    <button
+      #quickAdd
+      type="button"
+      class="quick-add"
+      [attr.aria-expanded]="sizesOpen()"
+      [attr.aria-controls]="panelId()"
+      (click)="toggleSizes()"
+    >
+      <app-icon name="plus" [size]="18" />
+      <span class="sr-only">Quick add {{ product().name }}</span>
+    </button>
+    <div
+      class="sizes"
+      [class.sizes--open]="sizesOpen()"
+      [id]="panelId()"
+      role="group"
+      [attr.aria-label]="'Sizes of ' + product().name"
+    >
+      @for (group of colorGroups(); track group.color) {
+        <div class="sizes__row">
+          @if (colors().length > 1) {
+            <span class="sizes__color">{{ group.color }}</span>
+          }
+          @for (variant of group.variants; track variant.id) {
+            <button
+              type="button"
+              class="sizes__size"
+              [disabled]="variant.stock < 1"
+              [attr.aria-label]="sizeLabel(variant)"
+              (click)="add(variant)"
+            >
+              {{ variant.size }}
+            </button>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<div class="info">
+  <h3 class="info__name">
+    <a [routerLink]="['/product', product().id]">{{ product().name }}</a>
+  </h3>
+  <p class="info__price">{{ product().priceCents | money }}</p>
+  @if (colors().length > 1) {
+    <ul class="info__colors" role="list" [attr.aria-label]="colors().length + ' colors'">
+      @for (color of colors(); track color) {
+        <li>
+          <span class="swatch" [style.background]="clothColor(color)"></span>
+          <span class="sr-only">{{ color }}</span>
+        </li>
+      }
+    </ul>
+  }
+</div>

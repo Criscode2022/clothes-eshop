@@ -1,53 +1,82 @@
-<article class="grid items-start gap-12 lg:grid-cols-[minmax(0,40rem)_minmax(14rem,20rem)]">
-  <div class="max-w-[62ch]">
-    <h1 class="font-display text-display">Atelier</h1>
-    <p class="mt-6">
-      Marlow cuts a small ready-to-wear floor: coats that clear a knit, trousers with a real thigh, and shirts you can
-      press at home. The pieces on the floor are the collection. There is no separate drop and no waiting list.
-    </p>
-    <p class="mt-4">
-      Cloth is named on each piece, with the care it actually needs. Wool is brushed and aired. Cotton is washed. Silk
-      is cleaned, not guessed at. Fit notes describe the cut. They are not a lab chart, and they are not a promise that
-      two bodies wear one size the same way.
-    </p>
-    <h2 class="mt-10 font-display text-xl">How an order leaves</h2>
-    <p class="mt-4">
-      Shipping is $8, and free when the pieces total at least $200. You can check out as a guest. An account only keeps
-      the order under your name. Payment is the method you choose: at the shop, by bank transfer, or in cash when the
-      parcel arrives. Marlow does not take a card number.
-    </p>
-    <p class="mt-4">
-      After you place the order, the workroom moves it from placed, to picking, to ready, and then completed. You can
-      still cancel before it is finished.
-    </p>
-    <p class="mt-8">
-      <a routerLink="/">Return to the floor</a>
-    </p>
-  </div>
-  <img
-    class="portrait max-w-xs"
-    ngSrc="/garments/wool-overcoat.jpg"
-    width="800"
-    height="1200"
-    alt=""
-    animate.enter="line-enter"
-  />
-</article>
+<article class="atelier">
+  <header class="lead page">
+    <div class="lead__text">
+      <h1 class="lead__title">Atelier</h1>
+      <p class="lead__intro">
+        Marlow cuts a small ready-to-wear floor: coats that clear a knit, trousers with a real
+        thigh, and shirts you can press at home. The pieces on the floor are the collection. There
+        is no separate drop and no waiting list.
+      </p>
+    </div>
+    <div class="lead__photo">
+      <img
+        ngSrc="/garments/wool-overcoat.jpg"
+        width="800"
+        height="1200"
+        priority
+        alt="Charcoal Wool Overcoat"
+      />
+    </div>
+  </header>
 
-<section class="mt-16 max-w-[62ch]">
-  <h2 class="font-display text-xl">The floor</h2>
-  <ul class="mt-4" role="list">
-    <li class="border-t border-border py-3">
-      <a routerLink="/category/outerwear">Outerwear</a>
-    </li>
-    <li class="border-t border-border py-3">
-      <a routerLink="/category/knitwear">Knitwear</a>
-    </li>
-    <li class="border-t border-border py-3">
-      <a routerLink="/category/trousers">Trousers</a>
-    </li>
-    <li class="border-t border-border py-3">
-      <a routerLink="/category/shirts">Shirts</a>
-    </li>
-  </ul>
-</section>
+  <div class="body page">
+    <section class="block" aria-labelledby="cloth-title">
+      <h2 id="cloth-title" class="block__title">Cloth and care</h2>
+      <div class="block__text">
+        <p>
+          Cloth is named on each piece, with the care it actually needs. Wool is brushed and aired.
+          Cotton is washed. Silk is cleaned, not guessed at.
+        </p>
+        <p>
+          Fit notes describe the cut. They are not a lab chart, and they are not a promise that two
+          bodies wear one size the same way.
+        </p>
+      </div>
+    </section>
+
+    <section id="shipping" class="block" aria-labelledby="shipping-title">
+      <h2 id="shipping-title" class="block__title">Shipping and payment</h2>
+      <div class="block__text">
+        <p>
+          Shipping is $8.00, and free when the pieces total at least $200.00. You can check out as a
+          guest; an account only keeps the order under your name.
+        </p>
+        <p>You choose how to pay, and Marlow records the method. It never takes a card number.</p>
+        <ul class="methods" role="list">
+          @for (method of paymentMethods; track method.id) {
+            <li>{{ method.label }}</li>
+          }
+        </ul>
+      </div>
+    </section>
+
+    <section id="orders" class="block" aria-labelledby="orders-title">
+      <h2 id="orders-title" class="block__title">How an order leaves</h2>
+      <div class="block__text">
+        <ol class="steps" role="list">
+          @for (step of orderSteps; track step.name; let index = $index) {
+            <li class="steps__item">
+              <span class="steps__number" aria-hidden="true">{{ index + 1 }}</span>
+              <div>
+                <h3 class="steps__name">{{ step.name }}</h3>
+                <p>{{ step.detail }}</p>
+              </div>
+            </li>
+          }
+        </ol>
+        <p>You can still cancel an order until it is completed.</p>
+      </div>
+    </section>
+
+    <nav class="block" aria-labelledby="floor-title">
+      <h2 id="floor-title" class="block__title">The floor</h2>
+      <ul class="floor-links" role="list">
+        @for (category of categories; track category.slug) {
+          <li>
+            <a [routerLink]="['/category', category.slug]">{{ category.name }}</a>
+          </li>
+        }
+      </ul>
+    </nav>
+  </div>
+</article>

@@ -8,8 +8,8 @@ describe('shop presentation setup', () => {
     devDependencies: Record<string, string>;
   };
   const angular = readFileSync('angular.json', 'utf8');
-  const checkout = readFileSync('src/app/pages/checkout/checkout.html', 'utf8');
-  const bag = readFileSync('src/app/pages/bag/bag.html', 'utf8');
+  const bagLines = readFileSync('src/app/ui/bag-lines/bag-lines.html', 'utf8');
+  const config = readFileSync('src/app/app.config.ts', 'utf8');
 
   it('uses Tailwind v4 tokens, server rendering, and no Ionic or native shell', () => {
     expect(tailwind).toContain("@import 'tailwindcss'");
@@ -28,12 +28,21 @@ describe('shop presentation setup', () => {
     expect(angular).toContain('"marlow.shop"');
   });
 
-  it('animates the bag and checkout steps and reduces that motion', () => {
-    expect(bag).toContain('animate.enter="line-enter"');
-    expect(checkout).toContain('animate.enter="step-enter"');
-    expect(checkout).toContain('animate.leave="step-leave"');
-    expect(styles).toContain('@keyframes line-enter');
-    expect(styles).toContain('@keyframes step-enter');
+  it('self-hosts Archivo with its width axis and keeps colors on the tokens', () => {
+    expect(pkg.dependencies['@fontsource-variable/archivo']).toBeTruthy();
+    expect(angular).toContain('@fontsource-variable/archivo/wdth.css');
+    expect(angular).not.toContain('newsreader');
+    expect(styles).toContain("--font-body: 'Archivo Variable'");
+    expect(styles).toContain('@media (prefers-color-scheme: dark)');
+    expect(styles).toContain('@layer components');
+  });
+
+  it('animates the bag lines, the drawer, and route changes, and reduces that motion', () => {
+    expect(bagLines).toContain('animate.enter="line-enter"');
+    expect(bagLines).toContain('animate.leave="line-leave"');
+    expect(styles).toContain('@starting-style');
+    expect(styles).toContain('::view-transition-group(*)');
+    expect(config).toContain('withViewTransitions');
     expect(styles).toContain('prefers-reduced-motion: reduce');
     expect(styles).not.toContain('@angular/animations');
   });

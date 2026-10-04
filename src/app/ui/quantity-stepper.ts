@@ -1,0 +1,74 @@
+import { Component, input, output } from '@angular/core';
+import { Icon } from './icon';
+
+/** One fewer, the count, one more. The parent decides what a change means. */
+@Component({
+  selector: 'app-quantity-stepper',
+  imports: [Icon],
+  template: `
+    <div class="stepper" role="group" [attr.aria-label]="'Quantity of ' + label()">
+      <button
+        type="button"
+        class="stepper__step"
+        [disabled]="value() <= min()"
+        [attr.aria-label]="'One fewer ' + label()"
+        (click)="changed.emit(value() - 1)"
+      >
+        <app-icon name="minus" [size]="16" />
+      </button>
+      <output class="stepper__value" aria-live="polite">{{ value() }}</output>
+      <button
+        type="button"
+        class="stepper__step"
+        [disabled]="value() >= max()"
+        [attr.aria-label]="'One more ' + label()"
+        (click)="changed.emit(value() + 1)"
+      >
+        <app-icon name="plus" [size]="16" />
+      </button>
+    </div>
+  `,
+  styles: `
+    .stepper {
+      display: inline-grid;
+      grid-template-columns: 2.5rem 2rem 2.5rem;
+      align-items: stretch;
+      height: 2.5rem;
+      border: 1px solid var(--color-border);
+    }
+
+    .stepper__step {
+      display: grid;
+      place-items: center;
+      padding: 0;
+      color: inherit;
+      background: none;
+      border: 0;
+      cursor: pointer;
+
+      &:hover:not(:disabled) {
+        background: var(--color-surface);
+      }
+
+      &:disabled {
+        color: var(--color-text-muted);
+        cursor: not-allowed;
+      }
+    }
+
+    .stepper__value {
+      display: grid;
+      place-items: center;
+      font-size: var(--text-ui);
+      font-variant-numeric: tabular-nums;
+    }
+  `,
+})
+export class QuantityStepper {
+  readonly value = input.required<number>();
+  readonly max = input.required<number>();
+  readonly min = input(1);
+  /** What is being counted, read out by the buttons: "One more Oxford Cloth Shirt, White S". */
+  readonly label = input.required<string>();
+  readonly changed = output<number>();
+}

@@ -1,22 +1,96 @@
-@if (order.error()) {
-  <h1 class="font-display text-display">That order is not available</h1>
-  <p class="mt-4">{{ order.error()?.message }}</p>
-} @else if (order.value(); as placed) {
-  <p class="text-text-muted">Order reference</p>
-  <h1 class="mt-2 font-display text-display">{{ placed.reference }}</h1>
-  <p class="mt-4">We recorded {{ paymentLabel(placed.paymentMethod) }}.</p>
-  <ul class="mt-8 max-w-[68ch]" role="list">
-    @for (line of placed.lines; track line.variantId) {
-      <li class="border-t border-border py-3">
-        {{ line.name }}, {{ line.color }} {{ line.size }}, {{ line.quantity }} × {{ line.unitPriceCents | money }}
-      </li>
-    }
-  </ul>
-  <p class="mt-4">Shipping {{ placed.shippingCents | money }}</p>
-  <p class="text-lg">Total {{ placed.totalCents | money }}</p>
-  <p class="mt-6">
-    <a routerLink="/">Return to the shop</a>
-  </p>
-} @else {
-  <h1 class="font-display text-display">Finding the order</h1>
-}
+<div class="order page">
+  @if (order.error()) {
+    <section class="state" aria-labelledby="order-error-title">
+      <h1 id="order-error-title" class="title">That order is not available</h1>
+      <p>{{ order.error()?.message }}</p>
+      <p>
+        Check the reference. An order placed while signed in opens only after you sign in again.
+      </p>
+      <div class="state__actions">
+        <a class="button button--primary" routerLink="/sign-in">Sign in</a>
+        <a class="button" routerLink="/">Return to the shop</a>
+      </div>
+    </section>
+  } @else if (order.value(); as placed) {
+    <header class="head">
+      @if (justPlaced) {
+        <p class="head__thanks">
+          <app-icon name="check" [size]="18" />
+          Thank you, {{ placed.contact.name }}. Your order is placed.
+        </p>
+      }
+      <h1 class="title">Order {{ placed.reference }}</h1>
+      <div class="head__meta">
+        <app-fulfillment-badge [state]="placed.fulfillment" />
+        <button
+          type="button"
+          class="text-button head__copy"
+          (click)="copyReference(placed.reference)"
+        >
+          <app-icon name="copy" [size]="16" />
+          {{ copied() ? 'Reference copied' : 'Copy reference' }}
+        </button>
+      </div>
+      <p class="head__keep">Keep the reference: it is how the shop finds your order.</p>
+    </header>
+
+    <section class="track" aria-label="Progress">
+      <app-order-track [state]="placed.fulfillment" />
+    </section>
+
+    <div class="layout">
+      <section aria-labelledby="pieces-title">
+        <h2 id="pieces-title" class="section-title">Pieces</h2>
+        <ul class="lines" role="list">
+          @for (line of placed.lines; track line.variantId) {
+            <li class="line">
+              <span class="line__photo">
+                <app-piece-photo [pieceId]="line.productId" [color]="line.color" />
+              </span>
+              <span class="line__piece">
+                <span>{{ line.name }}</span>
+                <span class="line__meta"
+                  >{{ line.color }}, size {{ line.size }}, {{ line.quantity }} ×
+                  {{ line.unitPriceCents | money }}</span
+                >
+              </span>
+              <span class="line__price">{{ line.lineCents | money }}</span>
+            </li>
+          }
+        </ul>
+        <app-order-totals
+          [subtotalCents]="placed.subtotalCents"
+          [shippingCents]="placed.shippingCents"
+          [totalCents]="placed.totalCents"
+        />
+      </section>
+
+      <dl class="facts">
+        <div>
+          <dt>Payment</dt>
+          <dd>{{ paymentLabel(placed.paymentMethod) }}. No card was taken.</dd>
+        </div>
+        <div>
+          <dt>Delivery to</dt>
+          <dd>
+            {{ placed.contact.name }}<br />
+            {{ placed.shipping.line1 }}<br />
+            {{ placed.shipping.city }} {{ placed.shipping.postalCode }}<br />
+            {{ placed.shipping.country }}
+          </dd>
+        </div>
+        <div>
+          <dt>Contact</dt>
+          <dd>
+            {{ placed.contact.email }}<br />
+            {{ placed.contact.phone }}
+          </dd>
+        </div>
+      </dl>
+    </div>
+
+    <p class="continue"><a class="button" routerLink="/">Continue shopping</a></p>
+  } @else {
+    <p class="state" role="status">Finding the order.</p>
+  }
+</div>

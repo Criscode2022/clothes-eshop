@@ -12,11 +12,24 @@ export const PAYMENT_METHODS = [
 
 export type PaymentMethodId = (typeof PAYMENT_METHODS)[number]['id'];
 
-export const CHECKOUT_STEPS = ['contact', 'shipping', 'review', 'payment'] as const;
-export type CheckoutStep = (typeof CHECKOUT_STEPS)[number];
-
 export const FULFILLMENT_STATES = ['placed', 'picking', 'ready', 'completed', 'cancelled'] as const;
 export type Fulfillment = (typeof FULFILLMENT_STATES)[number];
+
+/** The way an order normally travels. Cancelling takes it off this track. */
+const FULFILLMENT_TRACK = [
+  'placed',
+  'picking',
+  'ready',
+  'completed',
+] as const satisfies readonly Fulfillment[];
+
+export type TrackStatus = 'done' | 'current' | 'upcoming';
+
+export interface TrackStep {
+  readonly state: Fulfillment;
+  readonly label: string;
+  readonly status: TrackStatus;
+}
 
 const NEXT_FULFILLMENT: Record<Fulfillment, readonly Fulfillment[]> = {
   placed: ['picking', 'cancelled'],
@@ -99,7 +112,10 @@ export function quoteOrder(lines: readonly CartLine[], products: readonly Produc
   };
 }
 
-export function assertCheckoutDraft(draft: CheckoutDraft, products: readonly Product[]): OrderQuote {
+export function assertCheckoutDraft(
+  draft: CheckoutDraft,
+  products: readonly Product[],
+): OrderQuote {
   assertNoCardData(draft);
   assertContact(draft.contact);
   assertShipping(draft.shipping);
@@ -120,7 +136,16 @@ export function transitionFulfillment(current: Fulfillment, target: Fulfillment)
   return target;
 }
 
-const FULFILLMENT_LABELS: Record<Fulfillment, string> = {
+const FULFILLMENT_NAMES: Record<Fulfillment, string> = {
+  placed: 'Placed',
+  picking: 'Picking',
+  ready: 'Ready',
+  completed: 'Completed',
+  cancelled: 'Cancelled',
+};
+
+/** The verb on the button that moves an order into each state. */
+const FULFILLMENT_ACTIONS: Record<Fulfillment, string> = {
   placed: 'Placed',
   picking: 'Start picking',
   ready: 'Mark ready',
@@ -128,8 +153,37 @@ const FULFILLMENT_LABELS: Record<Fulfillment, string> = {
   cancelled: 'Cancel',
 };
 
-export function fulfillmentActions(current: Fulfillment): readonly { target: Fulfillment; label: string }[] {
-  return NEXT_FULFILLMENT[current].map((target) => ({ target, label: FULFILLMENT_LABELS[target] }));
+export function fulfillmentName(state: Fulfillment): string {
+  return FULFILLMENT_NAMES[state];
+}
+
+export function fulfillmentActions(
+  current: Fulfillment,
+): readonly { target: Fulfillment; label: string }[] {
+  return NEXT_FULFILLMENT[current].map((target) => ({
+    target,
+    label: FULFILLMENT_ACTIONS[target],
+  }));
+}
+
+/** Each step of the track, marked behind, at, or ahead of the order. A cancelled order has no track. */
+export function fulfillmentTrack(current: Fulfillment): TrackStep[] {
+  const position = FULFILLMENT_TRACK.findIndex((state) => state === current);
+  if (position < 0) {
+    return [];
+  }
+  return FULFILLMENT_TRACK.map((state, index) => ({
+    state,
+    label: fulfillmentName(state),
+    status: trackStatus(index, position),
+  }));
+}
+
+function trackStatus(index: number, position: number): TrackStatus {
+  if (index < position) {
+    return 'done';
+  }
+  return index === position ? 'current' : 'upcoming';
 }
 
 export function assertNoCardData(value: unknown): void {

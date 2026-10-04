@@ -1,0 +1,156 @@
+.state {
+  display: grid;
+  gap: 1rem;
+  justify-items: start;
+  padding-block: 1.5rem;
+  color: var(--color-text-muted);
+}
+
+.pieces {
+  display: grid;
+  gap: 2.5rem;
+
+  @media (min-width: 64rem) {
+    grid-template-columns: minmax(16rem, 22rem) minmax(0, 1fr);
+    gap: 4rem;
+    align-items: start;
+  }
+}
+
+.list ul {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--color-border);
+}
+
+.list__item {
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr) auto;
+  gap: 0.875rem;
+  align-items: center;
+  padding: 0.625rem 0.5rem;
+  font-size: var(--text-ui);
+  text-decoration: none;
+  border-bottom: 1px solid var(--color-border);
+
+  &:hover {
+    background: var(--color-surface);
+  }
+
+  &[aria-current='true'] {
+    background: var(--color-surface-strong);
+  }
+}
+
+.list__photo,
+.editor__photo {
+  display: block;
+  aspect-ratio: 2 / 3;
+  background: var(--color-surface);
+}
+
+.list__text {
+  display: grid;
+  min-width: 0;
+}
+
+.list__name {
+  overflow: hidden;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.list__meta,
+.list__stock {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.editor {
+  display: grid;
+  gap: 2.5rem;
+}
+
+.editor__head {
+  display: flex;
+  gap: 1.25rem;
+  align-items: center;
+}
+
+.editor__photo {
+  width: 4.5rem;
+  flex: none;
+}
+
+.editor__intro {
+  display: grid;
+  gap: 0.375rem;
+}
+
+.editor__title {
+  font-size: var(--text-lg);
+}
+
+.editor__meta {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+
+  a {
+    color: var(--color-text);
+  }
+}
+
+.block {
+  display: grid;
+  gap: 1rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.block__title {
+  font-size: var(--text-ui);
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.block__status {
+  min-height: 1.25rem;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.block__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+}
+
+.price-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.price-row__input {
+  width: 10rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.variant-row {
+  display: grid;
+  gap: 1rem;
+
+  @media (min-width: 40rem) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.table-scroll {
+  overflow-x: auto;
+}

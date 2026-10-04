@@ -1,0 +1,135 @@
+@if (loading() && pieces().length === 0) {
+  <p class="state" role="status">Loading pieces.</p>
+} @else if (loadError()) {
+  <div class="state">
+    <p class="notice notice--error" role="alert">{{ loadError() }}</p>
+    <button type="button" class="button" (click)="load()">Try again</button>
+  </div>
+} @else {
+  <div class="pieces">
+    <nav class="list" aria-label="Pieces">
+      <ul role="list">
+        @for (item of pieces(); track item.id) {
+          <li>
+            <a
+              class="list__item"
+              [routerLink]="[]"
+              [queryParams]="{ piece: item.id }"
+              [attr.aria-current]="item.id === selected()?.id ? 'true' : null"
+            >
+              <span class="list__photo">
+                <app-piece-photo [pieceId]="item.id" [color]="item.variants[0]?.color ?? ''" />
+              </span>
+              <span class="list__text">
+                <span class="list__name">{{ item.name }}</span>
+                <span class="list__meta"
+                  >{{ categoryName(item.category) }}, {{ item.priceCents | money }}</span
+                >
+              </span>
+              <span class="list__stock">{{ totalStock(item) }} on hand</span>
+            </a>
+          </li>
+        }
+      </ul>
+    </nav>
+
+    @if (selected(); as current) {
+      <section class="editor" aria-labelledby="editor-title">
+        <header class="editor__head">
+          <span class="editor__photo">
+            <app-piece-photo [pieceId]="current.id" [color]="current.variants[0]?.color ?? ''" />
+          </span>
+          <div class="editor__intro">
+            <h2 id="editor-title" class="editor__title">{{ current.name }}</h2>
+            <p class="editor__meta">
+              {{ categoryName(current.category) }}.
+              <a [routerLink]="['/product', current.id]">See it on the floor</a>
+            </p>
+          </div>
+        </header>
+
+        <form class="block" novalidate (submit)="savePrice(); $event.preventDefault()">
+          <h3 class="block__title">Price</h3>
+          <div class="price-row">
+            <div class="field">
+              <label class="field__label" for="piece-price">Price in dollars</label>
+              <input
+                id="piece-price"
+                class="input price-row__input"
+                type="number"
+                step="0.01"
+                inputmode="decimal"
+                [formField]="priceForm.dollars"
+                [attr.aria-invalid]="priceForm.dollars().touched() && priceForm.dollars().invalid()"
+                [attr.aria-describedby]="
+                  priceForm.dollars().touched() && priceForm.dollars().invalid()
+                    ? 'piece-price-error'
+                    : null
+                "
+              />
+            </div>
+            <button type="submit" class="button button--primary">Save price</button>
+          </div>
+          @if (priceForm.dollars().touched() && priceForm.dollars().invalid()) {
+            <p id="piece-price-error" class="field__error">
+              {{ priceForm.dollars().errors()[0]?.message }}
+            </p>
+          }
+          <p class="block__status" role="status">{{ priceStatus() }}</p>
+        </form>
+
+        <section class="block" aria-labelledby="sizes-title">
+          <h3 id="sizes-title" class="block__title">Sizes and colors</h3>
+          <div class="table-scroll" role="region" aria-labelledby="sizes-title" tabindex="0">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th scope="col">Color</th>
+                  <th scope="col">Size</th>
+                  <th scope="col">On hand</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (variant of current.variants; track variant.id) {
+                  <tr>
+                    <td>{{ variant.color }}</td>
+                    <td>{{ variant.size }}</td>
+                    <td>
+                      <app-stock-field
+                        [variant]="variant"
+                        [label]="current.name + ', ' + variant.color + ' ' + variant.size"
+                      />
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <form class="block" novalidate (submit)="addVariant(); $event.preventDefault()">
+          <h3 class="block__title">Add a size or color</h3>
+          <div class="variant-row">
+            <app-text-field inputId="variant-size" label="Size" [field]="variantForm.size" />
+            <app-text-field inputId="variant-color" label="Color" [field]="variantForm.color" />
+            <div class="field">
+              <label class="field__label" for="variant-stock">On hand</label>
+              <input
+                id="variant-stock"
+                class="input"
+                type="number"
+                inputmode="numeric"
+                [formField]="variantForm.stock"
+                [attr.aria-invalid]="variantForm.stock().touched() && variantForm.stock().invalid()"
+              />
+            </div>
+          </div>
+          <div class="block__actions">
+            <button type="submit" class="button">Add size</button>
+            <p class="block__status" role="status">{{ variantStatus() }}</p>
+          </div>
+        </form>
+      </section>
+    }
+  </div>
+}

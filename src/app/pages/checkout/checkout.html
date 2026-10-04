@@ -1,145 +1,183 @@
-<h1 class="font-display text-display">Checkout</h1>
-<p class="mt-3 max-w-[62ch]">
-  An account is optional.
-  <a routerLink="/sign-in">Sign in</a>
-  only if you want this order kept under your name.
-</p>
+<div class="checkout page">
+  @if (bag.quote(); as quote) {
+    <header class="head">
+      <h1 class="head__title">Checkout</h1>
+      <p class="head__lede">
+        An account is optional.
+        @if (!session.current()) {
+          <a routerLink="/sign-in">Sign in</a> only if you want this order kept under your name.
+        }
+      </p>
+    </header>
 
-@if (quote(); as totals) {
-  <div class="mt-8 grid items-start gap-12 lg:grid-cols-[minmax(0,32rem)_18rem]">
-  <div>
-  <ol class="flex flex-wrap gap-x-6 gap-y-2" aria-label="Checkout steps">
-    @for (name of steps; track name) {
-      <li [attr.aria-current]="step() === name ? 'step' : null">{{ name }}</li>
-    }
-  </ol>
+    <details class="summary-toggle">
+      <summary>
+        <span>Order summary</span>
+        <app-icon name="chevron-down" [size]="18" />
+        <span class="summary-toggle__total">{{ quote.totalCents | money }}</span>
+      </summary>
+      <ng-container *ngTemplateOutlet="summary" />
+    </details>
 
-  @if (step() === 'contact') {
-    <form class="mt-8 grid max-w-md gap-4" animate.enter="step-enter" animate.leave="step-leave" (submit)="continueContact(); $event.preventDefault()">
-      <h2 class="font-display text-xl">Contact</h2>
-      <label>
-        Name
-        <input id="contact-name" class="mt-1 block w-full" autocomplete="name" [formField]="contactForm.name" />
-        @if (contactForm.name().touched() && contactForm.name().errors().length) {
-          <span class="text-danger">{{ contactForm.name().errors()[0].message }}</span>
+    <div class="layout">
+      <form class="form" novalidate (submit)="placeOrder(); $event.preventDefault()">
+        @if (errorMessage()) {
+          <p class="notice notice--error" role="alert" tabindex="-1">{{ errorMessage() }}</p>
         }
-      </label>
-      <label>
-        Email
-        <input id="contact-email" class="mt-1 block w-full" type="email" autocomplete="email" [formField]="contactForm.email" />
-        @if (contactForm.email().touched() && contactForm.email().errors().length) {
-          <span class="text-danger">{{ contactForm.email().errors()[0].message }}</span>
-        }
-      </label>
-      <label>
-        Phone
-        <input id="contact-phone" class="mt-1 block w-full" type="tel" autocomplete="tel" [formField]="contactForm.phone" />
-        @if (contactForm.phone().touched() && contactForm.phone().errors().length) {
-          <span class="text-danger">{{ contactForm.phone().errors()[0].message }}</span>
-        }
-      </label>
-      <button type="submit" [disabled]="contactForm().invalid()">Continue to shipping</button>
-    </form>
-  } @else if (step() === 'shipping') {
-    <form class="mt-8 grid max-w-md gap-4" animate.enter="step-enter" animate.leave="step-leave" (submit)="continueShipping(); $event.preventDefault()">
-      <h2 class="font-display text-xl">Shipping</h2>
-      <label>
-        Street
-        <input id="ship-line1" class="mt-1 block w-full" autocomplete="address-line1" [formField]="shippingForm.line1" />
-        @if (shippingForm.line1().touched() && shippingForm.line1().errors().length) {
-          <span class="text-danger">{{ shippingForm.line1().errors()[0].message }}</span>
-        }
-      </label>
-      <label>
-        City
-        <input id="ship-city" class="mt-1 block w-full" autocomplete="address-level2" [formField]="shippingForm.city" />
-        @if (shippingForm.city().touched() && shippingForm.city().errors().length) {
-          <span class="text-danger">{{ shippingForm.city().errors()[0].message }}</span>
-        }
-      </label>
-      <label>
-        Postal code
-        <input id="ship-postal" class="mt-1 block w-full" autocomplete="postal-code" [formField]="shippingForm.postalCode" />
-        @if (shippingForm.postalCode().touched() && shippingForm.postalCode().errors().length) {
-          <span class="text-danger">{{ shippingForm.postalCode().errors()[0].message }}</span>
-        }
-      </label>
-      <label>
-        Country
-        <input id="ship-country" class="mt-1 block w-full" autocomplete="country-name" [formField]="shippingForm.country" />
-        @if (shippingForm.country().touched() && shippingForm.country().errors().length) {
-          <span class="text-danger">{{ shippingForm.country().errors()[0].message }}</span>
-        }
-      </label>
-      <button type="submit" [disabled]="shippingForm().invalid()">Continue to review</button>
-    </form>
-  } @else if (step() === 'review') {
-    <section class="mt-8 max-w-[68ch]" animate.enter="step-enter" animate.leave="step-leave">
-      <h2 class="font-display text-xl">Review</h2>
-      <ul class="mt-4" role="list">
-        @for (line of totals.lines; track line.variantId) {
-          <li class="border-t border-border py-3">
-            {{ line.name }}, {{ line.color }} {{ line.size }}, {{ line.quantity }} × {{ line.unitPriceCents | money }}
-          </li>
-        }
-      </ul>
-      <p class="mt-4">Shipping {{ totals.shippingCents | money }}</p>
-      <p class="text-lg">Total {{ totals.totalCents | money }}</p>
-      <button class="mt-6" type="button" (click)="continueReview()">Continue to payment</button>
-    </section>
-  } @else {
-    <form class="mt-8 grid max-w-md gap-4" animate.enter="step-enter" animate.leave="step-leave" (submit)="placeOrder(); $event.preventDefault()">
-      <h2 class="font-display text-xl">Payment</h2>
-      <fieldset>
-        <legend>How you will pay</legend>
-        <div class="mt-2 grid gap-3">
-          @for (method of methods; track method.id) {
-            <label class="inline-flex items-center gap-2">
-              <input type="radio" [value]="method.id" [formField]="paymentForm.method" />
-              {{ method.label }}
-            </label>
+
+        <section class="section" aria-labelledby="contact-title">
+          <h2 id="contact-title" class="section__title">Contact</h2>
+          <div class="section__fields">
+            <app-text-field
+              class="span-2"
+              inputId="contact-name"
+              label="Full name"
+              autocomplete="name"
+              [field]="checkoutForm.contact.name"
+            />
+            <app-text-field
+              inputId="contact-email"
+              label="Email"
+              type="email"
+              autocomplete="email"
+              hint="The receipt goes here."
+              [field]="checkoutForm.contact.email"
+            />
+            <app-text-field
+              inputId="contact-phone"
+              label="Phone"
+              type="tel"
+              autocomplete="tel"
+              [field]="checkoutForm.contact.phone"
+            />
+          </div>
+        </section>
+
+        <section class="section" aria-labelledby="delivery-title">
+          <h2 id="delivery-title" class="section__title">Delivery</h2>
+          <div class="section__fields">
+            <app-text-field
+              class="span-2"
+              inputId="ship-line1"
+              label="Street address"
+              autocomplete="address-line1"
+              [field]="checkoutForm.shipping.line1"
+            />
+            <app-text-field
+              inputId="ship-city"
+              label="City"
+              autocomplete="address-level2"
+              [field]="checkoutForm.shipping.city"
+            />
+            <app-text-field
+              inputId="ship-postal"
+              label="Postal code"
+              autocomplete="postal-code"
+              [field]="checkoutForm.shipping.postalCode"
+            />
+            <app-text-field
+              class="span-2"
+              inputId="ship-country"
+              label="Country"
+              autocomplete="country-name"
+              [field]="checkoutForm.shipping.country"
+            />
+          </div>
+        </section>
+
+        <section class="section" aria-labelledby="payment-title">
+          <h2 id="payment-title" class="section__title">Payment</h2>
+          <fieldset
+            class="choices"
+            [attr.aria-describedby]="
+              checkoutForm.paymentMethod().touched() && checkoutForm.paymentMethod().invalid()
+                ? 'payment-error payment-note'
+                : 'payment-note'
+            "
+          >
+            <legend class="sr-only">How you will pay</legend>
+            @for (method of methods; track method.id) {
+              <label class="choice">
+                <input
+                  type="radio"
+                  [value]="method.id"
+                  [formField]="checkoutForm.paymentMethod"
+                  [attr.aria-invalid]="
+                    checkoutForm.paymentMethod().touched() && checkoutForm.paymentMethod().invalid()
+                  "
+                />
+                <span>{{ method.label }}</span>
+              </label>
+            }
+          </fieldset>
+          @if (checkoutForm.paymentMethod().touched() && checkoutForm.paymentMethod().invalid()) {
+            <p id="payment-error" class="field__error">
+              {{ checkoutForm.paymentMethod().errors()[0]?.message }}
+            </p>
           }
+          <p id="payment-note" class="section__note">
+            No card needed. Marlow records the method you choose and never asks for a card number.
+          </p>
+        </section>
+
+        <div class="submit">
+          <p class="submit__total">
+            <span>Total</span>
+            <span>{{ quote.totalCents | money }}</span>
+          </p>
+          <button
+            type="submit"
+            class="button button--primary button--block"
+            [disabled]="placing()"
+            [attr.aria-busy]="placing()"
+          >
+            {{ placing() ? 'Placing order' : 'Place order' }}
+          </button>
         </div>
-      </fieldset>
-      <p class="text-text-muted">We record the method only. Do not enter a card number.</p>
-      @if (paymentForm.method().touched() && paymentForm.method().errors().length) {
-        <p class="text-danger">{{ paymentForm.method().errors()[0].message }}</p>
-      }
-      @if (errorMessage()) {
-        <p role="alert" class="text-danger">{{ errorMessage() }}</p>
-      }
-      <button type="submit" [disabled]="paymentForm().invalid() || placing()">Place order</button>
-    </form>
+      </form>
+
+      <aside class="summary" aria-labelledby="summary-title">
+        <h2 id="summary-title" class="summary__title">Order summary</h2>
+        <ng-container *ngTemplateOutlet="summary" />
+      </aside>
+    </div>
+
+    <ng-template #summary>
+      <div class="summary__body">
+        <ul class="summary__lines" role="list">
+          @for (line of bag.detailed(); track line.variantId) {
+            <li class="summary__line">
+              <span class="summary__photo">
+                <app-piece-photo [pieceId]="line.productId" [color]="line.color" />
+                @if (line.quantity > 1) {
+                  <span class="summary__quantity">{{ line.quantity }}</span>
+                }
+              </span>
+              <span class="summary__piece">
+                <span>{{ line.name }}</span>
+                <span class="summary__meta">{{ line.color }}, size {{ line.size }}</span>
+                @if (line.quantity > 1) {
+                  <span class="sr-only">Quantity {{ line.quantity }}</span>
+                }
+              </span>
+              <span class="summary__price">{{ line.lineCents | money }}</span>
+            </li>
+          }
+        </ul>
+        <app-order-totals
+          [subtotalCents]="quote.subtotalCents"
+          [shippingCents]="quote.shippingCents"
+          [totalCents]="quote.totalCents"
+        />
+        <app-free-shipping [subtotalCents]="quote.subtotalCents" />
+        <p class="summary__edit"><a routerLink="/bag">Change the bag</a></p>
+      </div>
+    </ng-template>
+  } @else {
+    <section class="empty" aria-labelledby="empty-title">
+      <h1 id="empty-title" class="head__title">Checkout</h1>
+      <p>Your bag is empty, so there is nothing to check out.</p>
+      <a class="button button--primary" routerLink="/">Shop the floor</a>
+    </section>
   }
-  </div>
-  <aside class="border-t border-border pt-6 lg:border-t-0 lg:pt-0" aria-label="This order">
-    <h2 class="font-display text-xl">This order</h2>
-    <ul class="mt-4" role="list">
-      @for (line of totals.lines; track line.variantId) {
-        <li class="border-t border-border py-3">
-          {{ line.name }}, {{ line.color }} {{ line.size }} × {{ line.quantity }}
-          <span class="block">{{ line.lineCents | money }}</span>
-        </li>
-      }
-    </ul>
-    <dl class="mt-4 grid grid-cols-2 gap-y-2">
-      <dt>Pieces</dt>
-      <dd class="text-end">{{ totals.subtotalCents | money }}</dd>
-      <dt>Shipping</dt>
-      <dd class="text-end">{{ totals.shippingCents | money }}</dd>
-      <dt class="font-semibold">Total</dt>
-      <dd class="text-end font-semibold">{{ totals.totalCents | money }}</dd>
-    </dl>
-    @if (centsUntilFreeShipping(totals.subtotalCents) > 0) {
-      <p class="mt-4 text-text-muted">Add {{ centsUntilFreeShipping(totals.subtotalCents) | money }} for free shipping.</p>
-    } @else {
-      <p class="mt-4">Shipping is free on this bag.</p>
-    }
-  </aside>
-  </div>
-} @else {
-  <p class="mt-6">The bag is empty, so there is nothing to check out.</p>
-  <p class="mt-4">
-    <a routerLink="/">Browse the floor</a>
-  </p>
-}
+</div>

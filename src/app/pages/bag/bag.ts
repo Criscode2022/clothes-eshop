@@ -1,41 +1,65 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Bag } from '../../shop/bag';
-import { CatalogStore } from '../../shop/catalog-store';
-import { quoteOrder } from '../../shop/checkout';
-import { MoneyPipe } from '../../shop/money.pipe';
-import { centsUntilFreeShipping } from '../../shop/money';
+import { BagLines } from '../../ui/bag-lines/bag-lines';
+import { FreeShipping } from '../../ui/free-shipping';
+import { OrderTotals } from '../../ui/order-totals';
 
 @Component({
   selector: 'app-bag',
-  imports: [RouterLink, MoneyPipe],
+  imports: [BagLines, FreeShipping, OrderTotals, RouterLink],
   templateUrl: './bag.html',
+  styles: `
+    .bag {
+      display: grid;
+      gap: 2rem;
+      padding-block: 2.5rem 0;
+    }
+
+    .title {
+      font-size: var(--text-xl);
+    }
+
+    .layout {
+      display: grid;
+      gap: 3rem;
+
+      @media (min-width: 64rem) {
+        grid-template-columns: minmax(0, 1fr) minmax(20rem, 24rem);
+        gap: 5rem;
+        align-items: start;
+      }
+    }
+
+    .summary {
+      display: grid;
+      gap: 1.5rem;
+      padding: 1.75rem;
+      background: var(--color-surface);
+
+      @media (min-width: 64rem) {
+        position: sticky;
+        top: calc(var(--header-height) + 2rem);
+      }
+    }
+
+    .summary__title {
+      font-size: var(--text-md);
+      letter-spacing: 0;
+    }
+
+    .summary__note {
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+    }
+
+    .empty {
+      display: grid;
+      gap: 1.25rem;
+      justify-items: start;
+    }
+  `,
 })
 export class BagPage {
-  private readonly bag = inject(Bag);
-  private readonly catalog = inject(CatalogStore);
-
-  protected readonly lines = this.bag.detailed;
-  protected readonly centsUntilFreeShipping = centsUntilFreeShipping;
-  protected readonly quote = computed(() => {
-    const lines = this.bag.items();
-    if (lines.length === 0) {
-      return null;
-    }
-    try {
-      return quoteOrder(lines, this.catalog.pieces());
-    } catch {
-      return null;
-    }
-  });
-
-  protected increase(variantId: string, quantity: number, stock: number): void {
-    if (quantity < stock) {
-      this.bag.setQuantity(variantId, quantity + 1);
-    }
-  }
-
-  protected decrease(variantId: string, quantity: number): void {
-    this.bag.setQuantity(variantId, quantity - 1);
-  }
+  protected readonly bag = inject(Bag);
 }

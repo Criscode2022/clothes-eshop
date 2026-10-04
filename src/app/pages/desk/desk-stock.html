@@ -1,0 +1,64 @@
+<section class="stock" aria-labelledby="stock-title">
+  <div class="stock__head">
+    <h2 id="stock-title" class="stock__title">Stock</h2>
+    <label class="stock__filter">
+      <input type="checkbox" [checked]="lowOnly()" (change)="showLowOnly($event)" />
+      Only the last few and sold out
+      <span class="stock__count">{{ lowCount() }}</span>
+    </label>
+  </div>
+
+  @if (loading()) {
+    <p class="stock__empty" role="status">Loading stock.</p>
+  } @else if (loadError()) {
+    <div class="stock__empty">
+      <p class="notice notice--error" role="alert">{{ loadError() }}</p>
+      <button type="button" class="button" (click)="load()">Try again</button>
+    </div>
+  } @else if (pieces().length === 0) {
+    <p class="stock__empty">Every size has more than two on hand.</p>
+  } @else {
+    <div class="table-scroll" role="region" aria-labelledby="stock-title" tabindex="0">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th scope="col">Piece</th>
+            <th scope="col">Color</th>
+            <th scope="col">Size</th>
+            <th scope="col">On hand</th>
+            <th scope="col">Floor shows</th>
+          </tr>
+        </thead>
+        @for (group of pieces(); track group.product.id) {
+          <tbody class="group">
+            @for (variant of group.variants; track variant.id; let first = $first) {
+              <tr>
+                @if (first) {
+                  <th scope="rowgroup" [attr.rowspan]="group.variants.length" class="group__piece">
+                    <span class="group__photo">
+                      <app-piece-photo [pieceId]="group.product.id" [color]="variant.color" />
+                    </span>
+                    {{ group.product.name }}
+                  </th>
+                }
+                <td>{{ variant.color }}</td>
+                <td>{{ variant.size }}</td>
+                <td>
+                  <app-stock-field [variant]="variant" [label]="label(group.product, variant)" />
+                </td>
+                <td>
+                  <span
+                    class="note"
+                    [class.note--low]="stockState(variant.stock) === 'low'"
+                    [class.note--out]="stockState(variant.stock) === 'sold-out'"
+                    >{{ stockNote(variant.stock) }}</span
+                  >
+                </td>
+              </tr>
+            }
+          </tbody>
+        }
+      </table>
+    </div>
+  }
+</section>

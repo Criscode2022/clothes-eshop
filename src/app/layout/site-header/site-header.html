@@ -1,0 +1,148 @@
+<header class="header">
+  <div class="bar page">
+    <button
+      type="button"
+      class="icon-button bar__menu"
+      aria-haspopup="dialog"
+      aria-controls="site-menu"
+      [attr.aria-expanded]="menuOpen()"
+      (click)="openMenu()"
+    >
+      <app-icon name="menu" />
+      <span class="sr-only">Menu</span>
+    </button>
+
+    <a class="wordmark bar__brand" routerLink="/">Marlow</a>
+
+    <nav class="bar__nav" aria-label="Main">
+      <ul role="list">
+        <li>
+          <a
+            routerLink="/"
+            routerLinkActive="is-current"
+            ariaCurrentWhenActive="page"
+            [routerLinkActiveOptions]="{ exact: true }"
+            >Shop</a
+          >
+        </li>
+        @for (category of categories; track category.slug) {
+          <li>
+            <a
+              [routerLink]="['/category', category.slug]"
+              routerLinkActive="is-current"
+              ariaCurrentWhenActive="page"
+              >{{ category.name }}</a
+            >
+          </li>
+        }
+      </ul>
+    </nav>
+
+    <div class="bar__tools">
+      <a
+        class="tool"
+        routerLink="/atelier"
+        routerLinkActive="is-current"
+        ariaCurrentWhenActive="page"
+        >Atelier</a
+      >
+      @if (session.current()) {
+        @if (isClient()) {
+          <a
+            class="tool"
+            routerLink="/account/orders"
+            routerLinkActive="is-current"
+            ariaCurrentWhenActive="page"
+            >Orders</a
+          >
+        }
+        @if (showDesk()) {
+          <a
+            class="tool"
+            routerLink="/desk"
+            routerLinkActive="is-current"
+            ariaCurrentWhenActive="page"
+            >Desk</a
+          >
+        }
+        @if (showOwner()) {
+          <a
+            class="tool"
+            routerLink="/owner"
+            routerLinkActive="is-current"
+            ariaCurrentWhenActive="page"
+            >Backoffice</a
+          >
+        }
+        <button type="button" class="tool tool--button" (click)="signOut()">Sign out</button>
+      } @else {
+        <a
+          class="tool"
+          routerLink="/sign-in"
+          routerLinkActive="is-current"
+          ariaCurrentWhenActive="page"
+          >Sign in</a
+        >
+      }
+
+      <button type="button" class="bag-button" aria-haspopup="dialog" (click)="drawer.open()">
+        <app-icon name="bag" class="bag-button__icon" />
+        <span class="bag-button__label">Bag</span>
+        @if (bag.count() > 0) {
+          <span class="bag-button__count">{{ bag.count() }}</span>
+          <span class="sr-only">{{ bag.count() === 1 ? 'item' : 'items' }}</span>
+        } @else {
+          <span class="sr-only">, empty</span>
+        }
+      </button>
+    </div>
+  </div>
+</header>
+
+<dialog
+  #menu
+  id="site-menu"
+  class="sheet sheet--start"
+  aria-label="Menu"
+  (close)="menuClosed()"
+  (click)="closeMenuFromBackdrop($event)"
+>
+  <div class="sheet__panel">
+    <div class="menu-head">
+      <span class="wordmark">Marlow</span>
+      <button type="button" class="icon-button" (click)="closeMenu()">
+        <app-icon name="close" />
+        <span class="sr-only">Close menu</span>
+      </button>
+    </div>
+    <nav class="menu-nav" aria-label="Menu">
+      <ul role="list" class="menu-nav__list">
+        <li><a routerLink="/" (click)="closeMenu()">Shop all</a></li>
+        @for (category of categories; track category.slug) {
+          <li>
+            <a [routerLink]="['/category', category.slug]" (click)="closeMenu()">{{
+              category.name
+            }}</a>
+          </li>
+        }
+      </ul>
+      <ul role="list" class="menu-nav__list menu-nav__list--quiet">
+        <li><a routerLink="/atelier" (click)="closeMenu()">Atelier</a></li>
+        @if (session.current()) {
+          @if (isClient()) {
+            <li><a routerLink="/account/orders" (click)="closeMenu()">Your orders</a></li>
+          }
+          @if (showDesk()) {
+            <li><a routerLink="/desk" (click)="closeMenu()">Desk</a></li>
+          }
+          @if (showOwner()) {
+            <li><a routerLink="/owner" (click)="closeMenu()">Backoffice</a></li>
+          }
+          <li><button type="button" class="text-button" (click)="signOut()">Sign out</button></li>
+        } @else {
+          <li><a routerLink="/sign-in" (click)="closeMenu()">Sign in</a></li>
+        }
+      </ul>
+    </nav>
+  </div>
+</dialog>

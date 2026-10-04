@@ -7,8 +7,8 @@ Rules and context for this app only. Agents read this file after [PROJECT.md](PR
 Marlow is a ready-to-wear clothes shop with three audiences.
 
 - Clients browse the public floor, build a bag, and check out. An account is optional. A guest order is stored without a client id. A signed-in client sees only the orders stored with that client's id.
-- The owner runs the backoffice at `/owner`: create and edit pieces (price, sizes and colors, stock) and see every order.
-- Shop workers use the daily desk at `/desk`: list orders, move fulfillment (including completed and cancelled), and change on-hand stock. They cannot change prices or other catalog administration.
+- The owner runs the backoffice at `/owner`: every order at `/owner`, pieces (price in dollars, sizes and colors, stock) at `/owner/pieces`, and new pieces at `/owner/new`.
+- Shop workers use the daily desk at `/desk`: orders by fulfillment state at `/desk`, including completed and cancelled, and on-hand stock at `/desk/stock`. They cannot change prices or other catalog administration.
 
 Visitors and clients cannot open the desk or the backoffice. A worker cannot open owner-only actions.
 
@@ -24,10 +24,15 @@ Visitors and clients cannot open the desk or the backoffice. A worker cannot ope
 - When `DATABASE_URL` is set, the server loads the branch into the shared shop book before each request and writes successful orders, prices, stock, and new pieces back. Guest orders are still inserted by that server, because anonymous has no write grant. A client id is stored only when it exists in `neon_auth.user`. Without `DATABASE_URL`, the same book stays in memory and the tests keep using it.
 - Floor accounts still open the three sections. The password is `marlow-floor`. Avery Cole (`avery@marlow.shop`) and Noah Pell (`noah@marlow.shop`) are clients. Jordan Hale (`jordan@marlow.shop`) is a worker. Sloan Marlow (`sloan@marlow.shop`) is the owner. These are demo people, not a connection string or an API token. A shopper can also create a Neon Auth account. The role for that account comes from `app_private` through `current_shop_role`, not from a field the person can edit.
 - The public floor shows a photograph, composition, care, and fit for each seeded piece, the amount left until shipping is free, a checkout summary, and an atelier page at `/atelier`. `/atelier` is server-rendered with the catalog.
+- The look is the category standard for a quiet-luxury clothes shop, held to the craft of COS, Arket, and Toteme. The owner chose it on 2026-10-03 over novelty directions, and released the earlier magenta accent, Newsreader serif, and copy voice. `DESIGN.md` records the visual system, `PRODUCT.md` the product truth, and `.impeccable/surfaces/` the briefs for the storefront and the task screens.
+- Buying takes the fewest steps: sizes can be added from the floor's quick add, the bag opens as a drawer on the line just added, and checkout is one page (contact, delivery, payment) with the order summary in view. A size is chosen by the shopper; the product page preselects one only when it is the last size left in that color.
+- The bag is kept in the browser's `localStorage` under `marlow.bag`, restored after the first render so hydration matches the server, and capped at current stock when it comes back.
 
 ## Rules
 
 - Do not add Ionic, a service worker, or Angular Native.
 - Keep colors on the tokens in `src/styles.scss`. Tailwind reads those tokens; do not add `tailwind.config.js` or `@tailwind` directives.
+- One typeface: Archivo, self-hosted from `@fontsource-variable/archivo` with its width axis. Do not add a second face.
+- Shared styles in `src/styles.scss` sit in Tailwind's `base` and `components` layers, so utilities can override them.
 - Guest checkout stays on the public path. Do not put a sign-in wall in front of it.
 - Do not put payment-provider calls or email sending in browser code.

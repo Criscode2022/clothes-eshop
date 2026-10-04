@@ -3,6 +3,8 @@ import { findProduct } from './catalog';
 import { StockLimitError, addLine, changeQuantity } from './cart';
 import type { CartLine } from './cart';
 import { CatalogStore } from './catalog-store';
+import { quoteOrder } from './checkout';
+import type { OrderQuote } from './checkout';
 
 export interface BagLine extends CartLine {
   readonly name: string;
@@ -12,6 +14,10 @@ export interface BagLine extends CartLine {
   readonly lineCents: number;
   readonly stock: number;
 }
+
+export type AddOutcome =
+  | { readonly added: true; readonly line: BagLine }
+  | { readonly added: false; readonly reason: string };
 
 @Service()
 export class Bag {
@@ -23,19 +29,27 @@ export class Bag {
   readonly noticeMessage = this.notice.asReadonly();
   readonly count = computed(() => this.lines().reduce((sum, line) => sum + line.quantity, 0));
   readonly detailed = computed(() => this.describe(this.lines()));
+  /** What the bag costs now, or null when it is empty or a line no longer fits the floor. */
+  readonly quote = computed(() => this.quoteLines(this.lines()));
 
-  add(productId: string, variantId: string): void {
-    const variant = this.variant(productId, variantId);
+  /** Adds one of a size. A refusal is also left in the notice so the page can say why. */
+  add(productId: string, variantId: string): AddOutcome {
+    const variant = this.describe([{ productId, variantId, quantity: 1 }])[0];
     if (!variant) {
-      this.notice.set('That size is no longer on the floor.');
-      return;
+      return this.refuse('That size is no longer on the floor.');
     }
     try {
       this.lines.update((lines) => addLine(lines, productId, variantId, 1, variant.stock));
-      this.notice.set(`Added ${variant.name}, ${variant.color} ${variant.size}.`);
     } catch (error) {
-      this.notice.set(error instanceof StockLimitError ? error.message : 'That piece could not be added.');
+      return this.refuse(
+        error instanceof StockLimitError ? error.message : 'That piece could not be added.',
+      );
     }
+    this.notice.set('');
+    return {
+      added: true,
+      line: this.detailed().find((line) => line.variantId === variantId) ?? variant,
+    };
   }
 
   setQuantity(variantId: string, quantity: number): void {
@@ -47,8 +61,19 @@ export class Bag {
       this.lines.update((lines) => changeQuantity(lines, variantId, quantity, line.stock));
       this.notice.set('');
     } catch (error) {
-      this.notice.set(error instanceof StockLimitError ? error.message : 'That quantity is not available.');
+      this.notice.set(
+        error instanceof StockLimitError ? error.message : 'That quantity is not available.',
+      );
     }
+  }
+
+  remove(variantId: string): void {
+    this.setQuantity(variantId, 0);
+  }
+
+  /** Puts back a bag saved earlier in this browser. */
+  restore(lines: readonly CartLine[]): void {
+    this.lines.set([...lines]);
   }
 
   clearNotice(): void {
@@ -59,8 +84,21 @@ export class Bag {
     this.lines.set([]);
   }
 
-  private variant(productId: string, variantId: string): (BagLine & { stock: number }) | null {
-    return this.describe([{ productId, variantId, quantity: 1 }])[0] ?? null;
+  private refuse(reason: string): AddOutcome {
+    this.notice.set(reason);
+    return { added: false, reason };
+  }
+
+  private quoteLines(lines: readonly CartLine[]): OrderQuote | null {
+    if (lines.length === 0) {
+      return null;
+    }
+    try {
+      return quoteOrder(lines, this.catalog.pieces());
+    } catch {
+      // A line the floor can no longer fill shows in the bag; checkout waits until it is fixed.
+      return null;
+    }
   }
 
   private describe(lines: readonly CartLine[]): BagLine[] {

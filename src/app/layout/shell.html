@@ -1,65 +1,30 @@
 <a class="skip-link" href="#main-content" (click)="skipToMain($event)">Skip to main content</a>
 
-<header class="site-header">
-  <a class="site-header__brand font-display text-xl" routerLink="/">Marlow</a>
-  <nav aria-label="Main">
-    <ul class="site-nav" role="list">
-      <li>
-        <a
-          class="site-nav__link"
-          routerLink="/"
-          routerLinkActive="site-nav__link--active"
-          ariaCurrentWhenActive="page"
-          [routerLinkActiveOptions]="{ exact: true }"
-          >Shop</a
-        >
-      </li>
-      <li>
-        <a class="site-nav__link" routerLink="/bag" routerLinkActive="site-nav__link--active" ariaCurrentWhenActive="page">
-          Bag
-          @if (bag.count() > 0) {
-            <span animate.enter="line-enter">{{ bag.count() }}</span>
-          }
-        </a>
-      </li>
-      @if (session.current(); as person) {
-        @if (person.role === 'client') {
-          <li>
-            <a class="site-nav__link" routerLink="/account/orders" routerLinkActive="site-nav__link--active" ariaCurrentWhenActive="page">Orders</a>
-          </li>
-        }
-        @if (showDesk()) {
-          <li>
-            <a class="site-nav__link" routerLink="/desk" routerLinkActive="site-nav__link--active" ariaCurrentWhenActive="page">Desk</a>
-          </li>
-        }
-        @if (showOwner()) {
-          <li>
-            <a class="site-nav__link" routerLink="/owner" routerLinkActive="site-nav__link--active" ariaCurrentWhenActive="page">Backoffice</a>
-          </li>
-        }
-        <li>
-          <button class="secondary" type="button" (click)="signOut()">Sign out</button>
-        </li>
-      } @else {
-        <li>
-          <a class="site-nav__link" routerLink="/sign-in" routerLinkActive="site-nav__link--active" ariaCurrentWhenActive="page">Sign in</a>
-        </li>
-      }
-    </ul>
-  </nav>
-  @if (bag.noticeMessage(); as notice) {
-    <p class="w-full" role="status" animate.enter="line-enter" animate.leave="line-leave">{{ notice }}</p>
-  }
-</header>
+<p class="announcement">
+  <span>Free shipping from $200.</span>
+  <span class="announcement__more"
+    >No card needed: pay at the shop, by bank transfer, or in cash on delivery.</span
+  >
+</p>
+
+<app-site-header />
 
 <main id="main-content" class="site-main" tabindex="-1" #main>
   <router-outlet />
 </main>
 
-<footer class="site-footer">
-  <p>
-    <a routerLink="/atelier">Atelier</a>
-  </p>
-  <p class="mt-2">Marlow, ready-to-wear. Prices in US dollars. Shipping is free from $200.</p>
-</footer>
+<app-site-footer />
+
+<app-bag-panel />
+
+<div class="toast-region" role="status">
+  @if (bag.noticeMessage(); as notice) {
+    <p class="toast" animate.enter="line-enter" animate.leave="line-leave">
+      <span>{{ notice }}</span>
+      <button type="button" class="toast__close" (click)="dismissNotice()">
+        <app-icon name="close" [size]="16" />
+        <span class="sr-only">Dismiss</span>
+      </button>
+    </p>
+  }
+</div>

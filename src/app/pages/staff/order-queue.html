@@ -1,0 +1,174 @@
+<section class="queue" aria-labelledby="queue-title">
+  <div class="queue__head">
+    <h2 id="queue-title" class="queue__title">{{ heading() }}</h2>
+    <label class="queue__search">
+      <span class="sr-only">Find an order by reference or client name</span>
+      <input class="input" type="search" placeholder="Reference or name" (input)="search($event)" />
+    </label>
+  </div>
+
+  <fieldset class="views">
+    <legend class="sr-only">Show orders</legend>
+    @for (option of views; track option.id) {
+      <label class="views__option">
+        <input
+          type="radio"
+          name="queue-view"
+          [value]="option.id"
+          [checked]="view() === option.id"
+          (change)="chooseView(option.id)"
+        />
+        {{ option.label }}
+        <span class="views__count">{{ counts()[option.id] }}</span>
+      </label>
+    }
+  </fieldset>
+
+  @if (actionError()) {
+    <p class="notice notice--error" role="alert">{{ actionError() }}</p>
+  }
+  <p class="sr-only" role="status">{{ lastChange() }}</p>
+
+  @if (loading()) {
+    <p class="queue__state" role="status">Loading orders.</p>
+  } @else if (loadError()) {
+    <div class="queue__state">
+      <p class="notice notice--error" role="alert">{{ loadError() }}</p>
+      <button type="button" class="button" (click)="load()">Try again</button>
+    </div>
+  } @else if (!hasOrders()) {
+    <p class="queue__state">No orders yet. They appear here the moment a shopper places one.</p>
+  } @else if (visible().length === 0) {
+    <p class="queue__state">
+      @if (query()) {
+        Nothing matches “{{ query() }}” here.
+      } @else {
+        No orders in this view.
+      }
+    </p>
+  } @else {
+    <div class="table-scroll" role="region" aria-labelledby="queue-title" tabindex="0">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th scope="col">Order</th>
+            <th scope="col">Client</th>
+            <th scope="col" class="numeric">Pieces</th>
+            <th scope="col" class="numeric">Total</th>
+            <th scope="col">Payment</th>
+            <th scope="col">State</th>
+            <th scope="col"><span class="sr-only">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (order of visible(); track order.reference) {
+            <tr [class.is-open]="openReference() === order.reference">
+              <th scope="row">
+                <button
+                  type="button"
+                  class="disclose"
+                  [attr.aria-expanded]="openReference() === order.reference"
+                  [attr.aria-controls]="'lines-' + order.reference"
+                  (click)="toggleDetails(order.reference)"
+                >
+                  <app-icon name="chevron-down" [size]="16" />
+                  {{ order.reference }}
+                </button>
+              </th>
+              <td>
+                <span class="client">{{ order.contact.name }}</span>
+                @if (order.clientId) {
+                  <span class="muted">Account</span>
+                } @else {
+                  <span class="muted">Guest</span>
+                }
+              </td>
+              <td class="numeric">{{ pieceCount(order) }}</td>
+              <td class="numeric">{{ order.totalCents | money }}</td>
+              <td>{{ paymentLabel(order.paymentMethod) }}</td>
+              <td><app-fulfillment-badge [state]="order.fulfillment" /></td>
+              <td>
+                <div class="actions">
+                  @if (confirmingCancel() === order.reference) {
+                    <span class="actions__ask">Cancel {{ order.reference }}?</span>
+                    <button
+                      type="button"
+                      class="button button--small"
+                      [disabled]="moving() === order.reference"
+                      (click)="move(order, 'cancelled')"
+                    >
+                      Cancel order
+                    </button>
+                    <button type="button" class="text-button" (click)="confirmingCancel.set(null)">
+                      Keep
+                    </button>
+                  } @else {
+                    @if (nextStep(order); as step) {
+                      <button
+                        type="button"
+                        class="button button--primary button--small"
+                        [disabled]="moving() === order.reference"
+                        [attr.aria-busy]="moving() === order.reference"
+                        (click)="move(order, step.target)"
+                      >
+                        {{ step.label }}<span class="sr-only"> {{ order.reference }}</span>
+                      </button>
+                    }
+                    @if (canCancel(order)) {
+                      <button
+                        type="button"
+                        class="text-button"
+                        [disabled]="moving() === order.reference"
+                        (click)="confirmingCancel.set(order.reference)"
+                      >
+                        Cancel<span class="sr-only"> {{ order.reference }}</span>
+                      </button>
+                    }
+                  }
+                </div>
+              </td>
+            </tr>
+            @if (openReference() === order.reference) {
+              <tr class="details" [id]="'lines-' + order.reference">
+                <td colspan="7">
+                  <div class="details__grid">
+                    <div>
+                      <h3 class="details__title">To pick</h3>
+                      <ul class="details__lines" role="list">
+                        @for (line of order.lines; track line.variantId) {
+                          <li>
+                            <span class="details__quantity">{{ line.quantity }} ×</span>
+                            {{ line.name }}, {{ line.color }} {{ line.size }}
+                          </li>
+                        }
+                      </ul>
+                    </div>
+                    <div>
+                      <h3 class="details__title">Ship to</h3>
+                      <p>
+                        {{ order.contact.name }}<br />
+                        {{ order.shipping.line1 }}<br />
+                        {{ order.shipping.city }} {{ order.shipping.postalCode }},
+                        {{ order.shipping.country }}
+                      </p>
+                    </div>
+                    <div>
+                      <h3 class="details__title">Contact</h3>
+                      <p>
+                        {{ order.contact.email }}<br />
+                        {{ order.contact.phone }}
+                      </p>
+                      <p class="details__link">
+                        <a [routerLink]="['/order', order.reference]">Open the order page</a>
+                      </p>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

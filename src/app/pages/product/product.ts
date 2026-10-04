@@ -1,65 +1,130 @@
-import { NgOptimizedImage } from '@angular/common';
-import { Component, computed, inject, input, linkedSignal } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  ElementRef,
+  afterNextRender,
+  computed,
+  inject,
+  input,
+  linkedSignal,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { Bag } from '../../shop/bag';
-import { categoryName } from '../../shop/catalog';
+import { BagDrawer } from '../../shop/bag-drawer';
+import { categoryName, clothColor, variantsByColor } from '../../shop/catalog';
 import { CatalogStore } from '../../shop/catalog-store';
-import { careOf, compositionOf, fitNote, portraitSrc, relatedPieces } from '../../shop/cloth';
+import { careOf, compositionOf, fitNote, morePieces } from '../../shop/cloth';
+import { FREE_SHIPPING_FROM_CENTS } from '../../shop/money';
 import { MoneyPipe } from '../../shop/money.pipe';
+import { stockNote, stockState } from '../../shop/stock';
+import { Icon } from '../../ui/icon';
+import { PiecePhoto } from '../../ui/piece-photo';
+import { ProductCard } from '../../ui/product-card/product-card';
 
 @Component({
   selector: 'app-product',
-  imports: [NgOptimizedImage, RouterLink, MoneyPipe],
+  imports: [Icon, MoneyPipe, PiecePhoto, ProductCard, RouterLink],
   templateUrl: './product.html',
+  styleUrl: './product.scss',
 })
 export class ProductPage {
   readonly id = input.required<string>();
   private readonly catalog = inject(CatalogStore);
-  private readonly bag = inject(Bag);
+  private readonly drawer = inject(BagDrawer);
+  private readonly sizeGroup = viewChild<ElementRef<HTMLElement>>('sizeGroup');
+  private readonly buyButton = viewChild<ElementRef<HTMLElement>>('buyButton');
 
-  protected readonly portraitSrc = portraitSrc;
-  protected readonly compositionOf = compositionOf;
-  protected readonly careOf = careOf;
-  protected readonly fitNote = fitNote;
-  protected readonly categoryName = categoryName;
+  protected readonly clothColor = clothColor;
   protected readonly product = computed(() => this.catalog.product(this.id()));
-  protected readonly related = computed(() => {
+  protected readonly categoryName = computed(
+    () => categoryName(this.product()?.category ?? '') ?? '',
+  );
+  protected readonly more = computed(() => {
     const product = this.product();
-    return product ? relatedPieces(this.catalog.pieces(), product) : [];
+    return product ? morePieces(this.catalog.pieces(), product) : [];
   });
-  protected readonly colors = computed(() => [
-    ...new Set(this.product()?.variants.map((variant) => variant.color) ?? []),
-  ]);
-  protected readonly color = linkedSignal(() => {
+  protected readonly colorGroups = computed(() => {
     const product = this.product();
-    const variant = product?.variants.find((item) => item.stock > 0) ?? product?.variants[0];
-    return variant?.color ?? '';
+    return product ? variantsByColor(product) : [];
+  });
+  protected readonly color = linkedSignal(() => {
+    const groups = this.colorGroups();
+    return (
+      (groups.find((group) => group.variants.some((variant) => variant.stock > 0)) ?? groups[0])
+        ?.color ?? ''
+    );
   });
   protected readonly sizes = computed(
-    () => this.product()?.variants.filter((variant) => variant.color === this.color()) ?? [],
+    () => this.colorGroups().find((group) => group.color === this.color())?.variants ?? [],
   );
-  protected readonly size = linkedSignal(() => {
-    const sizes = this.sizes();
-    return (sizes.find((variant) => variant.stock > 0) ?? sizes[0])?.size ?? '';
+  /** A size is chosen for the shopper only when it is the one size left in this color. */
+  protected readonly sizeId = linkedSignal(() => {
+    const available = this.sizes().filter((variant) => variant.stock > 0);
+    return available.length === 1 ? available[0].id : '';
   });
   protected readonly variant = computed(
-    () => this.sizes().find((item) => item.size === this.size()) ?? null,
+    () => this.sizes().find((item) => item.id === this.sizeId()) ?? null,
   );
+  protected readonly stock = computed(() => {
+    const variant = this.variant();
+    return variant ? { note: stockNote(variant.stock), state: stockState(variant.stock) } : null;
+  });
+  protected readonly composition = computed(() => {
+    const product = this.product();
+    return product ? compositionOf(product) : '';
+  });
+  protected readonly care = computed(() => {
+    const product = this.product();
+    return product ? careOf(product) : '';
+  });
+  protected readonly fit = computed(() => {
+    const product = this.product();
+    return product ? fitNote(product.category) : '';
+  });
+  protected readonly shipsFree = computed(
+    () => (this.product()?.priceCents ?? 0) >= FREE_SHIPPING_FROM_CENTS,
+  );
+  protected readonly sizeHintShown = signal(false);
+  /** On a phone the buy button scrolls away under the photograph; a bar keeps it in reach. */
+  protected readonly buyBarShown = signal(false);
+
+  constructor() {
+    const destroyRef = inject(DestroyRef);
+    afterNextRender(() => {
+      const button = this.buyButton()?.nativeElement;
+      if (!button || typeof IntersectionObserver === 'undefined') {
+        return;
+      }
+      const observer = new IntersectionObserver(([entry]) =>
+        this.buyBarShown.set(!entry?.isIntersecting),
+      );
+      observer.observe(button);
+      destroyRef.onDestroy(() => observer.disconnect());
+    });
+  }
 
   protected chooseColor(color: string): void {
     this.color.set(color);
+    this.sizeHintShown.set(false);
   }
 
-  protected chooseSize(size: string): void {
-    this.size.set(size);
+  protected chooseSize(variantId: string): void {
+    this.sizeId.set(variantId);
+    this.sizeHintShown.set(false);
   }
 
   protected addToBag(): void {
     const product = this.product();
     const variant = this.variant();
-    if (!product || !variant) {
+    if (!product) {
       return;
     }
-    this.bag.add(product.id, variant.id);
+    if (!variant) {
+      this.sizeHintShown.set(true);
+      this.sizeGroup()?.nativeElement.focus();
+      return;
+    }
+    this.drawer.add(product.id, variant.id);
   }
 }

@@ -1,76 +1,110 @@
-<div class="grid items-start gap-10 md:grid-cols-[11rem_minmax(0,1fr)]">
-  <div>
-    <nav aria-label="Categories">
-      <ul class="flex gap-x-5 gap-y-2 overflow-x-auto md:flex-col md:overflow-visible" role="list">
-        @for (category of categories; track category.slug) {
-          <li>
-            <a
-              [routerLink]="['/category', category.slug]"
-              routerLinkActive="font-semibold"
-              ariaCurrentWhenActive="page"
-              >{{ category.name }}</a
-            >
-          </li>
-        }
-      </ul>
-    </nav>
-    <p class="mt-6">
-      <a routerLink="/atelier">Atelier</a>
-    </p>
-  </div>
-
-  <div>
-    @if (unknownCategory()) {
-      <h1 class="font-display text-display">That category is not on the floor</h1>
-      <p class="mt-4 text-text-muted">Choose outerwear, knitwear, trousers, or shirts.</p>
-    } @else if (lead(); as piece) {
-      <div class="grid items-end gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(14rem,22rem)]">
-        <div class="max-w-[62ch]">
-          <h1 class="font-display text-display">{{ piece.name }}</h1>
-          <p class="mt-4">{{ piece.summary }}</p>
-          @if (compositionOf(piece); as cloth) {
-            <p class="mt-2 text-text-muted">{{ cloth }}</p>
-          }
-          <p class="mt-3 text-lg">{{ piece.priceCents | money }}</p>
-          <p class="mt-6">
-            <a [routerLink]="['/product', piece.id]">View {{ piece.name }}</a>
-          </p>
-        </div>
-        @if (portraitSrc(piece.id); as src) {
+@if (isFloor()) {
+  @if (spread().length > 0) {
+    <div class="spread">
+      @for (tile of spread(); track tile.piece.id; let index = $index) {
+        <a
+          class="spread__tile"
+          [class.spread__tile--lead]="index === 1"
+          [routerLink]="['/product', tile.piece.id]"
+        >
           <img
-            class="portrait max-w-sm"
-            [ngSrc]="src"
+            [ngSrc]="tile.src"
             width="800"
             height="1200"
-            priority
-            alt=""
-            animate.enter="line-enter"
+            [priority]="index === 1"
+            [alt]="tile.piece.name"
           />
-        }
-      </div>
+        </a>
+      }
+    </div>
+  }
 
-      <ul class="mt-12" role="list">
-        @for (product of pieces(); track product.id) {
-          <li class="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-4 border-t border-border py-5">
-            @if (portraitSrc(product.id); as src) {
-              <img class="portrait-thumb" [ngSrc]="src" width="160" height="240" alt="" />
-            } @else {
-              <span
-                class="size-4 border border-border"
-                [style.background]="clothColor(product.variants[0].color)"
-                aria-hidden="true"
-              ></span>
-            }
-            <div>
-              <a class="font-display text-xl" [routerLink]="['/product', product.id]">{{ product.name }}</a>
-              <p class="text-text-muted">{{ product.summary }}</p>
-            </div>
-            <p>{{ product.priceCents | money }}</p>
-          </li>
-        }
+  <section class="intro page" aria-labelledby="intro-title">
+    <h1 id="intro-title" class="intro__title">
+      A small <span class="whitespace-nowrap">ready-to-wear</span> floor
+    </h1>
+    <div class="intro__body">
+      <p>
+        Coats that clear a knit, trousers with a real thigh, and shirts you can press at home. Every
+        piece names its cloth and how to care for it.
+      </p>
+      <ul class="terms" role="list">
+        <li><app-icon name="check" [size]="16" />Free shipping from $200</li>
+        <li><app-icon name="check" [size]="16" />No card needed</li>
+        <li><app-icon name="check" [size]="16" />Check out as a guest</li>
       </ul>
-    } @else {
-      <h1 class="font-display text-display">Nothing is cut in this category yet</h1>
-    }
+    </div>
+  </section>
+
+  <section class="floor page" aria-labelledby="floor-title">
+    <div class="floor__bar">
+      <h2 id="floor-title" class="floor__title">The floor</h2>
+      <ng-container *ngTemplateOutlet="filters" />
+    </div>
+    <ng-container *ngTemplateOutlet="grid" />
+  </section>
+} @else if (category(); as current) {
+  <div class="split page">
+    <header class="category">
+      <h1 class="category__title">{{ current.name }}</h1>
+      <p class="category__fit">{{ fit() }}</p>
+      <ng-container *ngTemplateOutlet="filters" />
+    </header>
+    <section class="split__pieces" aria-labelledby="floor-title">
+      <h2 id="floor-title" class="sr-only">Pieces in {{ current.name }}</h2>
+      <ng-container *ngTemplateOutlet="grid" />
+    </section>
   </div>
-</div>
+} @else {
+  <section class="missing page" aria-labelledby="missing-title">
+    <h1 id="missing-title" class="category__title">That category is not on the floor</h1>
+    <p>The floor has four:</p>
+    <ul class="missing__list" role="list">
+      @for (item of categories; track item.slug) {
+        <li>
+          <a [routerLink]="['/category', item.slug]">{{ item.name }}</a>
+        </li>
+      }
+    </ul>
+  </section>
+}
+
+<ng-template #filters>
+  <nav class="filters" aria-label="Categories">
+    <ul role="list">
+      <li>
+        <a
+          routerLink="/"
+          routerLinkActive="is-current"
+          ariaCurrentWhenActive="page"
+          [routerLinkActiveOptions]="{ exact: true }"
+          >All <span class="filters__count">{{ countIn(null) }}</span></a
+        >
+      </li>
+      @for (item of categories; track item.slug) {
+        <li>
+          <a
+            [routerLink]="['/category', item.slug]"
+            routerLinkActive="is-current"
+            ariaCurrentWhenActive="page"
+            >{{ item.name }} <span class="filters__count">{{ countIn(item.slug) }}</span></a
+          >
+        </li>
+      }
+    </ul>
+  </nav>
+</ng-template>
+
+<ng-template #grid>
+  @if (pieces().length === 0) {
+    <p class="floor__empty">Nothing is cut in this category yet.</p>
+  } @else {
+    <ul class="grid" [class.grid--pair]="!isFloor()" role="list">
+      @for (piece of pieces(); track piece.id; let index = $index) {
+        <li>
+          <app-product-card [product]="piece" [priority]="!isFloor() && index < 2" />
+        </li>
+      }
+    </ul>
+  }
+</ng-template>

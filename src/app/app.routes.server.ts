@@ -11,7 +11,10 @@ export const serverRoutes: ServerRoute[] = [
   { path: 'sign-in', renderMode: RenderMode.Client },
   { path: 'account/orders', renderMode: RenderMode.Client },
   { path: 'desk', renderMode: RenderMode.Client },
+  { path: 'desk/stock', renderMode: RenderMode.Client },
   { path: 'owner', renderMode: RenderMode.Client },
+  { path: 'owner/pieces', renderMode: RenderMode.Client },
+  { path: 'owner/new', renderMode: RenderMode.Client },
   { path: 'not-allowed', renderMode: RenderMode.Client },
   { path: '**', renderMode: RenderMode.Client },
 ];

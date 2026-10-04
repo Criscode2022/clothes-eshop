@@ -1,28 +1,34 @@
-import { Component, ElementRef, computed, inject, viewChild } from '@angular/core';
+import { Component, ElementRef, afterNextRender, inject, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { filter, skip } from 'rxjs';
-import { canOpenArea } from '../shop/access';
 import { Bag } from '../shop/bag';
-import { ShopClient } from '../shop/shop-client';
-import { ShopSession } from '../shop/shop-session';
+import { BagPersistence } from '../shop/bag-persistence';
+import { Icon } from '../ui/icon';
+import { BagPanel } from './bag-panel/bag-panel';
+import { SiteFooter } from './site-footer';
+import { SiteHeader } from './site-header/site-header';
 
 @Component({
   selector: 'app-shell',
-  imports: [RouterLink, RouterLinkActive, RouterOutlet],
+  imports: [BagPanel, Icon, RouterOutlet, SiteFooter, SiteHeader],
   templateUrl: './shell.html',
   styleUrl: './shell.scss',
 })
 export class Shell {
   private readonly main = viewChild.required<ElementRef<HTMLElement>>('main');
-  private readonly shop = inject(ShopClient);
   protected readonly bag = inject(Bag);
-  protected readonly session = inject(ShopSession);
-  protected readonly showDesk = computed(() => canOpenArea('desk', this.session.current()));
-  protected readonly showOwner = computed(() => canOpenArea('owner', this.session.current()));
 
   constructor() {
     const router = inject(Router);
+    const persistence = inject(BagPersistence);
+    // The saved bag lives in the browser. Bringing it back after the first render keeps hydration intact.
+    afterNextRender(() => {
+      const storage = browserStorage();
+      if (storage) {
+        persistence.start(storage);
+      }
+    });
     // Leave focus alone on the first page load. After each later navigation, move it to the
     // new content so keyboard and screen reader users start reading the page that just changed.
     router.events
@@ -37,16 +43,25 @@ export class Shell {
       });
   }
 
-  protected signOut(): void {
-    void this.shop.signOut();
-  }
-
   protected skipToMain(event: Event): void {
     event.preventDefault();
     this.focusMain();
   }
 
+  protected dismissNotice(): void {
+    this.bag.clearNotice();
+  }
+
   private focusMain(): void {
-    this.main().nativeElement.focus();
+    this.main().nativeElement.focus({ preventScroll: true });
+  }
+}
+
+function browserStorage(): Storage | null {
+  try {
+    return window.localStorage;
+  } catch {
+    // Storage blocked by the browser: the bag still works, it just is not kept after a reload.
+    return null;
   }
 }

@@ -1,5 +1,5 @@
 import { SEED_PRODUCTS } from './catalog';
-import { compositionOf, fitNote, relatedPieces } from './cloth';
+import { compositionOf, fitNote, morePieces, relatedPieces } from './cloth';
 import { centsUntilFreeShipping } from './money';
 import { ordersFromRows, productsFromRows, referenceAfter } from './neon-book';
 import type { LineRecord, OrderRecord, ProductRecord, VariantRecord } from './neon-book';
@@ -17,6 +17,21 @@ describe('cloth and shipping remainder', () => {
     expect(related.map((product) => product.id)).toEqual(['silk-tunic']);
     expect(centsUntilFreeShipping(8_900)).toBe(11_100);
     expect(centsUntilFreeShipping(20_000)).toBe(0);
+  });
+
+  it('suggests the same category first, then the rest of the floor in order', () => {
+    const shirt = SEED_PRODUCTS.find((product) => product.id === 'oxford-shirt');
+    expect(shirt).toBeTruthy();
+    if (!shirt) {
+      return;
+    }
+    expect(morePieces(SEED_PRODUCTS, shirt).map((product) => product.id)).toEqual([
+      'silk-tunic',
+      'wool-overcoat',
+      'field-jacket',
+      'merino-crew',
+    ]);
+    expect(morePieces(SEED_PRODUCTS, shirt, 2)).toHaveLength(2);
   });
 });
 
@@ -62,7 +77,13 @@ function product(slug: string, name: string, category: string, price: number): P
   return { slug, name, category, price_cents: price, summary: name, composition: '', care: '' };
 }
 
-function variant(productSlug: string, slug: string, size: string, color: string, stock: number): VariantRecord {
+function variant(
+  productSlug: string,
+  slug: string,
+  size: string,
+  color: string,
+  stock: number,
+): VariantRecord {
   return { product_slug: productSlug, slug, size, color, stock };
 }
 

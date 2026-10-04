@@ -1,0 +1,175 @@
+:host {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: block;
+  background: var(--color-canvas);
+  border-bottom: 1px solid var(--color-border);
+}
+
+// Phone: menu, centered wordmark, bag. Desktop: wordmark, departments, tools.
+.bar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1rem;
+  height: var(--header-height);
+}
+
+.bar__menu {
+  justify-self: start;
+  margin-inline-start: -0.75rem;
+}
+
+.bar__nav {
+  display: none;
+
+  ul {
+    display: flex;
+    gap: 1.75rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+}
+
+.bar__nav a,
+.tool {
+  display: none;
+  align-items: center;
+  min-height: 2.75rem;
+  font-size: var(--text-ui);
+  text-decoration: none;
+  text-underline-offset: 0.45em;
+
+  &:hover,
+  &.is-current {
+    text-decoration-line: underline;
+  }
+}
+
+.bar__nav a {
+  display: inline-flex;
+}
+
+.tool--button {
+  padding: 0;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.bar__tools {
+  display: flex;
+  justify-self: end;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.bag-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: 2.75rem;
+  margin-inline-end: -0.5rem;
+  padding: 0 0.5rem;
+  font-size: var(--text-ui);
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.bag-button__label {
+  // Read on every screen size; shown beside the icon only on desktop.
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.bag-button__count {
+  display: inline-grid;
+  min-width: 1.25rem;
+  font-variant-numeric: tabular-nums;
+  place-items: center;
+  height: 1.25rem;
+  padding-inline: 0.3rem;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-on-accent);
+  background: var(--color-accent);
+  border-radius: 999px;
+}
+
+@media (min-width: 64rem) {
+  .bar {
+    grid-template-columns: auto 1fr auto;
+    gap: 3rem;
+  }
+
+  .bar__menu {
+    display: none;
+  }
+
+  .bar__nav {
+    display: block;
+  }
+
+  .tool {
+    display: inline-flex;
+  }
+
+  .bag-button__icon {
+    display: none;
+  }
+
+  .bag-button__label {
+    position: static;
+    width: auto;
+    height: auto;
+    clip-path: none;
+  }
+}
+
+.menu-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem 0.5rem 1.5rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.menu-nav {
+  display: grid;
+  gap: 2rem;
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+.menu-nav__list {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-lg);
+
+  a {
+    display: block;
+    padding-block: 0.375rem;
+    text-decoration: none;
+  }
+}
+
+.menu-nav__list--quiet {
+  font-size: var(--text-md);
+  color: var(--color-text-muted);
+
+  a {
+    color: var(--color-text);
+  }
+}

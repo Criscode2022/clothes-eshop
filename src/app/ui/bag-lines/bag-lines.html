@@ -1,0 +1,45 @@
+<ul class="lines" role="list">
+  @for (line of lines(); track line.variantId) {
+    <li
+      class="line"
+      [class.line--added]="line.variantId === highlight()"
+      animate.enter="line-enter"
+      animate.leave="line-leave"
+    >
+      <a
+        class="line__photo"
+        [routerLink]="['/product', line.productId]"
+        tabindex="-1"
+        aria-hidden="true"
+      >
+        <app-piece-photo [pieceId]="line.productId" [color]="line.color" />
+      </a>
+      <div class="line__body">
+        <div class="line__head">
+          <p class="line__name">
+            <a [routerLink]="['/product', line.productId]">{{ line.name }}</a>
+          </p>
+          <p class="line__total">{{ line.lineCents | money }}</p>
+        </div>
+        <p class="line__meta">{{ line.color }}, size {{ line.size }}</p>
+        @if (line.quantity > 1) {
+          <p class="line__meta">{{ line.unitPriceCents | money }} each</p>
+        }
+        <div class="line__actions">
+          <app-quantity-stepper
+            [value]="line.quantity"
+            [max]="line.stock"
+            [label]="describe(line)"
+            (changed)="setQuantity(line, $event)"
+          />
+          <button type="button" class="text-button" (click)="remove(line)">
+            Remove<span class="sr-only"> {{ describe(line) }}</span>
+          </button>
+        </div>
+        @if (line.quantity >= line.stock) {
+          <p class="line__meta">That is all we have in this size.</p>
+        }
+      </div>
+    </li>
+  }
+</ul>

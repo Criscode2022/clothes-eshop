@@ -1,0 +1,158 @@
+:host {
+  display: grid;
+  gap: 0.875rem;
+  align-content: start;
+}
+
+.media {
+  position: relative;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  background: var(--color-surface);
+}
+
+.media__link {
+  display: block;
+  height: 100%;
+}
+
+.media__flag {
+  position: absolute;
+  left: 0.75rem;
+  bottom: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  font-size: var(--text-sm);
+  background: var(--color-canvas);
+}
+
+.quick-add {
+  position: absolute;
+  z-index: 1;
+  right: 0.5rem;
+  bottom: 0.5rem;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  color: var(--color-text);
+  background: var(--color-canvas);
+  border: 0;
+  cursor: pointer;
+
+  app-icon {
+    transition: transform var(--duration-fast) var(--ease-out);
+  }
+
+  &[aria-expanded='true'] app-icon {
+    transform: rotate(45deg);
+  }
+}
+
+// The sizes sit hidden over the foot of the photograph until the toggle or a hover opens them.
+.sizes {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.75rem 3.75rem 0.75rem 0.75rem;
+  background: color-mix(in srgb, var(--color-canvas) 94%, transparent);
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(0.75rem);
+  transition:
+    opacity var(--duration-fast) ease-out,
+    transform var(--duration-base) var(--ease-out),
+    visibility 0s linear var(--duration-fast);
+}
+
+.sizes--open {
+  visibility: visible;
+  opacity: 1;
+  transform: none;
+  transition-delay: 0s;
+}
+
+@media (hover: hover) {
+  .media:hover .sizes {
+    visibility: visible;
+    opacity: 1;
+    transform: none;
+    transition-delay: 0s;
+  }
+}
+
+.sizes__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  align-items: center;
+}
+
+.sizes__color {
+  width: 100%;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.sizes__size {
+  min-width: 2.75rem;
+  min-height: 2.5rem;
+  padding: 0 0.625rem;
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+  background: var(--color-canvas);
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    color: var(--color-on-accent);
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+
+  &:disabled {
+    color: var(--color-text-muted);
+    text-decoration: line-through;
+    cursor: not-allowed;
+  }
+}
+
+.info {
+  display: grid;
+  gap: 0.125rem 1rem;
+  font-size: var(--text-ui);
+
+  @media (min-width: 48rem) {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+}
+
+.info__name {
+  font-size: inherit;
+  font-weight: 500;
+  letter-spacing: 0;
+
+  a {
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.info__price {
+  font-variant-numeric: tabular-nums;
+}
+
+.info__colors {
+  display: flex;
+  gap: 0.375rem;
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}

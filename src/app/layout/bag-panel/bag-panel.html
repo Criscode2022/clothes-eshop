@@ -1,0 +1,55 @@
+<dialog
+  #dialog
+  class="sheet sheet--end"
+  aria-labelledby="bag-title"
+  [attr.aria-describedby]="addedLine() ? 'bag-added' : null"
+  (close)="drawer.close()"
+  (click)="closeFromBackdrop($event)"
+>
+  <div class="sheet__panel">
+    <header class="head">
+      <h2 id="bag-title" class="head__title">
+        Bag <span class="head__count">{{ bag.count() }}</span>
+      </h2>
+      <button type="button" class="icon-button" (click)="close()">
+        <app-icon name="close" />
+        <span class="sr-only">Close bag</span>
+      </button>
+    </header>
+
+    @if (bag.detailed().length === 0) {
+      <div class="empty">
+        <p>Your bag is empty.</p>
+        <a class="button button--primary" routerLink="/">Shop the floor</a>
+      </div>
+    } @else {
+      @if (addedLine(); as line) {
+        <p id="bag-added" class="added">
+          <app-icon name="check" [size]="18" />
+          <span>Added {{ line.name }}, {{ line.color }} {{ line.size }}.</span>
+        </p>
+      }
+
+      <div class="body">
+        <app-bag-lines [lines]="bag.detailed()" [highlight]="drawer.justAdded()" />
+      </div>
+
+      <footer class="foot">
+        @if (bag.quote(); as quote) {
+          <app-free-shipping [subtotalCents]="quote.subtotalCents" />
+          <app-order-totals
+            [subtotalCents]="quote.subtotalCents"
+            [shippingCents]="quote.shippingCents"
+            [totalCents]="quote.totalCents"
+          />
+          <a class="button button--primary button--block" routerLink="/checkout">Check out</a>
+          <a class="foot__link" routerLink="/bag">View bag</a>
+        } @else {
+          <p class="notice notice--error">
+            A size in your bag changed on the floor. Lower its quantity or remove it to check out.
+          </p>
+        }
+      </footer>
+    }
+  </div>
+</dialog>

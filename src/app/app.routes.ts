@@ -2,6 +2,8 @@ import { Routes } from '@angular/router';
 import { Shell } from './layout/shell';
 import { clientGuard, deskGuard, ownerGuard } from './shop/staff.guard';
 
+const orderQueue = () => import('./pages/staff/order-queue').then((m) => m.OrderQueue);
+
 export const routes: Routes = [
   {
     path: '',
@@ -55,15 +57,44 @@ export const routes: Routes = [
       },
       {
         path: 'desk',
-        title: 'Desk | Marlow',
         canActivate: [deskGuard],
         loadComponent: () => import('./pages/desk/desk').then((m) => m.Desk),
+        children: [
+          {
+            path: '',
+            title: 'Desk | Marlow',
+            data: { heading: 'Orders' },
+            loadComponent: orderQueue,
+          },
+          {
+            path: 'stock',
+            title: 'Stock | Marlow',
+            loadComponent: () => import('./pages/desk/desk-stock').then((m) => m.DeskStock),
+          },
+        ],
       },
       {
         path: 'owner',
-        title: 'Backoffice | Marlow',
         canActivate: [ownerGuard],
         loadComponent: () => import('./pages/owner/owner').then((m) => m.Owner),
+        children: [
+          {
+            path: '',
+            title: 'Backoffice | Marlow',
+            data: { heading: 'Every order' },
+            loadComponent: orderQueue,
+          },
+          {
+            path: 'pieces',
+            title: 'Pieces | Marlow',
+            loadComponent: () => import('./pages/owner/owner-pieces').then((m) => m.OwnerPieces),
+          },
+          {
+            path: 'new',
+            title: 'New piece | Marlow',
+            loadComponent: () => import('./pages/owner/new-piece').then((m) => m.NewPiece),
+          },
+        ],
       },
       {
         path: 'not-allowed',

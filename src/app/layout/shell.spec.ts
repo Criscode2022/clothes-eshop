@@ -19,6 +19,7 @@ describe('Shell', () => {
   }
 
   beforeEach(async () => {
+    localStorage.clear();
     TestBed.configureTestingModule({
       providers: [
         provideHttpClient(),
@@ -60,5 +61,20 @@ describe('Shell', () => {
 
     expect(main().textContent).toContain('Second page');
     expect(document.activeElement).toBe(main());
+  });
+
+  it('opens the bag from the header and closes it when the shopper moves on', async () => {
+    const bag = document.querySelector<HTMLDialogElement>('dialog[aria-labelledby="bag-title"]')!;
+    const bagButton = [...document.querySelectorAll('header button')].find((button) =>
+      button.textContent?.includes('Bag'),
+    ) as HTMLButtonElement;
+
+    bagButton.click();
+    await harness.fixture.whenStable();
+    expect(bag.hasAttribute('open')).toBe(true);
+    expect(bag.textContent).toContain('Your bag is empty.');
+
+    await harness.navigateByUrl('/second');
+    expect(bag.hasAttribute('open')).toBe(false);
   });
 });

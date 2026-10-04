@@ -1,0 +1,388 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-04T01:35:03+00:00",
+  "title": "Design System: Marlow",
+  "extensions": {
+    "colorMeta": {
+      "canvas": {
+        "role": "neutral",
+        "displayName": "Gallery White",
+        "canonical": "oklch(100.0% 0.000 89.9)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252525",
+          "#424242",
+          "#616161",
+          "#828282",
+          "#a5a5a5",
+          "#c9c9c9",
+          "#eeeeee"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Fitting-Room Grey",
+        "canonical": "oklch(97.0% 0.001 106.4)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252524",
+          "#424241",
+          "#616160",
+          "#828281",
+          "#a5a5a4",
+          "#c9c9c8",
+          "#eeeeed"
+        ]
+      },
+      "surface-strong": {
+        "role": "neutral",
+        "displayName": "Chalk Grey",
+        "canonical": "oklch(94.0% 0.001 106.4)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252524",
+          "#424241",
+          "#616160",
+          "#828281",
+          "#a5a5a4",
+          "#c9c9c8",
+          "#eeeeed"
+        ]
+      },
+      "ink": {
+        "role": "primary",
+        "displayName": "Ink Black",
+        "canonical": "oklch(0.0% 0.000 0.0)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252525",
+          "#424242",
+          "#616161",
+          "#828282",
+          "#a5a5a5",
+          "#c9c9c9",
+          "#eeeeee"
+        ]
+      },
+      "graphite": {
+        "role": "neutral",
+        "displayName": "Graphite",
+        "canonical": "oklch(49.2% 0.005 106.6)",
+        "tonalRamp": [
+          "#0b0b09",
+          "#252523",
+          "#42423f",
+          "#61615e",
+          "#82827f",
+          "#a5a5a2",
+          "#c9c9c6",
+          "#efefeb"
+        ]
+      },
+      "hairline": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "oklch(91.5% 0.003 106.5)",
+        "tonalRamp": [
+          "#0b0b0a",
+          "#252524",
+          "#424240",
+          "#616160",
+          "#828281",
+          "#a5a5a3",
+          "#c9c9c7",
+          "#eeeeec"
+        ]
+      },
+      "field-stroke": {
+        "role": "neutral",
+        "displayName": "Field Stroke",
+        "canonical": "oklch(63.9% 0.006 106.6)",
+        "tonalRamp": [
+          "#0b0b09",
+          "#252522",
+          "#42423f",
+          "#61615e",
+          "#83837f",
+          "#a5a5a1",
+          "#c9c9c5",
+          "#efefea"
+        ]
+      },
+      "error": {
+        "role": "state",
+        "displayName": "Oxblood Error",
+        "canonical": "oklch(50.0% 0.182 29.5)",
+        "tonalRamp": [
+          "#3b0000",
+          "#620000",
+          "#8a0000",
+          "#b12015",
+          "#da4a3b",
+          "#ff705e",
+          "#ff9681",
+          "#ffbba5"
+        ]
+      },
+      "notice": {
+        "role": "state",
+        "displayName": "Rust Notice",
+        "canonical": "oklch(48.0% 0.108 56.6)",
+        "tonalRamp": [
+          "#270000",
+          "#480d00",
+          "#6b2e00",
+          "#8e4f17",
+          "#b3703d",
+          "#d89360",
+          "#ffb783",
+          "#ffdca7"
+        ]
+      },
+      "positive": {
+        "role": "state",
+        "displayName": "Bottle Green",
+        "canonical": "oklch(46.0% 0.100 149.5)",
+        "tonalRamp": [
+          "#001400",
+          "#003104",
+          "#095022",
+          "#317141",
+          "#549361",
+          "#77b783",
+          "#9adca6",
+          "#bfffcb"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "wordmark": {
+        "displayName": "Wordmark",
+        "purpose": "The Marlow mark only; the single uppercase setting."
+      },
+      "display": {
+        "displayName": "Display",
+        "purpose": "The floor opening line, category and atelier titles; one per page."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Task page titles and the product name."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Section headings inside pages."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Running text within 62ch."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Buttons and product names on cards."
+      },
+      "caption": {
+        "displayName": "Caption",
+        "purpose": "Metadata, hints, errors, breadcrumbs, chips."
+      },
+      "data": {
+        "displayName": "Data",
+        "purpose": "Staff tables: condensed width, tabular figures."
+      }
+    },
+    "darkScheme": {
+      "canvas": "#121212",
+      "surface": "#1c1c1b",
+      "surface-strong": "#262625",
+      "ink": "#f4f4f2",
+      "graphite": "#a8a8a3",
+      "hairline": "#303030",
+      "field-stroke": "#7c7c78",
+      "error": "#ff8a7a",
+      "notice": "#f0b37e",
+      "positive": "#7fd18f",
+      "band": "#262625"
+    },
+    "shadows": [
+      {
+        "name": "toast",
+        "value": "0 0.5rem 1.5rem rgb(0 0 0 / 0.18)",
+        "purpose": "The bag notice toast; the only shadow in the system."
+      },
+      {
+        "name": "scrim",
+        "value": "rgb(0 0 0 / 0.36)",
+        "purpose": "Backdrop behind the bag and menu sheets (0.6 in dark)."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Every entrance and sheet slide."
+      },
+      {
+        "name": "duration-fast",
+        "value": "160ms",
+        "purpose": "Hover, border, and icon state changes."
+      },
+      {
+        "name": "duration-base",
+        "value": "320ms",
+        "purpose": "Sheets sliding in, bag lines entering."
+      },
+      {
+        "name": "settle",
+        "value": "scale(1.06) to 1 over 1.8s",
+        "purpose": "The floor spread, once on load."
+      },
+      {
+        "name": "photo-transition",
+        "value": "view transition group, 420ms",
+        "purpose": "A piece photograph carrying from the floor to its page."
+      },
+      {
+        "name": "flash",
+        "value": "surface-strong fade over 1.6s",
+        "purpose": "The bag line just added."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "40rem"
+      },
+      {
+        "name": "md",
+        "value": "48rem"
+      },
+      {
+        "name": "lg",
+        "value": "64rem"
+      },
+      {
+        "name": "xl",
+        "value": "80rem"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one black action per decision: Add to bag, Check out, Place order.",
+      "html": "<button class=\"ds-btn-primary\">Add to bag</button>",
+      "css": ".ds-btn-primary{display:inline-flex;align-items:center;justify-content:center;min-height:3rem;padding:0 1.5rem;font:500 0.875rem/1 'Archivo Variable',Arial,sans-serif;letter-spacing:0.01em;color:var(--color-on-accent,#fff);background:var(--color-accent,#000);border:1px solid var(--color-accent,#000);border-radius:0;cursor:pointer;transition:background-color 160ms ease-out}.ds-btn-primary:hover{background:color-mix(in srgb,var(--color-accent,#000) 80%,var(--color-canvas,#fff))}.ds-btn-primary:focus-visible{outline:2px solid var(--color-text,#000);outline-offset:3px}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Outlined actions beside a primary one: Create account, Continue shopping.",
+      "html": "<button class=\"ds-btn-secondary\">Continue shopping</button>",
+      "css": ".ds-btn-secondary{display:inline-flex;align-items:center;justify-content:center;min-height:3rem;padding:0 1.5rem;font:500 0.875rem/1 'Archivo Variable',Arial,sans-serif;color:var(--color-text,#000);background:transparent;border:1px solid var(--color-text,#000);border-radius:0;cursor:pointer;transition:background-color 160ms ease-out}.ds-btn-secondary:hover{background:var(--color-surface,#f5f5f4)}.ds-btn-secondary:focus-visible{outline:2px solid var(--color-text,#000);outline-offset:3px}"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Labelled field with its error under it; the border turns red only with a message.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-field__label\">Email</span><input class=\"ds-input\" type=\"email\" value=\"ada@example\" aria-invalid=\"true\"><span class=\"ds-field__error\">Enter an email address, like name@example.com.</span></label>",
+      "css": ".ds-field{display:grid;gap:0.375rem;font-family:'Archivo Variable',Arial,sans-serif}.ds-field__label{font-size:0.8125rem;font-weight:500}.ds-input{min-height:2.75rem;padding:0 0.875rem;font:400 1rem 'Archivo Variable',Arial,sans-serif;color:var(--color-text,#000);background:var(--color-canvas,#fff);border:1px solid var(--color-field-border,#8c8c88);border-radius:0}.ds-input:hover,.ds-input:focus-visible{border-color:var(--color-text,#000)}.ds-input:focus-visible{outline:2px solid var(--color-text,#000);outline-offset:0}.ds-input[aria-invalid=true]{border-color:var(--color-danger,#b42318)}.ds-field__error{font-size:0.8125rem;color:var(--color-danger,#b42318)}"
+    },
+    {
+      "name": "Size Option",
+      "kind": "custom",
+      "refersTo": "size-option",
+      "description": "Boxed native radios; the chosen size fills black, a sold-out size is struck through.",
+      "html": "<div class=\"ds-sizes\"><label class=\"ds-size\"><input type=\"radio\" name=\"ds-size\">46</label><label class=\"ds-size\"><input type=\"radio\" name=\"ds-size\" checked>48</label><label class=\"ds-size\"><input type=\"radio\" name=\"ds-size\" disabled>50</label></div>",
+      "css": ".ds-sizes{display:flex;gap:0.5rem;font:400 0.875rem 'Archivo Variable',Arial,sans-serif}.ds-size{position:relative;display:inline-grid;place-items:center;min-width:3.25rem;min-height:2.75rem;padding:0 0.75rem;border:1px solid var(--color-border,#e3e3e1);font-variant-numeric:tabular-nums;cursor:pointer}.ds-size:hover{border-color:var(--color-text,#000)}.ds-size:has(input:checked){color:var(--color-on-accent,#fff);background:var(--color-accent,#000);border-color:var(--color-accent,#000)}.ds-size:has(input:disabled){color:var(--color-text-muted,#61615e);text-decoration:line-through;background:var(--color-surface,#f5f5f4);cursor:not-allowed}.ds-size:has(input:focus-visible){outline:2px solid var(--color-text,#000);outline-offset:2px}.ds-size input{position:absolute;inset:0;margin:0;opacity:0}"
+    },
+    {
+      "name": "Filter Chip",
+      "kind": "chip",
+      "refersTo": "filter-chip",
+      "description": "Category and order-state filters with counts; the current one fills black.",
+      "html": "<nav class=\"ds-chips\"><a class=\"ds-chip ds-chip--current\" href=\"#\">All <span>8</span></a><a class=\"ds-chip\" href=\"#\">Outerwear <span>2</span></a></nav>",
+      "css": ".ds-chips{display:flex;gap:0.5rem;font:400 0.8125rem 'Archivo Variable',Arial,sans-serif}.ds-chip{display:inline-flex;gap:0.375rem;align-items:center;min-height:2.5rem;padding:0 1rem;color:var(--color-text,#000);text-decoration:none;border:1px solid var(--color-border,#e3e3e1)}.ds-chip span{color:var(--color-text-muted,#61615e);font-variant-numeric:tabular-nums}.ds-chip:hover{border-color:var(--color-text,#000)}.ds-chip:focus-visible{outline:2px solid var(--color-text,#000);outline-offset:3px}.ds-chip--current{color:var(--color-on-accent,#fff);background:var(--color-accent,#000);border-color:var(--color-accent,#000)}.ds-chip--current span{color:inherit}"
+    },
+    {
+      "name": "Product Card",
+      "kind": "card",
+      "refersTo": "product-card",
+      "description": "A 2:3 portrait over name and price, with a square quick-add button at its foot.",
+      "html": "<article class=\"ds-card\"><div class=\"ds-card__media\"><button class=\"ds-card__add\" aria-label=\"Quick add Merino Crew Neck\"><svg viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\"><path d=\"M12 5.5v13M5.5 12h13\"/></svg></button></div><div class=\"ds-card__info\"><span class=\"ds-card__name\">Merino Crew Neck</span><span class=\"ds-card__price\">$98.00</span></div></article>",
+      "css": ".ds-card{display:grid;gap:0.875rem;width:14rem;font:400 0.875rem 'Archivo Variable',Arial,sans-serif;color:var(--color-text,#000)}.ds-card__media{position:relative;aspect-ratio:2/3;background:#5c525b}.ds-card__add{position:absolute;right:0.5rem;bottom:0.5rem;display:grid;place-items:center;width:2.75rem;height:2.75rem;padding:0;color:var(--color-text,#000);background:var(--color-canvas,#fff);border:0;cursor:pointer}.ds-card__add:focus-visible{outline:2px solid var(--color-text,#000);outline-offset:3px}.ds-card__info{display:flex;justify-content:space-between;gap:1rem}.ds-card__name{font-weight:500}.ds-card__price{font-variant-numeric:tabular-nums}"
+    },
+    {
+      "name": "Status Badge",
+      "kind": "custom",
+      "refersTo": "status-badge",
+      "description": "A dot plus the order state name; the name always carries the meaning.",
+      "html": "<span class=\"ds-badge ds-badge--picking\">Picking</span>",
+      "css": ".ds-badge{display:inline-flex;gap:0.5rem;align-items:center;font:400 0.8125rem 'Archivo Variable',Arial,sans-serif;color:var(--color-text,#000)}.ds-badge::before{content:'';width:0.5rem;height:0.5rem;border-radius:50%;background:var(--color-text,#000)}.ds-badge--picking::before{background:var(--color-notice,#8a4b12)}"
+    },
+    {
+      "name": "Header Navigation",
+      "kind": "nav",
+      "refersTo": "site-header",
+      "description": "Wordmark, departments, tools, and the bag count; the current page is underlined.",
+      "html": "<header class=\"ds-nav\"><a class=\"ds-nav__mark\" href=\"#\">Marlow</a><a class=\"ds-nav__link ds-nav__link--current\" href=\"#\">Shop</a><a class=\"ds-nav__link\" href=\"#\">Outerwear</a><span class=\"ds-nav__bag\">Bag <span>2</span></span></header>",
+      "css": ".ds-nav{display:flex;gap:1.75rem;align-items:center;height:3.5rem;padding:0 1.5rem;font:400 0.875rem 'Archivo Variable',Arial,sans-serif;color:var(--color-text,#000);background:var(--color-canvas,#fff);border-bottom:1px solid var(--color-border,#e3e3e1)}.ds-nav__mark{margin-right:1.5rem;font-size:1.0625rem;font-weight:620;font-stretch:125%;letter-spacing:0.16em;text-transform:uppercase;text-decoration:none;color:inherit}.ds-nav__link{color:inherit;text-decoration:none;text-underline-offset:0.45em}.ds-nav__link:hover,.ds-nav__link--current{text-decoration:underline}.ds-nav__link:focus-visible{outline:2px solid var(--color-text,#000);outline-offset:3px}.ds-nav__bag{margin-left:auto;display:inline-flex;gap:0.375rem;align-items:center}.ds-nav__bag span{display:inline-grid;place-items:center;min-width:1.25rem;height:1.25rem;font-size:0.75rem;font-weight:600;color:var(--color-on-accent,#fff);background:var(--color-accent,#000);border-radius:999px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The White Room",
+    "overview": "Marlow's floor is a white room hung with eight pieces. The page itself is white, black, and one cool grey ramp, so the only color a shopper sees is in the garment photographs: mauve plaster walls, rumpled linen, camel, ink, oat. The system is the category standard for a quiet-luxury shop, held to the craft of COS, Arket, and Toteme, by the owner's choice over novelty directions. Its distinction is restraint carried all the way through: one typeface, square corners, flat surfaces, and copy that states cloth, care, stock, and cost plainly.\n\nDensity changes by job. The storefront is spacious, with large portraits and few words. The checkout is calm and single-column, with the total always in view. The desk and backoffice tighten into condensed, tabular tables built for daily repetition. All of them share the same palette, type, and controls, so a worker on the desk and a shopper on the floor are in the same shop.\n\nMotion is sparse and answers actions. The opening spread settles once on load; a piece's photograph carries over from the floor to its page through a view transition; the bag and the menu slide in from the edge; a line just added to the bag flashes once. Reduced motion collapses all of it.",
+    "keyCharacteristics": [
+      "White ground, black type, grey panels; the photographs are the palette.",
+      "One family, Archivo, stretched by its width axis: expanded for the wordmark, normal for reading, condensed for staff data.",
+      "Square corners everywhere except the bag count and color swatches.",
+      "Flat at rest: depth comes from grey fills and the scrim behind sheets.",
+      "Prices, sizes, and stock always in plain words with tabular figures."
+    ],
+    "rules": [
+      {
+        "name": "The Photograph Carries the Color Rule",
+        "body": "No hue enters the interface except through the garment photographs and the three state colors. A new screen gets its warmth from photography, not from tinting the chrome.",
+        "section": "colors"
+      },
+      {
+        "name": "The Black Is the Action Rule",
+        "body": "One filled black control per decision: Add to bag, Check out, Place order, the next fulfillment step. Everything secondary is outlined, underlined, or quiet.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Family Rule",
+        "body": "Archivo only. Change width or weight for a new role; never add a face.",
+        "section": "typography"
+      },
+      {
+        "name": "The Figures Line Up Rule",
+        "body": "Prices, quantities, counts, and references use tabular figures wherever they stack or sit in columns.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat Floor Rule",
+        "body": "Cards, panels, and buttons have no shadow and no border-plus-shadow pairing. If something must stand apart, give it a grey fill.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do let photographs supply the color; keep chrome to Ink Black, Gallery White, and the greys.",
+      "Do give every slot that shows a piece a 2:3 frame, at any size.",
+      "Do state prices, sizes, stock, and costs in words with tabular figures, and keep the total visible wherever money is being committed.",
+      "Do mark selection and state with a fill or a word; the color dot only assists.",
+      "Do underline links inside running text, and keep focus outlines visible (2px Ink Black, 3px offset).",
+      "Do use Archivo's width axis for new roles: condensed (84%) only in dense staff tables, expanded (125%) only for the wordmark."
+    ],
+    "donts": [
+      "Don't add a brand accent color or tint the interface with the photographs' mauve.",
+      "Don't round corners or add shadows to cards, panels, or buttons.",
+      "Don't mark a selected list item with a colored side stripe; use a grey fill.",
+      "Don't set labels or headings in uppercase; only the wordmark is uppercase.",
+      "Don't put a label or eyebrow above a heading; the heading speaks for itself.",
+      "Don't introduce a second typeface."
+    ]
+  }
+}

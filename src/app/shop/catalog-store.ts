@@ -1,5 +1,13 @@
 import { isPlatformServer } from '@angular/common';
-import { InjectionToken, PLATFORM_ID, Service, TransferState, inject, makeStateKey, signal } from '@angular/core';
+import {
+  InjectionToken,
+  PLATFORM_ID,
+  Service,
+  TransferState,
+  inject,
+  makeStateKey,
+  signal,
+} from '@angular/core';
 import { SEED_PRODUCTS, cloneProducts, findProduct } from './catalog';
 import type { Product } from './catalog';
 
@@ -33,6 +41,11 @@ export class CatalogStore {
         ? products.map((item) => (item.id === product.id ? product : item))
         : [...products, product],
     );
+  }
+
+  /** Takes the whole floor as the server holds it now. */
+  replaceAll(products: readonly Product[]): void {
+    this.products.set(cloneProducts(products));
   }
 
   private readInitial(): readonly Product[] {

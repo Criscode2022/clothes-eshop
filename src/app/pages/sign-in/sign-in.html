@@ -1,70 +1,110 @@
-<h1 class="font-display text-display">Sign in</h1>
-<p class="mt-4 max-w-[62ch]">
-  Signing in is optional. Guests can
-  <a routerLink="/checkout">check out</a>
-  without an account.
-</p>
+<div class="sign-in page">
+  <header class="head">
+    <h1 class="head__title">Sign in or create an account</h1>
+    <p class="head__lede">
+      Signing in is optional. Guests can <a routerLink="/checkout">check out</a> without an account;
+      an account keeps your orders under your name.
+    </p>
+  </header>
 
-<form class="mt-8 grid max-w-md gap-4" (submit)="signIn(); $event.preventDefault()">
-  <label>
-    Email
-    <input id="sign-in-email" class="mt-1 block w-full" type="email" autocomplete="username" [formField]="signInForm.email" />
-    @if (signInForm.email().touched() && signInForm.email().errors().length) {
-      <span class="text-danger">{{ signInForm.email().errors()[0].message }}</span>
-    }
-  </label>
-  <label>
-    Password
-    <input id="sign-in-password" class="mt-1 block w-full" type="password" autocomplete="current-password" [formField]="signInForm.password" />
-    @if (signInForm.password().touched() && signInForm.password().errors().length) {
-      <span class="text-danger">{{ signInForm.password().errors()[0].message }}</span>
-    }
-  </label>
-  @if (errorMessage()) {
-    <p role="alert" class="text-danger">{{ errorMessage() }}</p>
-  }
-  <button type="submit" [disabled]="signInForm().invalid()">Sign in</button>
-</form>
+  <div class="panels">
+    <section class="panel" aria-labelledby="sign-in-title">
+      <h2 id="sign-in-title" class="panel__title">Sign in</h2>
+      <form class="panel__form" novalidate (submit)="signIn(); $event.preventDefault()">
+        @if (errorMessage()) {
+          <p class="notice notice--error" role="alert">{{ errorMessage() }}</p>
+        }
+        <app-text-field
+          inputId="sign-in-email"
+          label="Email"
+          type="email"
+          autocomplete="username"
+          [field]="signInForm.email"
+        />
+        <app-text-field
+          inputId="sign-in-password"
+          label="Password"
+          type="password"
+          autocomplete="current-password"
+          [field]="signInForm.password"
+        />
+        <button
+          type="submit"
+          class="button button--primary button--block"
+          [disabled]="signingIn()"
+          [attr.aria-busy]="signingIn()"
+        >
+          {{ signingIn() ? 'Signing in' : 'Sign in' }}
+        </button>
+      </form>
 
-<section class="mt-12 max-w-md">
-  <h2 class="font-display text-xl">Create an account</h2>
-  <p class="mt-3">An account is optional. It keeps later orders under your name. Neon Auth holds the password.</p>
-  <form class="mt-6 grid gap-4" (submit)="createAccount(); $event.preventDefault()">
-    <label>
-      Name
-      <input id="account-name" class="mt-1 block w-full" autocomplete="name" [formField]="accountForm.name" />
-      @if (accountForm.name().touched() && accountForm.name().errors().length) {
-        <span class="text-danger">{{ accountForm.name().errors()[0].message }}</span>
-      }
-    </label>
-    <label>
-      Email
-      <input id="account-email" class="mt-1 block w-full" type="email" autocomplete="email" [formField]="accountForm.email" />
-      @if (accountForm.email().touched() && accountForm.email().errors().length) {
-        <span class="text-danger">{{ accountForm.email().errors()[0].message }}</span>
-      }
-    </label>
-    <label>
-      Password
-      <input id="account-password" class="mt-1 block w-full" type="password" autocomplete="new-password" [formField]="accountForm.password" />
-      @if (accountForm.password().touched() && accountForm.password().errors().length) {
-        <span class="text-danger">{{ accountForm.password().errors()[0].message }}</span>
-      }
-    </label>
-    @if (accountMessage()) {
-      <p role="alert" class="text-danger">{{ accountMessage() }}</p>
-    }
-    <button type="submit" [disabled]="accountForm().invalid()">Create account</button>
-  </form>
-</section>
+      <div class="floor" aria-labelledby="floor-title">
+        <h3 id="floor-title" class="floor__title">Floor accounts</h3>
+        <p class="floor__note">
+          Demo people who open the client, desk, and backoffice views. They share the password
+          <code>{{ floorPassword }}</code
+          >.
+        </p>
+        <ul class="floor__list" role="list">
+          @for (account of floorAccounts; track account.email) {
+            <li>
+              <button
+                type="button"
+                class="floor__account"
+                [disabled]="signingIn()"
+                (click)="useFloorAccount(account.email)"
+              >
+                <span>
+                  <span class="floor__name">{{ account.name }}</span>
+                  <span class="floor__email">{{ account.email }}</span>
+                </span>
+                <span class="floor__role">{{ opens(account.role) }}</span>
+              </button>
+            </li>
+          }
+        </ul>
+      </div>
+    </section>
 
-<section class="mt-10 max-w-[62ch]">
-  <h2 class="font-display text-xl">Floor accounts</h2>
-  <p class="mt-3">The desk and the backoffice also open with these floor accounts. The password is marlow-floor.</p>
-  <ul class="mt-4" role="list">
-    <li>Avery Cole, client, avery@marlow.shop</li>
-    <li>Noah Pell, client, noah@marlow.shop</li>
-    <li>Jordan Hale, worker, jordan@marlow.shop</li>
-    <li>Sloan Marlow, owner, sloan@marlow.shop</li>
-  </ul>
-</section>
+    <section class="panel" aria-labelledby="create-title">
+      <h2 id="create-title" class="panel__title">Create an account</h2>
+      <p class="panel__note">
+        An account keeps later orders under your name. Neon Auth holds the password.
+      </p>
+      <form class="panel__form" novalidate (submit)="createAccount(); $event.preventDefault()">
+        @if (accountMessage()) {
+          <p class="notice notice--error" role="alert">{{ accountMessage() }}</p>
+        }
+        <app-text-field
+          inputId="account-name"
+          label="Full name"
+          autocomplete="name"
+          [field]="accountForm.name"
+        />
+        <app-text-field
+          inputId="account-email"
+          label="Email"
+          type="email"
+          autocomplete="email"
+          [field]="accountForm.email"
+        />
+        <app-text-field
+          inputId="account-password"
+          label="Password"
+          type="password"
+          autocomplete="new-password"
+          hint="At least 8 characters."
+          [field]="accountForm.password"
+        />
+        <button
+          type="submit"
+          class="button button--block"
+          [disabled]="creating()"
+          [attr.aria-busy]="creating()"
+        >
+          {{ creating() ? 'Creating account' : 'Create account' }}
+        </button>
+      </form>
+    </section>
+  </div>
+</div>

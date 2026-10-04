@@ -144,6 +144,24 @@ export function findVariant(product: Product, variantId: string): Variant | unde
   return product.variants.find((variant) => variant.id === variantId);
 }
 
+export interface ColorGroup {
+  readonly color: string;
+  readonly variants: readonly Variant[];
+}
+
+/** A piece's sizes grouped under each color, in floor order. */
+export function variantsByColor(product: Product): ColorGroup[] {
+  const groups = new Map<string, Variant[]>();
+  for (const variant of product.variants) {
+    groups.set(variant.color, [...(groups.get(variant.color) ?? []), variant]);
+  }
+  return [...groups].map(([color, variants]) => ({ color, variants }));
+}
+
+export function isSoldOut(product: Product): boolean {
+  return product.variants.every((variant) => variant.stock < 1);
+}
+
 const CLOTH_COLORS: Record<string, string> = {
   Charcoal: '#3c3a3b',
   Camel: '#b08968',

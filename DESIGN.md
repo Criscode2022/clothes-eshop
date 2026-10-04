@@ -1,0 +1,275 @@
+---
+name: Marlow
+description: A small ready-to-wear floor, set as a quiet white shop where the garment photographs carry every color.
+colors:
+  canvas: "#ffffff"
+  surface: "#f5f5f4"
+  surface-strong: "#ebebea"
+  ink: "#000000"
+  graphite: "#61615e"
+  hairline: "#e3e3e1"
+  field-stroke: "#8c8c88"
+  error: "#b42318"
+  notice: "#8a4b12"
+  positive: "#276738"
+typography:
+  wordmark:
+    fontFamily: "Archivo Variable, Helvetica Neue, Arial, sans-serif"
+    fontSize: "1.0625rem"
+    fontWeight: 620
+    letterSpacing: "0.16em"
+    fontVariation: "'wdth' 125"
+  display:
+    fontFamily: "Archivo Variable, Helvetica Neue, Arial, sans-serif"
+    fontSize: "clamp(2rem, 1.35rem + 2.2vw, 3.25rem)"
+    fontWeight: 450
+    lineHeight: 1.15
+    letterSpacing: "-0.03em"
+  headline:
+    fontFamily: "Archivo Variable, Helvetica Neue, Arial, sans-serif"
+    fontSize: "1.625rem"
+    fontWeight: 500
+    lineHeight: 1.15
+    letterSpacing: "-0.02em"
+  title:
+    fontFamily: "Archivo Variable, Helvetica Neue, Arial, sans-serif"
+    fontSize: "1rem"
+    fontWeight: 500
+    lineHeight: 1.15
+  body:
+    fontFamily: "Archivo Variable, Helvetica Neue, Arial, sans-serif"
+    fontSize: "1rem"
+    fontWeight: 400
+    lineHeight: 1.55
+  label:
+    fontFamily: "Archivo Variable, Helvetica Neue, Arial, sans-serif"
+    fontSize: "0.875rem"
+    fontWeight: 500
+    letterSpacing: "0.01em"
+  caption:
+    fontFamily: "Archivo Variable, Helvetica Neue, Arial, sans-serif"
+    fontSize: "0.8125rem"
+    fontWeight: 400
+  data:
+    fontFamily: "Archivo Variable, Helvetica Neue, Arial, sans-serif"
+    fontSize: "0.875rem"
+    fontWeight: 400
+    fontFeature: "'tnum'"
+    fontVariation: "'wdth' 84"
+rounded:
+  none: "0"
+  pill: "999px"
+spacing:
+  xs: "0.25rem"
+  sm: "0.5rem"
+  md: "1rem"
+  lg: "1.5rem"
+  xl: "2.5rem"
+  gutter: "clamp(1rem, 3.2vw, 2.5rem)"
+components:
+  button-primary:
+    backgroundColor: "{colors.ink}"
+    textColor: "{colors.canvas}"
+    typography: "{typography.label}"
+    rounded: "{rounded.none}"
+    padding: "0 1.5rem"
+    height: "3rem"
+  button-secondary:
+    backgroundColor: "{colors.canvas}"
+    textColor: "{colors.ink}"
+    typography: "{typography.label}"
+    rounded: "{rounded.none}"
+    padding: "0 1.5rem"
+    height: "3rem"
+  button-secondary-hover:
+    backgroundColor: "{colors.surface}"
+  input:
+    backgroundColor: "{colors.canvas}"
+    textColor: "{colors.ink}"
+    typography: "{typography.body}"
+    rounded: "{rounded.none}"
+    padding: "0 0.875rem"
+    height: "2.75rem"
+  size-option:
+    backgroundColor: "{colors.canvas}"
+    textColor: "{colors.ink}"
+    typography: "{typography.label}"
+    rounded: "{rounded.none}"
+    height: "2.75rem"
+  size-option-selected:
+    backgroundColor: "{colors.ink}"
+    textColor: "{colors.canvas}"
+  filter-chip:
+    backgroundColor: "{colors.canvas}"
+    textColor: "{colors.ink}"
+    typography: "{typography.caption}"
+    rounded: "{rounded.none}"
+    padding: "0 1rem"
+    height: "2.5rem"
+  filter-chip-current:
+    backgroundColor: "{colors.ink}"
+    textColor: "{colors.canvas}"
+  summary-panel:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.none}"
+    padding: "1.75rem"
+---
+
+# Design System: Marlow
+
+## Overview
+
+**Creative North Star: "The White Room"**
+
+Marlow's floor is a white room hung with eight pieces. The page itself is white, black, and one cool grey ramp, so the only color a shopper sees is in the garment photographs: mauve plaster walls, rumpled linen, camel, ink, oat. The system is the category standard for a quiet-luxury shop, held to the craft of COS, Arket, and Toteme, by the owner's choice over novelty directions. Its distinction is restraint carried all the way through: one typeface, square corners, flat surfaces, and copy that states cloth, care, stock, and cost plainly.
+
+Density changes by job. The storefront is spacious, with large portraits and few words. The checkout is calm and single-column, with the total always in view. The desk and backoffice tighten into condensed, tabular tables built for daily repetition. All of them share the same palette, type, and controls, so a worker on the desk and a shopper on the floor are in the same shop.
+
+Motion is sparse and answers actions. The opening spread settles once on load; a piece's photograph carries over from the floor to its page through a view transition; the bag and the menu slide in from the edge; a line just added to the bag flashes once. Reduced motion collapses all of it.
+
+**Key Characteristics:**
+
+- White ground, black type, grey panels; the photographs are the palette.
+- One family, Archivo, stretched by its width axis: expanded for the wordmark, normal for reading, condensed for staff data.
+- Square corners everywhere except the bag count and color swatches.
+- Flat at rest: depth comes from grey fills and the scrim behind sheets.
+- Prices, sizes, and stock always in plain words with tabular figures.
+
+## Colors
+
+A monochrome working palette that lets the mauve, camel, and ink of the photographs be the only color in the room.
+
+### Primary
+
+- **Ink Black** (#000000): all type, the primary button, the selected size and current filter, the announcement band, and the free-shipping meter's fill. Black is the action color; there is no separate brand accent.
+
+### Neutral
+
+- **Gallery White** (#ffffff): the page ground and the text on black buttons.
+- **Fitting-Room Grey** (#f5f5f4): quiet panels: the checkout and bag summaries, the order facts, the desk's open-order details, photo placeholders, and hover on secondary controls.
+- **Chalk Grey** (#ebebea): heavier fills: disabled buttons, the selected piece in the backoffice list, the one-time flash on a line just added to the bag.
+- **Graphite** (#61615e): secondary text: ledes, metadata, captions, empty states (6.2:1 on white).
+- **Hairline** (#e3e3e1): 1px dividers between rows of data and around unselected chips and size boxes. Decorative only; never the sole marker of a control.
+- **Field Stroke** (#8c8c88): input borders, at 3.4:1 against white so fields read as controls.
+
+### State
+
+- **Oxblood Error** (#b42318): field errors and failed actions, always with words.
+- **Rust Notice** (#8a4b12): "Only 2 left", and the dot for orders being picked or ready.
+- **Bottle Green** (#276738): the dot for completed orders.
+
+The dark scheme keeps the same roles: ground #121212, panels #1c1c1b and #262625, type #f4f4f2, secondary text #a8a8a3, hairline #303030, field stroke #7c7c78, black actions become #f4f4f2 with dark text, and the announcement band becomes #262625 so it never glares. Every text pair meets WCAG AA in both schemes.
+
+### Named Rules
+
+**The Photograph Carries the Color Rule.** No hue enters the interface except through the garment photographs and the three state colors. A new screen gets its warmth from photography, not from tinting the chrome.
+
+**The Black Is the Action Rule.** One filled black control per decision: Add to bag, Check out, Place order, the next fulfillment step. Everything secondary is outlined, underlined, or quiet.
+
+## Typography
+
+**Display Font:** Archivo Variable (with Helvetica Neue, Arial, sans-serif)
+**Body Font:** Archivo Variable (same family)
+
+**Character:** A neutral, slightly industrial grotesk that stays out of the garments' way. Its width axis does the work a second typeface would: 125% for the woven-label wordmark, 100% for everything a shopper reads, 84% for staff tables.
+
+### Hierarchy
+
+- **Wordmark** (620, 1.0625rem, 0.16em tracking, 125% width, uppercase): the Marlow mark in the header, menu, and footer. The only uppercase text in the system.
+- **Display** (450, clamp(2rem, 1.35rem + 2.2vw, 3.25rem), 1.15, -0.03em): the floor's opening line, category titles, and the atelier title. Never more than one per page.
+- **Headline** (500, 1.625rem, 1.15, -0.02em): page titles in task flows (Checkout, Bag, Order, Daily desk, Backoffice) and the product name.
+- **Title** (500, 1rem, 0 tracking): section headings inside pages: Contact, Delivery, Payment, Pieces, More from the floor.
+- **Body** (400, 1rem, 1.55): running text, kept within 62ch.
+- **Label** (500, 0.875rem, 0.01em): buttons and product names on cards. Navigation and prices use the same size at 400.
+- **Caption** (400, 0.8125rem): metadata, hints, errors, breadcrumbs, filter chips.
+- **Data** (400, 0.875rem, 84% width, tabular figures): every staff table.
+
+### Named Rules
+
+**The One Family Rule.** Archivo only. Change width or weight for a new role; never add a face.
+
+**The Figures Line Up Rule.** Prices, quantities, counts, and references use tabular figures wherever they stack or sit in columns.
+
+## Layout
+
+Content sits in a centered container up to 90rem wide with a fluid gutter of clamp(1rem, 3.2vw, 2.5rem); spacing follows 0.25rem steps, with more space above a heading than below it. Breakpoints are 40rem, 48rem, 64rem, and 80rem.
+
+- **Floor:** a full-bleed spread of three 2:3 portraits about half the window high (one portrait on a phone), then the opening line beside the terms, then a product grid of 2, 3, and 4 columns at the phone, tablet, and wide breakpoints, with 2.5–3rem between rows.
+- **Category:** from 64rem, a split: title, fit note, and filters in a sticky left column, the pieces two-up on the right.
+- **Product:** from 64rem, the photograph sized to the window's height beside a 20–27rem buy panel, centered as one composition; on a phone the photograph runs edge to edge and a fixed buy bar appears once the main button scrolls away.
+- **Checkout:** a form of at most 40rem beside a sticky 20–26rem summary, inside a 76rem container; on a phone the summary folds into a bar showing the total.
+- **Staff:** a title, a lede, link tabs for sections, then full-width tables that scroll sideways on small screens.
+
+## Elevation & Depth
+
+Flat at rest. Depth is tonal: grey panels for summaries and details, a darker grey for selection, and a scrim (black at 36% in light, 60% in dark) behind the bag and menu sheets. The bag notice toast is the single shadowed element, because it floats over content it does not belong to.
+
+### Shadow Vocabulary
+
+- **Toast** (`box-shadow: 0 0.5rem 1.5rem rgb(0 0 0 / 0.18)`): the bag notice at the bottom of the screen. Nothing else casts a shadow.
+
+### Named Rules
+
+**The Flat Floor Rule.** Cards, panels, and buttons have no shadow and no border-plus-shadow pairing. If something must stand apart, give it a grey fill.
+
+## Shapes
+
+Square. Buttons, inputs, size boxes, chips, panels, sheets, and photographs all have 0 radius. Product photographs keep their 2:3 portrait frame wherever a piece is shown: cards, the product page, bag lines, summaries, the backoffice list. Only the floor's opening spread and the atelier's lead photograph crop wider, because they set a scene rather than show a piece. The only round shapes are the bag count (a pill) and color swatches (circles), which are markers, not containers.
+
+## Components
+
+### Buttons
+
+- **Shape:** square (0), 3rem tall, 1.5rem side padding; a 2.25rem small size serves table rows.
+- **Primary:** Ink Black fill, white label at 500 weight. Hover mixes 20% of the ground into the black.
+- **Secondary:** 1px Ink Black outline on the ground; hover fills Fitting-Room Grey.
+- **Text button:** an underlined caption-size action (Remove, Cancel, Keep, Copy reference) for secondary actions that sit inline.
+- **Disabled:** Chalk Grey fill with Graphite text. Busy buttons carry aria-busy and change their label ("Placing order").
+
+### Chips
+
+- **Style:** square, 2.5rem tall, 1px Hairline border, caption type with a Graphite count.
+- **State:** the current category or order state fills Ink Black with white text. Category chips are links; desk state chips are native radios.
+
+### Cards / Containers
+
+- **Product card:** a 2:3 photograph over the name and price; no frame, no shadow. A white square plus button at the photograph's foot opens the sizes, which slide up over the photograph (also on hover where hover exists). A piece with no photograph shows a grey panel with its cloth swatch and "No photograph yet".
+- **Summary panel:** Fitting-Room Grey, 1.75rem padding, square; holds order lines, totals, and the free-shipping meter.
+
+### Inputs / Fields
+
+- **Style:** 2.75rem tall, 1px Field Stroke border, white ground, square, 1rem text so phones never zoom.
+- **Focus:** the border turns Ink Black with a 2px Ink Black outline.
+- **Error:** the border turns Oxblood Error, the message sits under the field and is linked with aria-describedby; the first invalid field takes focus on submit, and nothing typed is lost.
+- **Choices:** payment methods are bordered rows around native radios; the checked row gets an Ink Black border. Sizes are boxes around visually hidden radios; sold-out sizes are struck through on grey and disabled.
+
+### Navigation
+
+- **Header:** sticky, white, with a Hairline bottom border. On desktop: the wordmark, departments at label size, then Atelier, the account links, and Bag with a black count pill. The current page is underlined with a 0.45em offset. On a phone: a menu button, the centered wordmark, and the bag icon.
+- **Menu and bag:** native modal dialogs that slide in from the left and right edges over a scrim, close on Escape, backdrop click, or navigation, and return focus to their buttons.
+- **Staff sections:** link tabs with a 2px Ink Black underline on the current section.
+
+### Status badge
+
+A small dot plus the state's name: Placed in Ink Black, Picking and Ready in Rust Notice, Completed in Bottle Green, Cancelled in Oxblood Error. The name always carries the meaning.
+
+## Do's and Don'ts
+
+### Do:
+
+- **Do** let photographs supply the color; keep chrome to Ink Black, Gallery White, and the greys.
+- **Do** give every slot that shows a piece a 2:3 frame, at any size.
+- **Do** state prices, sizes, stock, and costs in words with tabular figures, and keep the total visible wherever money is being committed.
+- **Do** mark selection and state with a fill or a word; the color dot only assists.
+- **Do** underline links inside running text, and keep focus outlines visible (2px Ink Black, 3px offset).
+- **Do** use Archivo's width axis for new roles: condensed (84%) only in dense staff tables, expanded (125%) only for the wordmark.
+
+### Don't:
+
+- **Don't** add a brand accent color or tint the interface with the photographs' mauve.
+- **Don't** round corners or add shadows to cards, panels, or buttons.
+- **Don't** mark a selected list item with a colored side stripe; use a grey fill.
+- **Don't** set labels or headings in uppercase; only the wordmark is uppercase.
+- **Don't** put a label or eyebrow above a heading; the heading speaks for itself.
+- **Don't** introduce a second typeface.

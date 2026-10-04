@@ -1,0 +1,85 @@
+<form
+  class="new-piece"
+  novalidate
+  (submit)="create(); $event.preventDefault()"
+  aria-labelledby="new-piece-title"
+>
+  <h2 id="new-piece-title" class="title">New piece</h2>
+
+  @if (errorMessage()) {
+    <p class="notice notice--error" role="alert">{{ errorMessage() }}</p>
+  }
+
+  <fieldset class="group">
+    <legend class="group__legend">The piece</legend>
+    <app-text-field class="span-2" inputId="piece-name" label="Name" [field]="pieceForm.name" />
+    <div class="field">
+      <label class="field__label" for="piece-category">Category</label>
+      <select id="piece-category" class="input" [formField]="pieceForm.category">
+        @for (category of categories; track category.slug) {
+          <option [value]="category.slug">{{ category.name }}</option>
+        }
+      </select>
+    </div>
+    <div class="field">
+      <label class="field__label" for="piece-dollars">Price in dollars</label>
+      <input
+        id="piece-dollars"
+        class="input"
+        type="number"
+        step="0.01"
+        inputmode="decimal"
+        [formField]="pieceForm.dollars"
+        [attr.aria-invalid]="fieldError(pieceForm.dollars())"
+        [attr.aria-describedby]="fieldError(pieceForm.dollars()) ? 'piece-dollars-error' : null"
+      />
+      @if (fieldError(pieceForm.dollars())) {
+        <p id="piece-dollars-error" class="field__error">
+          {{ pieceForm.dollars().errors()[0]?.message }}
+        </p>
+      }
+    </div>
+    <app-text-field
+      class="span-2"
+      inputId="piece-summary"
+      label="One line about it"
+      hint="Shown under the name on its page, like “Fine merino, knitted tight enough to sit under a jacket.”"
+      [field]="pieceForm.summary"
+    />
+  </fieldset>
+
+  <fieldset class="group">
+    <legend class="group__legend">First size and color</legend>
+    <app-text-field inputId="piece-size" label="Size" [field]="pieceForm.size" />
+    <app-text-field inputId="piece-color" label="Color" [field]="pieceForm.color" />
+    <div class="field">
+      <label class="field__label" for="piece-stock">On hand</label>
+      <input
+        id="piece-stock"
+        class="input"
+        type="number"
+        inputmode="numeric"
+        [formField]="pieceForm.stock"
+        [attr.aria-invalid]="fieldError(pieceForm.stock())"
+        [attr.aria-describedby]="fieldError(pieceForm.stock()) ? 'piece-stock-error' : null"
+      />
+      @if (fieldError(pieceForm.stock())) {
+        <p id="piece-stock-error" class="field__error">
+          {{ pieceForm.stock().errors()[0]?.message }}
+        </p>
+      }
+    </div>
+  </fieldset>
+
+  <div class="actions">
+    <button
+      type="submit"
+      class="button button--primary"
+      [disabled]="saving()"
+      [attr.aria-busy]="saving()"
+    >
+      {{ saving() ? 'Adding piece' : 'Add piece to the floor' }}
+    </button>
+    <p class="note">It shows on the floor right away. Pieces added here have no photograph.</p>
+  </div>
+</form>

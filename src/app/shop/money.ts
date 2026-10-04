@@ -18,3 +18,17 @@ export function shippingFor(subtotalCents: number): number {
 export function centsUntilFreeShipping(subtotalCents: number): number {
   return Math.max(0, FREE_SHIPPING_FROM_CENTS - subtotalCents);
 }
+
+/** How far the pieces have filled toward free shipping, from 0 to 1. */
+export function freeShippingProgress(subtotalCents: number): number {
+  return Math.min(1, Math.max(0, subtotalCents) / FREE_SHIPPING_FROM_CENTS);
+}
+
+/** The owner types prices in dollars; the shop stores whole cents. */
+export function centsFromDollars(dollars: number): number {
+  return Math.round(dollars * 100);
+}
+
+export function dollarsFromCents(cents: number): number {
+  return cents / 100;
+}

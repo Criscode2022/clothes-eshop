@@ -4,6 +4,7 @@
 @theme inline reference {
   --color-canvas: var(--color-canvas);
   --color-surface: var(--color-surface);
+  --color-surface-strong: var(--color-surface-strong);
   --color-text: var(--color-text);
   --color-text-muted: var(--color-text-muted);
   --color-accent: var(--color-accent);
@@ -11,10 +12,13 @@
   --color-border: var(--color-border);
   --color-field-border: var(--color-field-border);
   --color-danger: var(--color-danger);
+  --color-notice: var(--color-notice);
+  --color-positive: var(--color-positive);
   --font-body: var(--font-body);
-  --font-display: var(--font-display);
   --font-code: var(--font-code);
+  --text-xs: var(--text-xs);
   --text-sm: var(--text-sm);
+  --text-ui: var(--text-ui);
   --text-md: var(--text-md);
   --text-lg: var(--text-lg);
   --text-xl: var(--text-xl);
