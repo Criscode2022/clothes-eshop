@@ -42,6 +42,12 @@ describe('Shell', () => {
     expect(main().textContent).toContain('First page');
   });
 
+  it('keeps the shipping and payment terms inside a labelled landmark', () => {
+    const terms = document.querySelector('aside[aria-label="Shipping and payment"]');
+
+    expect(terms?.textContent).toContain('Free shipping from $200.');
+  });
+
   it('marks the current page in the main navigation', () => {
     const current = document.querySelector('nav[aria-label="Main"] [aria-current="page"]');
 
