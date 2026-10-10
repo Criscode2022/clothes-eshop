@@ -12,7 +12,27 @@
     "experimentalDecorators": true,
     "importHelpers": true,
     "target": "ES2022",
-    "module": "preserve"
+    "module": "preserve",
+    "paths": {
+      "@spartan-ng/helm/utils": ["./src/app/ui/helm/utils/src/index.ts"],
+      "@spartan-ng/helm/button": ["./src/app/ui/helm/button/src/index.ts"],
+      "@spartan-ng/helm/badge": ["./src/app/ui/helm/badge/src/index.ts"],
+      "@spartan-ng/helm/separator": ["./src/app/ui/helm/separator/src/index.ts"],
+      "@spartan-ng/helm/sheet": ["./src/app/ui/helm/sheet/src/index.ts"],
+      "@spartan-ng/helm/accordion": ["./src/app/ui/helm/accordion/src/index.ts"],
+      "@spartan-ng/helm/skeleton": ["./src/app/ui/helm/skeleton/src/index.ts"],
+      "@spartan-ng/helm/spinner": ["./src/app/ui/helm/spinner/src/index.ts"],
+      "@spartan-ng/helm/empty": ["./src/app/ui/helm/empty/src/index.ts"],
+      "@spartan-ng/helm/breadcrumb": ["./src/app/ui/helm/breadcrumb/src/index.ts"],
+      "@spartan-ng/helm/input": ["./src/app/ui/helm/input/src/index.ts"],
+      "@spartan-ng/helm/table": ["./src/app/ui/helm/table/src/index.ts"],
+      "@spartan-ng/helm/alert": ["./src/app/ui/helm/alert/src/index.ts"],
+      "@spartan-ng/helm/card": ["./src/app/ui/helm/card/src/index.ts"],
+      "@spartan-ng/helm/item": ["./src/app/ui/helm/item/src/index.ts"],
+      "@spartan-ng/helm/progress": ["./src/app/ui/helm/progress/src/index.ts"],
+      "@spartan-ng/helm/input-group": ["./src/app/ui/helm/input-group/src/index.ts"],
+      "@spartan-ng/helm/textarea": ["./src/app/ui/helm/textarea/src/index.ts"]
+    }
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

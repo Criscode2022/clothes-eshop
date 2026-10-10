@@ -1,10 +1,12 @@
 import { Component, input, output } from '@angular/core';
-import { Icon } from './icon';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideMinus, lucidePlus } from '@ng-icons/lucide';
 
 /** One fewer, the count, one more. The parent decides what a change means. */
 @Component({
   selector: 'app-quantity-stepper',
-  imports: [Icon],
+  imports: [NgIcon],
+  providers: [provideIcons({ lucideMinus, lucidePlus })],
   template: `
     <div class="stepper" role="group" [attr.aria-label]="'Quantity of ' + label()">
       <button
@@ -14,7 +16,7 @@ import { Icon } from './icon';
         [attr.aria-label]="'One fewer ' + label()"
         (click)="changed.emit(value() - 1)"
       >
-        <app-icon name="minus" [size]="16" />
+        <ng-icon name="lucideMinus" />
       </button>
       <output class="stepper__value" aria-live="polite">{{ value() }}</output>
       <button
@@ -24,7 +26,7 @@ import { Icon } from './icon';
         [attr.aria-label]="'One more ' + label()"
         (click)="changed.emit(value() + 1)"
       >
-        <app-icon name="plus" [size]="16" />
+        <ng-icon name="lucidePlus" />
       </button>
     </div>
   `,
@@ -34,7 +36,13 @@ import { Icon } from './icon';
       grid-template-columns: 2.5rem 2rem 2.5rem;
       align-items: stretch;
       height: 2.5rem;
+      font-size: 1rem;
       border: 1px solid var(--color-border);
+      transition: border-color var(--duration-fast) ease-out;
+
+      &:hover {
+        border-color: var(--color-field-border);
+      }
     }
 
     .stepper__step {
@@ -46,8 +54,14 @@ import { Icon } from './icon';
       border: 0;
       cursor: pointer;
 
+      transition: background-color var(--duration-fast) ease-out;
+
       &:hover:not(:disabled) {
-        background: var(--color-surface);
+        background: var(--color-hover);
+      }
+
+      &:active:not(:disabled) ng-icon {
+        transform: scale(0.85);
       }
 
       &:disabled {

@@ -27,12 +27,19 @@ Visitors and clients cannot open the desk or the backoffice. A worker cannot ope
 - The look is the category standard for a quiet-luxury clothes shop, held to the craft of COS, Arket, and Toteme. The owner chose it on 2026-10-03 over novelty directions, and released the earlier magenta accent, Newsreader serif, and copy voice. `DESIGN.md` records the visual system, `PRODUCT.md` the product truth, and `.impeccable/surfaces/` the briefs for the storefront and the task screens.
 - Buying takes the fewest steps: sizes can be added from the floor's quick add, the bag opens as a drawer on the line just added, and checkout is one page (contact, delivery, payment) with the order summary in view. A size is chosen by the shopper; the product page preselects one only when it is the last size left in that color.
 - The bag is kept in the browser's `localStorage` under `marlow.bag`, restored after the first render so hydration matches the server, and capped at current stock when it comes back.
+- The UI is built on Spartan (set up 2026-10-11): Brain from npm and the `lyra` Helm style copied into `src/app/ui/helm/` (`components.json`). `src/tailwind.css` is the Spartan layers file; Spartan's semantic tokens alias the Marlow tokens there, `--accent` is the hover surface (`--color-hover`), `--primary` is the brand, and `--radius` is 0. The owner kept the White Room look; Spartan supplies behavior and structure, not a new style.
+- The generated Helm files stay as the CLI wrote them. Marlow's scale rides on top: `ShopButton` adds the shop's button heights to every `hlmBtn` in a template that imports `ShopButtonImports`, and an unlayered block in `src/styles.scss` sets type, padding, and focus on Spartan's `data-slot` parts. Signal Forms fields stay on `TextField`, because Spartan's input marks required fields invalid before they are touched.
+- The bag drawer and the phone menu are Spartan sheets inside `@defer` blocks (on idle, or as soon as they are asked to open), which keeps the CDK overlay and tailwind-merge out of the first page and the initial bundle under budget.
+- The floor ends with a "Cloth and care" note and a "Shop by category" index; the bag page suggests "More from the floor" through `piecesToPairWith`. Motion includes scroll reveals, chosen by the owner on 2026-10-11, through the `appReveal` directive, which only hides what starts below the fold and never under reduced motion.
+- Adding a size keeps opening the bag drawer on the line just added; the owner declined toasts for it on 2026-10-11.
 
 ## Rules
 
 - Do not add Ionic, a service worker, or Angular Native.
 - Keep colors on the tokens in `src/styles.scss`. Tailwind reads those tokens; do not add `tailwind.config.js` or `@tailwind` directives.
 - One typeface: Archivo, self-hosted from `@fontsource-variable/archivo` with its width axis. Do not add a second face.
-- Shared styles in `src/styles.scss` sit in Tailwind's `base` and `components` layers, so utilities can override them.
+- Shared styles in `src/styles.scss` sit in Tailwind's `base` and `components` layers, so utilities can override them. The one exception is the unlayered block for Spartan's `data-slot` parts, which has to win over Helm's utility classes.
 - Guest checkout stays on the public path. Do not put a sign-in wall in front of it.
 - Do not put payment-provider calls or email sending in browser code.
+- Import `ShopButtonImports`, not `HlmButton` alone, wherever a template uses `hlmBtn`.
+- Change Spartan's look through the tokens or the unlayered `data-slot` block in `src/styles.scss`; leave `src/app/ui/helm/` as generated.

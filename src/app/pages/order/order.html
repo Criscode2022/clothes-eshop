@@ -1,33 +1,41 @@
 <div class="order page">
   @if (order.error()) {
-    <section class="state" aria-labelledby="order-error-title">
-      <h1 id="order-error-title" class="title">That order is not available</h1>
-      <p>{{ order.error()?.message }}</p>
-      <p>
-        Check the reference. An order placed while signed in opens only after you sign in again.
-      </p>
-      <div class="state__actions">
-        <a class="button button--primary" routerLink="/sign-in">Sign in</a>
-        <a class="button" routerLink="/">Return to the shop</a>
+    <section hlmEmpty class="state" aria-labelledby="order-error-title">
+      <div hlmEmptyHeader>
+        <h1 id="order-error-title" hlmEmptyTitle>That order is not available</h1>
+        <p hlmEmptyDescription>
+          {{ order.error()?.message }} Check the reference. An order placed while signed in opens
+          only after you sign in again.
+        </p>
+      </div>
+      <div hlmEmptyContent class="state__actions">
+        <a hlmBtn routerLink="/sign-in">Sign in</a>
+        <a hlmBtn variant="outline" routerLink="/">Return to the shop</a>
       </div>
     </section>
   } @else if (order.value(); as placed) {
     <header class="head">
       @if (justPlaced) {
-        <p class="head__thanks">
-          <app-icon name="check" [size]="18" />
-          Thank you, {{ placed.contact.name }}. Your order is placed.
-        </p>
+        <div class="thanks">
+          <svg class="thanks__mark" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+            <circle class="thanks__ring" cx="24" cy="24" r="22" />
+            <path class="thanks__tick" d="M15 24.5l6.5 6.5L33.5 18" />
+          </svg>
+          <p class="thanks__line">Thank you, {{ placed.contact.name }}. Your order is placed.</p>
+        </div>
       }
       <h1 class="title">Order {{ placed.reference }}</h1>
       <div class="head__meta">
         <app-fulfillment-badge [state]="placed.fulfillment" />
         <button
+          hlmBtn
+          variant="link"
+          size="sm"
           type="button"
-          class="text-button head__copy"
+          class="head__copy"
           (click)="copyReference(placed.reference)"
         >
-          <app-icon name="copy" [size]="16" />
+          <ng-icon [name]="copied() ? 'lucideCheck' : 'lucideCopy'" />
           {{ copied() ? 'Reference copied' : 'Copy reference' }}
         </button>
       </div>
@@ -44,11 +52,16 @@
         <ul class="lines" role="list">
           @for (line of placed.lines; track line.variantId) {
             <li class="line">
-              <span class="line__photo">
+              <a
+                class="line__photo"
+                [routerLink]="['/product', line.productId]"
+                tabindex="-1"
+                aria-hidden="true"
+              >
                 <app-piece-photo [pieceId]="line.productId" [color]="line.color" />
-              </span>
+              </a>
               <span class="line__piece">
-                <span>{{ line.name }}</span>
+                <a class="sweep" [routerLink]="['/product', line.productId]">{{ line.name }}</a>
                 <span class="line__meta"
                   >{{ line.color }}, size {{ line.size }}, {{ line.quantity }} ×
                   {{ line.unitPriceCents | money }}</span
@@ -65,12 +78,12 @@
         />
       </section>
 
-      <dl class="facts">
-        <div>
+      <dl hlmCard class="facts">
+        <div hlmCardContent>
           <dt>Payment</dt>
           <dd>{{ paymentLabel(placed.paymentMethod) }}. No card was taken.</dd>
         </div>
-        <div>
+        <div hlmCardContent>
           <dt>Delivery to</dt>
           <dd>
             {{ placed.contact.name }}<br />
@@ -79,7 +92,7 @@
             {{ placed.shipping.country }}
           </dd>
         </div>
-        <div>
+        <div hlmCardContent>
           <dt>Contact</dt>
           <dd>
             {{ placed.contact.email }}<br />
@@ -89,8 +102,16 @@
       </dl>
     </div>
 
-    <p class="continue"><a class="button" routerLink="/">Continue shopping</a></p>
+    <p class="continue"><a hlmBtn variant="outline" routerLink="/">Continue shopping</a></p>
   } @else {
-    <p class="state" role="status">Finding the order.</p>
+    <div class="loading" aria-hidden="true">
+      <hlm-skeleton class="loading__title" />
+      <hlm-skeleton class="loading__line" />
+      <div class="loading__rows">
+        <hlm-skeleton class="loading__row" />
+        <hlm-skeleton class="loading__row" />
+      </div>
+    </div>
+    <p class="sr-only" role="status">Finding the order.</p>
   }
 </div>

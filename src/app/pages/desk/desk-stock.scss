@@ -36,13 +36,24 @@
   color: var(--color-text-muted);
 }
 
-.stock__empty {
+.stock__state {
+  display: grid;
+  gap: 1rem;
+  justify-items: start;
   padding-block: 1.5rem;
-  color: var(--color-text-muted);
 }
 
-.table-scroll {
-  overflow-x: auto;
+.stock__empty {
+  border: 1px solid var(--color-border);
+}
+
+.skeletons {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.skeletons__row {
+  height: 4.5rem;
 }
 
 .group + .group {
@@ -51,6 +62,9 @@
 
 .group__piece {
   min-width: 12rem;
+  padding: 0.875rem 1rem 0.875rem 0;
+  font-weight: 500;
+  text-align: start;
   vertical-align: top;
 }
 

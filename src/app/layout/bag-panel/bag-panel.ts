@@ -1,63 +1,59 @@
-import {
-  Component,
-  ElementRef,
-  afterRenderEffect,
-  computed,
-  inject,
-  viewChild,
-} from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationStart, Router, RouterLink } from '@angular/router';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideCheck, lucideShoppingBag, lucideX } from '@ng-icons/lucide';
+import type { BrnDialogState } from '@spartan-ng/brain/dialog';
+import { HlmEmptyImports } from '@spartan-ng/helm/empty';
+import { HlmSheetImports } from '@spartan-ng/helm/sheet';
 import { filter } from 'rxjs';
 import { Bag } from '../../shop/bag';
 import { BagDrawer } from '../../shop/bag-drawer';
+import { CATEGORIES } from '../../shop/catalog';
 import { BagLines } from '../../ui/bag-lines/bag-lines';
-import { closeModal, isBackdropClick, openModal } from '../../ui/dialog';
 import { FreeShipping } from '../../ui/free-shipping';
-import { Icon } from '../../ui/icon';
 import { OrderTotals } from '../../ui/order-totals';
+import { ShopButtonImports } from '../../ui/shop-button';
 
 /** The bag sliding in from the right edge, over whatever page the shopper is on. */
 @Component({
   selector: 'app-bag-panel',
-  imports: [BagLines, FreeShipping, Icon, OrderTotals, RouterLink],
+  imports: [
+    BagLines,
+    FreeShipping,
+    HlmEmptyImports,
+    HlmSheetImports,
+    NgIcon,
+    OrderTotals,
+    RouterLink,
+    ShopButtonImports,
+  ],
+  providers: [provideIcons({ lucideCheck, lucideShoppingBag, lucideX })],
   templateUrl: './bag-panel.html',
   styleUrl: './bag-panel.scss',
 })
 export class BagPanel {
-  private readonly dialog = viewChild.required<ElementRef<HTMLDialogElement>>('dialog');
   protected readonly bag = inject(Bag);
   protected readonly drawer = inject(BagDrawer);
+  protected readonly categories = CATEGORIES;
   protected readonly addedLine = computed(
     () => this.bag.detailed().find((line) => line.variantId === this.drawer.justAdded()) ?? null,
   );
 
   constructor() {
-    afterRenderEffect(() => {
-      const dialog = this.dialog().nativeElement;
-      if (this.drawer.isOpen()) {
-        openModal(dialog);
-      } else {
-        closeModal(dialog);
-      }
-    });
-    // Close before the next page renders, so the dialog hands focus back before the shell moves it to the page.
+    // Moving to another page closes the bag; the shell then puts focus on the new page.
     inject(Router)
       .events.pipe(
         filter((event) => event instanceof NavigationStart),
         takeUntilDestroyed(),
       )
-      .subscribe(() => this.close());
+      .subscribe(() => this.drawer.close());
   }
 
-  protected close(): void {
-    this.drawer.close();
-    closeModal(this.dialog().nativeElement);
-  }
-
-  protected closeFromBackdrop(event: MouseEvent): void {
-    if (isBackdropClick(event, this.dialog().nativeElement)) {
-      this.close();
+  /** Escape, the scrim, and the close button all end here, so the drawer's state never drifts from the sheet's. */
+  protected stateChanged(state: BrnDialogState): void {
+    if (state === 'closed') {
+      this.drawer.close();
     }
   }
 }

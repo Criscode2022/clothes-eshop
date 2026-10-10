@@ -13,7 +13,7 @@
     <details class="summary-toggle">
       <summary>
         <span>Order summary</span>
-        <app-icon name="chevron-down" [size]="18" />
+        <ng-icon name="lucideChevronDown" class="summary-toggle__icon" />
         <span class="summary-toggle__total">{{ quote.totalCents | money }}</span>
       </summary>
       <ng-container *ngTemplateOutlet="summary" />
@@ -22,7 +22,10 @@
     <div class="layout">
       <form class="form" novalidate (submit)="placeOrder(); $event.preventDefault()">
         @if (errorMessage()) {
-          <p class="notice notice--error" role="alert" tabindex="-1">{{ errorMessage() }}</p>
+          <div hlmAlert variant="destructive" tabindex="-1">
+            <ng-icon name="lucideCircleAlert" />
+            <p hlmAlertDescription>{{ errorMessage() }}</p>
+          </div>
         }
 
         <section class="section" aria-labelledby="contact-title">
@@ -106,6 +109,7 @@
                     checkoutForm.paymentMethod().touched() && checkoutForm.paymentMethod().invalid()
                   "
                 />
+                <ng-icon [name]="methodIcons[method.id]" class="choice__icon" />
                 <span>{{ method.label }}</span>
               </label>
             }
@@ -126,19 +130,29 @@
             <span>{{ quote.totalCents | money }}</span>
           </p>
           <button
+            hlmBtn
             type="submit"
-            class="button button--primary button--block"
+            class="w-full"
             [disabled]="placing()"
             [attr.aria-busy]="placing()"
           >
-            {{ placing() ? 'Placing order' : 'Place order' }}
+            @if (placing()) {
+              <hlm-spinner aria-hidden="true" />
+              Placing order
+            } @else {
+              Place order
+            }
           </button>
         </div>
       </form>
 
-      <aside class="summary" aria-labelledby="summary-title">
-        <h2 id="summary-title" class="summary__title">Order summary</h2>
-        <ng-container *ngTemplateOutlet="summary" />
+      <aside hlmCard class="summary" aria-labelledby="summary-title">
+        <div hlmCardHeader>
+          <h2 id="summary-title" hlmCardTitle>Order summary</h2>
+        </div>
+        <div hlmCardContent>
+          <ng-container *ngTemplateOutlet="summary" />
+        </div>
       </aside>
     </div>
 
@@ -174,10 +188,14 @@
       </div>
     </ng-template>
   } @else {
-    <section class="empty" aria-labelledby="empty-title">
-      <h1 id="empty-title" class="head__title">Checkout</h1>
-      <p>Your bag is empty, so there is nothing to check out.</p>
-      <a class="button button--primary" routerLink="/">Shop the floor</a>
+    <section hlmEmpty aria-labelledby="empty-title">
+      <div hlmEmptyHeader>
+        <h1 id="empty-title" hlmEmptyTitle>Checkout</h1>
+        <p hlmEmptyDescription>Your bag is empty, so there is nothing to check out.</p>
+      </div>
+      <div hlmEmptyContent>
+        <a hlmBtn routerLink="/">Shop the floor</a>
+      </div>
     </section>
   }
 </div>

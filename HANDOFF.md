@@ -12,6 +12,10 @@ Written 2026-10-08 at the end of a working session (2026-10-03 to 2026-10-08). I
 - **State:** the production build passes, 49 of 49 tests pass, the server renders the public pages, axe reports zero accessibility violations across 21 page states, and the impeccable finish review ended at "ship" for its five scored fixes.
 - **Biggest gotcha:** with a `.env` that sets `DATABASE_URL`, the dev and production servers read and **write** your Neon branch (orders, prices, stock). For any testing, run with `DATABASE_URL=` (empty) to stay in memory. Details in section 2.5.
 
+### Update, 2026-10-11: Spartan UI pass (branch `spartan-polish`)
+
+Later work rebuilt the UI on Spartan while keeping the White Room look. Where this file and the code disagree, trust `DESIGN.md` (section "Spartan underneath") and `APP.md` (Decisions and Rules), which were updated with it. In short: Spartan Brain plus the `lyra` Helm style in `src/app/ui/helm/` (left as generated), tokens aliased in `src/tailwind.css`, `ShopButtonImports` for every `hlmBtn`, Lucide icons through ng-icons (the authored `ui/icon.ts` and `ui/dialog.ts` are gone), the bag drawer and phone menu as deferred Spartan sheets, scroll reveals through `appReveal`, a hover loupe on product photos, and two new floor sections. 64 tests in 14 files; axe clean over 23 states.
+
 ---
 
 ## 2. Resume at a new location

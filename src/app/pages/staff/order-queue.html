@@ -1,16 +1,22 @@
 <section class="queue" aria-labelledby="queue-title">
   <div class="queue__head">
     <h2 id="queue-title" class="queue__title">{{ heading() }}</h2>
-    <label class="queue__search">
-      <span class="sr-only">Find an order by reference or client name</span>
-      <input class="input" type="search" placeholder="Reference or name" (input)="search($event)" />
-    </label>
+    <div hlmInputGroup class="search">
+      <div hlmInputGroupAddon><ng-icon name="lucideSearch" /></div>
+      <input
+        hlmInputGroupInput
+        type="search"
+        placeholder="Reference or name"
+        aria-label="Find an order by reference or client name"
+        (input)="search($event)"
+      />
+    </div>
   </div>
 
   <fieldset class="views">
     <legend class="sr-only">Show orders</legend>
     @for (option of views; track option.id) {
-      <label class="views__option">
+      <label class="chip">
         <input
           type="radio"
           name="queue-view"
@@ -19,51 +25,72 @@
           (change)="chooseView(option.id)"
         />
         {{ option.label }}
-        <span class="views__count">{{ counts()[option.id] }}</span>
+        <span class="chip__count">{{ counts()[option.id] }}</span>
       </label>
     }
   </fieldset>
 
   @if (actionError()) {
-    <p class="notice notice--error" role="alert">{{ actionError() }}</p>
+    <div hlmAlert variant="destructive">
+      <ng-icon name="lucideCircleAlert" />
+      <p hlmAlertDescription>{{ actionError() }}</p>
+    </div>
   }
   <p class="sr-only" role="status">{{ lastChange() }}</p>
 
   @if (loading()) {
-    <p class="queue__state" role="status">Loading orders.</p>
+    <div class="skeletons" aria-hidden="true">
+      @for (row of [0, 1, 2, 3]; track row) {
+        <hlm-skeleton class="skeletons__row" />
+      }
+    </div>
+    <p class="sr-only" role="status">Loading orders.</p>
   } @else if (loadError()) {
     <div class="queue__state">
-      <p class="notice notice--error" role="alert">{{ loadError() }}</p>
-      <button type="button" class="button" (click)="load()">Try again</button>
+      <div hlmAlert variant="destructive">
+        <ng-icon name="lucideCircleAlert" />
+        <p hlmAlertDescription>{{ loadError() }}</p>
+      </div>
+      <button hlmBtn variant="outline" type="button" (click)="load()">Try again</button>
     </div>
   } @else if (!hasOrders()) {
-    <p class="queue__state">No orders yet. They appear here the moment a shopper places one.</p>
+    <div hlmEmpty class="queue__empty">
+      <div hlmEmptyHeader>
+        <div hlmEmptyMedia variant="icon"><ng-icon name="lucideInbox" /></div>
+        <p hlmEmptyTitle>No orders yet</p>
+        <p hlmEmptyDescription>They appear here the moment a shopper places one.</p>
+      </div>
+    </div>
   } @else if (visible().length === 0) {
-    <p class="queue__state">
-      @if (query()) {
-        Nothing matches “{{ query() }}” here.
-      } @else {
-        No orders in this view.
-      }
-    </p>
+    <div hlmEmpty class="queue__empty">
+      <div hlmEmptyHeader>
+        @if (query()) {
+          <p hlmEmptyTitle>Nothing matches “{{ query() }}” here</p>
+          <p hlmEmptyDescription>Search by an order reference, like MR-1001, or a client's name.</p>
+        } @else {
+          <p hlmEmptyTitle>No orders in this view</p>
+          <p hlmEmptyDescription>Choose another state above to see its orders.</p>
+        }
+      </div>
+    </div>
   } @else {
-    <div class="table-scroll" role="region" aria-label="Order table" tabindex="0">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th scope="col">Order</th>
-            <th scope="col">Client</th>
-            <th scope="col" class="numeric">Pieces</th>
-            <th scope="col" class="numeric">Total</th>
-            <th scope="col">Payment</th>
-            <th scope="col">State</th>
-            <th scope="col"><span class="sr-only">Actions</span></th>
+    <div hlmTableContainer role="region" aria-label="Order table" tabindex="0">
+      <table hlmTable class="data-table">
+        <thead hlmTHead>
+          <tr hlmTr>
+            <th hlmTh scope="col">Order</th>
+            <th hlmTh scope="col">Client</th>
+            <th hlmTh scope="col" class="numeric">Pieces</th>
+            <th hlmTh scope="col" class="numeric">Total</th>
+            <th hlmTh scope="col">Payment</th>
+            <th hlmTh scope="col">State</th>
+            <th hlmTh scope="col"><span class="sr-only">Actions</span></th>
           </tr>
         </thead>
-        <tbody>
+        <tbody hlmTBody>
           @for (order of visible(); track order.reference) {
-            <tr [class.is-open]="openReference() === order.reference">
-              <th scope="row">
+            <tr hlmTr [class.is-open]="openReference() === order.reference">
+              <th scope="row" class="row-head">
                 <button
                   type="button"
                   class="disclose"
@@ -71,11 +98,11 @@
                   [attr.aria-controls]="'lines-' + order.reference"
                   (click)="toggleDetails(order.reference)"
                 >
-                  <app-icon name="chevron-down" [size]="16" />
+                  <ng-icon name="lucideChevronRight" class="disclose__icon" />
                   {{ order.reference }}
                 </button>
               </th>
-              <td>
+              <td hlmTd>
                 <span class="client">{{ order.contact.name }}</span>
                 @if (order.clientId) {
                   <span class="muted">Account</span>
@@ -83,41 +110,55 @@
                   <span class="muted">Guest</span>
                 }
               </td>
-              <td class="numeric">{{ pieceCount(order) }}</td>
-              <td class="numeric">{{ order.totalCents | money }}</td>
-              <td>{{ paymentLabel(order.paymentMethod) }}</td>
-              <td><app-fulfillment-badge [state]="order.fulfillment" /></td>
-              <td>
+              <td hlmTd class="numeric">{{ pieceCount(order) }}</td>
+              <td hlmTd class="numeric">{{ order.totalCents | money }}</td>
+              <td hlmTd>{{ paymentLabel(order.paymentMethod) }}</td>
+              <td hlmTd><app-fulfillment-badge [state]="order.fulfillment" /></td>
+              <td hlmTd>
                 <div class="actions">
                   @if (confirmingCancel() === order.reference) {
                     <span class="actions__ask">Cancel {{ order.reference }}?</span>
                     <button
+                      hlmBtn
+                      variant="outline"
+                      size="sm"
                       type="button"
-                      class="button button--small"
                       [disabled]="moving() === order.reference"
                       (click)="move(order, 'cancelled')"
                     >
                       Cancel order
                     </button>
-                    <button type="button" class="text-button" (click)="confirmingCancel.set(null)">
+                    <button
+                      hlmBtn
+                      variant="link"
+                      size="sm"
+                      type="button"
+                      (click)="confirmingCancel.set(null)"
+                    >
                       Keep
                     </button>
                   } @else {
                     @if (nextStep(order); as step) {
                       <button
+                        hlmBtn
+                        size="sm"
                         type="button"
-                        class="button button--primary button--small"
                         [disabled]="moving() === order.reference"
                         [attr.aria-busy]="moving() === order.reference"
                         (click)="move(order, step.target)"
                       >
+                        @if (moving() === order.reference) {
+                          <hlm-spinner aria-hidden="true" />
+                        }
                         {{ step.label }}<span class="sr-only"> {{ order.reference }}</span>
                       </button>
                     }
                     @if (canCancel(order)) {
                       <button
+                        hlmBtn
+                        variant="link"
+                        size="sm"
                         type="button"
-                        class="text-button"
                         [disabled]="moving() === order.reference"
                         (click)="confirmingCancel.set(order.reference)"
                       >
@@ -130,7 +171,7 @@
             </tr>
             @if (openReference() === order.reference) {
               <tr class="details" [id]="'lines-' + order.reference">
-                <td colspan="7">
+                <td hlmTd colspan="7">
                   <div class="details__grid">
                     <div>
                       <h3 class="details__title">To pick</h3>

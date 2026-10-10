@@ -20,7 +20,7 @@
   </header>
 
   <div class="body page">
-    <section class="block" aria-labelledby="cloth-title">
+    <section class="block" aria-labelledby="cloth-title" appReveal>
       <h2 id="cloth-title" class="block__title">Cloth and care</h2>
       <div class="block__text">
         <p>
@@ -34,7 +34,7 @@
       </div>
     </section>
 
-    <section id="shipping" class="block" aria-labelledby="shipping-title">
+    <section id="shipping" class="block" aria-labelledby="shipping-title" appReveal>
       <h2 id="shipping-title" class="block__title">Shipping and payment</h2>
       <div class="block__text">
         <p>
@@ -50,7 +50,7 @@
       </div>
     </section>
 
-    <section id="orders" class="block" aria-labelledby="orders-title">
+    <section id="orders" class="block" aria-labelledby="orders-title" appReveal>
       <h2 id="orders-title" class="block__title">How an order leaves</h2>
       <div class="block__text">
         <ol class="steps" role="list">
@@ -68,12 +68,12 @@
       </div>
     </section>
 
-    <nav class="block" aria-labelledby="floor-title">
+    <nav class="block" aria-labelledby="floor-title" appReveal>
       <h2 id="floor-title" class="block__title">The floor</h2>
       <ul class="floor-links" role="list">
         @for (category of categories; track category.slug) {
           <li>
-            <a [routerLink]="['/category', category.slug]">{{ category.name }}</a>
+            <a class="sweep" [routerLink]="['/category', category.slug]">{{ category.name }}</a>
           </li>
         }
       </ul>

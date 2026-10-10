@@ -3,7 +3,16 @@
   gap: 1rem;
   justify-items: start;
   padding-block: 1.5rem;
-  color: var(--color-text-muted);
+}
+
+.skeletons {
+  display: grid;
+  gap: 0.5rem;
+  max-width: 22rem;
+}
+
+.skeletons__row {
+  height: 4.5rem;
 }
 
 .pieces {
@@ -34,9 +43,10 @@
   font-size: var(--text-ui);
   text-decoration: none;
   border-bottom: 1px solid var(--color-border);
+  transition: background-color var(--duration-fast) ease-out;
 
   &:hover {
-    background: var(--color-surface);
+    background: var(--color-hover);
   }
 
   &[aria-current='true'] {
@@ -73,6 +83,7 @@
 .editor {
   display: grid;
   gap: 2.5rem;
+  animation: rise-in var(--duration-base) var(--ease-out);
 }
 
 .editor__head {
@@ -149,8 +160,4 @@
   @media (min-width: 40rem) {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-}
-
-.table-scroll {
-  overflow-x: auto;
 }

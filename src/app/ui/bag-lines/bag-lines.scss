@@ -26,6 +26,14 @@
   aspect-ratio: 2 / 3;
   overflow: hidden;
   background: var(--color-surface);
+
+  app-piece-photo {
+    transition: transform var(--duration-photo) var(--ease-out);
+  }
+
+  &:hover app-piece-photo {
+    transform: scale(1.06);
+  }
 }
 
 .line__body {
@@ -42,14 +50,6 @@
   font-weight: 500;
 }
 
-.line__name a {
-  text-decoration: none;
-
-  &:hover {
-    text-decoration: underline;
-  }
-}
-
 .line__total {
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -63,7 +63,7 @@
 .line__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem 1.25rem;
+  gap: 0.25rem 1.25rem;
   align-items: center;
   margin-top: 0.75rem;
 }

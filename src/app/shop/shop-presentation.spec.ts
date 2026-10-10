@@ -12,9 +12,8 @@ describe('shop presentation setup', () => {
   const config = readFileSync('src/app/app.config.ts', 'utf8');
 
   it('uses Tailwind v4 tokens, server rendering, and no Ionic or native shell', () => {
-    expect(tailwind).toContain("@import 'tailwindcss'");
+    expect(tailwind).toContain("@import 'tailwindcss/utilities.css'");
     expect(tailwind).not.toContain('@tailwind');
-    expect(tailwind).toContain('--color-accent: var(--color-accent)');
     expect(existsSync('tailwind.config.js')).toBe(false);
     expect(pkg.devDependencies['tailwindcss']).toMatch(/4\./);
     expect(pkg.dependencies['@angular/ssr']).toBeTruthy();
@@ -26,6 +25,21 @@ describe('shop presentation setup', () => {
     expect(angular).not.toContain('"allowedHosts": ["*"]');
     expect(angular).not.toContain('"allowedHosts": "*"');
     expect(angular).toContain('"marlow.shop"');
+  });
+
+  it('themes Spartan from the shop tokens and keeps its hover surface apart from the brand', () => {
+    const components = JSON.parse(readFileSync('components.json', 'utf8')) as {
+      componentsPath: string;
+    };
+
+    expect(components.componentsPath).toBe('src/app/ui/helm');
+    expect(tailwind).toContain("@import '@spartan-ng/brain/hlm-tailwind-preset.css'");
+    expect(tailwind).toContain('--primary: var(--color-accent)');
+    expect(tailwind).toContain('--accent: var(--color-hover)');
+    expect(tailwind).toContain('--radius: 0rem');
+    expect(tailwind).not.toContain('--color-accent: var(--color-accent)');
+    expect(tailwind).not.toContain('oklch(');
+    expect(styles).toContain('--color-hover:');
   });
 
   it('self-hosts Archivo with its width axis and keeps colors on the tokens', () => {
@@ -40,7 +54,9 @@ describe('shop presentation setup', () => {
   it('animates the bag lines, the drawer, and route changes, and reduces that motion', () => {
     expect(bagLines).toContain('animate.enter="line-enter"');
     expect(bagLines).toContain('animate.leave="line-leave"');
-    expect(styles).toContain('@starting-style');
+    expect(styles).toContain("[data-slot='sheet-content']");
+    expect(styles).toContain("[data-reveal='pending']");
+    expect(styles).toContain('.count-bump');
     expect(styles).toContain('::view-transition-group(*)');
     expect(config).toContain('withViewTransitions');
     expect(styles).toContain('prefers-reduced-motion: reduce');

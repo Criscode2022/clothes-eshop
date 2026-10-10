@@ -1,15 +1,32 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideCircleAlert, lucidePackageCheck } from '@ng-icons/lucide';
+import { HlmAlertImports } from '@spartan-ng/helm/alert';
+import { HlmEmptyImports } from '@spartan-ng/helm/empty';
+import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
+import { HlmTableImports } from '@spartan-ng/helm/table';
 import type { Product, Variant } from '../../shop/catalog';
 import { CatalogStore } from '../../shop/catalog-store';
 import { ShopClient } from '../../shop/shop-client';
 import { stockNote, stockState } from '../../shop/stock';
 import { PiecePhoto } from '../../ui/piece-photo';
+import { ShopButtonImports } from '../../ui/shop-button';
 import { StockField } from '../staff/stock-field';
 
 /** Every size and color with its on-hand count, editable in place. */
 @Component({
   selector: 'app-desk-stock',
-  imports: [PiecePhoto, StockField],
+  imports: [
+    HlmAlertImports,
+    HlmEmptyImports,
+    HlmSkeleton,
+    HlmTableImports,
+    NgIcon,
+    PiecePhoto,
+    ShopButtonImports,
+    StockField,
+  ],
+  providers: [provideIcons({ lucideCircleAlert, lucidePackageCheck })],
   templateUrl: './desk-stock.html',
   styleUrl: './desk-stock.scss',
 })

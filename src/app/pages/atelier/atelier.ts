@@ -3,11 +3,12 @@ import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CATEGORIES } from '../../shop/catalog';
 import { PAYMENT_METHODS } from '../../shop/checkout';
+import { Reveal } from '../../ui/reveal';
 
 /** How Marlow works: the floor, the cloth, and how an order leaves. */
 @Component({
   selector: 'app-atelier',
-  imports: [NgOptimizedImage, RouterLink],
+  imports: [NgOptimizedImage, Reveal, RouterLink],
   templateUrl: './atelier.html',
   styleUrl: './atelier.scss',
 })

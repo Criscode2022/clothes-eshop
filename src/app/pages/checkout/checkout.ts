@@ -2,16 +2,36 @@ import { NgTemplateOutlet } from '@angular/common';
 import { Component, ElementRef, Injector, afterNextRender, inject, signal } from '@angular/core';
 import { FormField, email, form, minLength, required, submit } from '@angular/forms/signals';
 import { Router, RouterLink } from '@angular/router';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import {
+  lucideBanknote,
+  lucideChevronDown,
+  lucideCircleAlert,
+  lucideLandmark,
+  lucideStore,
+} from '@ng-icons/lucide';
+import { HlmAlertImports } from '@spartan-ng/helm/alert';
+import { HlmCardImports } from '@spartan-ng/helm/card';
+import { HlmEmptyImports } from '@spartan-ng/helm/empty';
+import { HlmSpinner } from '@spartan-ng/helm/spinner';
 import { Bag } from '../../shop/bag';
 import { PAYMENT_METHODS } from '../../shop/checkout';
+import type { PaymentMethodId } from '../../shop/checkout';
 import { MoneyPipe } from '../../shop/money.pipe';
 import { ShopClient } from '../../shop/shop-client';
 import { ShopSession } from '../../shop/shop-session';
 import { FreeShipping } from '../../ui/free-shipping';
-import { Icon } from '../../ui/icon';
 import { OrderTotals } from '../../ui/order-totals';
 import { PiecePhoto } from '../../ui/piece-photo';
+import { ShopButtonImports } from '../../ui/shop-button';
 import { TextField } from '../../ui/text-field';
+
+/** The mark beside each way to pay. */
+const METHOD_ICONS: Record<PaymentMethodId, string> = {
+  'shop-floor': 'lucideStore',
+  'bank-transfer': 'lucideLandmark',
+  'cash-on-delivery': 'lucideBanknote',
+};
 
 /** One page: contact, delivery, and how to pay, with the order's cost in view the whole time. */
 @Component({
@@ -19,13 +39,27 @@ import { TextField } from '../../ui/text-field';
   imports: [
     FormField,
     FreeShipping,
-    Icon,
+    HlmAlertImports,
+    HlmCardImports,
+    HlmEmptyImports,
+    HlmSpinner,
     MoneyPipe,
+    NgIcon,
     NgTemplateOutlet,
     OrderTotals,
     PiecePhoto,
     RouterLink,
+    ShopButtonImports,
     TextField,
+  ],
+  providers: [
+    provideIcons({
+      lucideBanknote,
+      lucideChevronDown,
+      lucideCircleAlert,
+      lucideLandmark,
+      lucideStore,
+    }),
   ],
   templateUrl: './checkout.html',
   styleUrl: './checkout.scss',
@@ -39,6 +73,7 @@ export class Checkout {
   protected readonly bag = inject(Bag);
   protected readonly session = inject(ShopSession);
   protected readonly methods = PAYMENT_METHODS;
+  protected readonly methodIcons = METHOD_ICONS;
   protected readonly errorMessage = signal('');
   protected readonly placing = signal(false);
   protected readonly model = signal({

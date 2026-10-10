@@ -11,6 +11,11 @@ import {
   viewChild,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideBanknote, lucideTruck } from '@ng-icons/lucide';
+import { HlmAccordionImports } from '@spartan-ng/helm/accordion';
+import { HlmBreadcrumbImports } from '@spartan-ng/helm/breadcrumb';
+import { HlmEmptyImports } from '@spartan-ng/helm/empty';
 import { BagDrawer } from '../../shop/bag-drawer';
 import { categoryName, clothColor, variantsByColor } from '../../shop/catalog';
 import { CatalogStore } from '../../shop/catalog-store';
@@ -18,13 +23,28 @@ import { careOf, compositionOf, fitNote, morePieces } from '../../shop/cloth';
 import { FREE_SHIPPING_FROM_CENTS } from '../../shop/money';
 import { MoneyPipe } from '../../shop/money.pipe';
 import { stockNote, stockState } from '../../shop/stock';
-import { Icon } from '../../ui/icon';
+import { PhotoLoupe } from '../../ui/photo-loupe';
 import { PiecePhoto } from '../../ui/piece-photo';
 import { ProductCard } from '../../ui/product-card/product-card';
+import { Reveal } from '../../ui/reveal';
+import { ShopButtonImports } from '../../ui/shop-button';
 
 @Component({
   selector: 'app-product',
-  imports: [Icon, MoneyPipe, PiecePhoto, ProductCard, RouterLink],
+  imports: [
+    HlmAccordionImports,
+    HlmBreadcrumbImports,
+    HlmEmptyImports,
+    MoneyPipe,
+    NgIcon,
+    PhotoLoupe,
+    PiecePhoto,
+    ProductCard,
+    Reveal,
+    RouterLink,
+    ShopButtonImports,
+  ],
+  providers: [provideIcons({ lucideBanknote, lucideTruck })],
   templateUrl: './product.html',
   styleUrl: './product.scss',
 })

@@ -1,22 +1,27 @@
 import { Component, computed, inject, input, linkedSignal, signal } from '@angular/core';
 import type { Variant } from '../../shop/catalog';
 import { ShopClient } from '../../shop/shop-client';
-import { Icon } from '../../ui/icon';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideMinus, lucidePlus } from '@ng-icons/lucide';
+import { ShopButtonImports } from '../../ui/shop-button';
 
 /** On-hand stock for one size and color: nudge or type a count, then save it. A save updates the floor everywhere. */
 @Component({
   selector: 'app-stock-field',
-  imports: [Icon],
+  imports: [NgIcon, ShopButtonImports],
+  providers: [provideIcons({ lucideMinus, lucidePlus })],
   template: `
     <div class="stock" role="group" [attr.aria-label]="'On hand, ' + label()">
       <button
+        hlmBtn
+        variant="ghost"
+        size="icon-sm"
         type="button"
-        class="icon-button stock__nudge"
         [disabled]="draft() <= 0 || saving()"
         [attr.aria-label]="'One fewer ' + label()"
         (click)="nudge(-1)"
       >
-        <app-icon name="minus" [size]="16" />
+        <ng-icon name="lucideMinus" />
       </button>
       <input
         class="input stock__count"
@@ -31,18 +36,22 @@ import { Icon } from '../../ui/icon';
         (keydown.enter)="save()"
       />
       <button
+        hlmBtn
+        variant="ghost"
+        size="icon-sm"
         type="button"
-        class="icon-button stock__nudge"
         [disabled]="saving()"
         [attr.aria-label]="'One more ' + label()"
         (click)="nudge(1)"
       >
-        <app-icon name="plus" [size]="16" />
+        <ng-icon name="lucidePlus" />
       </button>
       <button
+        hlmBtn
+        size="sm"
         type="button"
-        class="button button--small"
-        [class.button--primary]="changed()"
+        class="stock__save"
+        [variant]="changed() ? 'default' : 'outline'"
         [disabled]="!changed() || invalid() || saving()"
         (click)="save()"
       >
@@ -66,12 +75,7 @@ import { Icon } from '../../ui/icon';
       font-variant-numeric: tabular-nums;
     }
 
-    .stock__nudge {
-      min-width: 2.5rem;
-      min-height: 2.5rem;
-    }
-
-    .button {
+    .stock__save {
       margin-inline-start: 0.5rem;
     }
 

@@ -106,10 +106,9 @@ describe('shop routes', () => {
     expect(TestBed.inject(Bag).items()).toEqual([
       { productId: 'oxford-shirt', variantId: 'oxford-shirt-m-white', quantity: 1 },
     ]);
-    expect(
-      document.querySelector('dialog[aria-labelledby="bag-title"]')?.hasAttribute('open'),
-    ).toBe(true);
-    expect(document.body.textContent).toContain('Added Oxford Cloth Shirt, White M.');
+    expect(document.querySelector('[role="dialog"]')?.textContent).toContain(
+      'Added Oxford Cloth Shirt, White M.',
+    );
   });
 
   it('asks for a size instead of guessing one', async () => {

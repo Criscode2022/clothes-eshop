@@ -4,10 +4,12 @@
 }
 
 .spread__tile {
+  position: relative;
   display: none;
   overflow: hidden;
   height: min(70svh, 125vw);
   background: var(--color-surface);
+  text-decoration: none;
 
   img {
     width: 100%;
@@ -15,6 +17,7 @@
     object-fit: cover;
     object-position: 50% 30%;
     animation: settle 1.8s var(--ease-out) both;
+    transition: scale var(--duration-photo) var(--ease-out);
   }
 
   &:nth-child(2) img {
@@ -30,6 +33,47 @@
   display: block;
 }
 
+// The piece's name and price, on a white label that rises when the pointer reaches the photograph.
+.spread__caption {
+  position: absolute;
+  left: var(--gutter);
+  bottom: 1.25rem;
+  display: grid;
+  padding: 0.625rem 0.875rem;
+  font-size: var(--text-sm);
+  background: var(--color-canvas);
+  transition:
+    opacity var(--duration-base) var(--ease-out),
+    translate var(--duration-base) var(--ease-out);
+}
+
+.spread__name {
+  font-weight: 500;
+}
+
+.spread__price {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (hover: hover) {
+  .spread__caption {
+    opacity: 0;
+    translate: 0 0.5rem;
+  }
+
+  .spread__tile:hover,
+  .spread__tile:focus-visible {
+    img {
+      scale: 1.035;
+    }
+
+    .spread__caption {
+      opacity: 1;
+      translate: none;
+    }
+  }
+}
+
 @media (min-width: 48rem) {
   .spread {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -39,6 +83,10 @@
   .spread__tile {
     display: block;
     height: clamp(18rem, 46svh, 50vw);
+  }
+
+  .spread__caption {
+    left: 1.25rem;
   }
 }
 
@@ -85,6 +133,10 @@
   }
 }
 
+.terms__icon {
+  font-size: 1rem;
+}
+
 // A category holds a couple of pieces: its title and fit note sit beside them, not above an empty row.
 .split {
   display: grid;
@@ -106,17 +158,15 @@
   @media (min-width: 64rem) {
     position: sticky;
     top: calc(var(--header-height) + 2rem);
+
+    .filters ul {
+      flex-wrap: wrap;
+    }
   }
 
   .filters {
     justify-self: stretch;
     margin-top: 0.75rem;
-
-    @media (min-width: 64rem) {
-      ul {
-        flex-wrap: wrap;
-      }
-    }
   }
 }
 
@@ -166,38 +216,6 @@
     padding: 0;
     list-style: none;
   }
-
-  a {
-    display: inline-flex;
-    gap: 0.375rem;
-    align-items: center;
-    min-height: 2.5rem;
-    padding: 0 1rem;
-    font-size: var(--text-sm);
-    white-space: nowrap;
-    text-decoration: none;
-    border: 1px solid var(--color-border);
-    transition: border-color var(--duration-fast) ease-out;
-
-    &:hover {
-      border-color: var(--color-text);
-    }
-
-    &.is-current {
-      color: var(--color-on-accent);
-      background: var(--color-accent);
-      border-color: var(--color-accent);
-
-      .filters__count {
-        color: inherit;
-      }
-    }
-  }
-}
-
-.filters__count {
-  color: var(--color-text-muted);
-  font-variant-numeric: tabular-nums;
 }
 
 .grid {
@@ -224,20 +242,19 @@
   }
 }
 
-.floor__empty,
-.missing {
+.floor__empty {
   padding-block: 2rem;
 }
 
 .missing {
-  display: grid;
-  gap: 1rem;
+  padding-block: 4rem;
 }
 
 .missing__list {
-  display: flex;
+  flex-direction: row;
   flex-wrap: wrap;
-  gap: 1.5rem;
+  justify-content: center;
+  max-width: none;
   margin: 0;
   padding: 0;
   list-style: none;

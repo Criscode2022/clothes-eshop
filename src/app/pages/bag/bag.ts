@@ -1,13 +1,34 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideShoppingBag } from '@ng-icons/lucide';
+import { HlmCardImports } from '@spartan-ng/helm/card';
+import { HlmEmptyImports } from '@spartan-ng/helm/empty';
 import { Bag } from '../../shop/bag';
+import { CatalogStore } from '../../shop/catalog-store';
+import { piecesToPairWith } from '../../shop/cloth';
 import { BagLines } from '../../ui/bag-lines/bag-lines';
 import { FreeShipping } from '../../ui/free-shipping';
 import { OrderTotals } from '../../ui/order-totals';
+import { ProductCard } from '../../ui/product-card/product-card';
+import { Reveal } from '../../ui/reveal';
+import { ShopButtonImports } from '../../ui/shop-button';
 
 @Component({
   selector: 'app-bag',
-  imports: [BagLines, FreeShipping, OrderTotals, RouterLink],
+  imports: [
+    BagLines,
+    FreeShipping,
+    HlmCardImports,
+    HlmEmptyImports,
+    NgIcon,
+    OrderTotals,
+    ProductCard,
+    Reveal,
+    RouterLink,
+    ShopButtonImports,
+  ],
+  providers: [provideIcons({ lucideShoppingBag })],
   templateUrl: './bag.html',
   styles: `
     .bag {
@@ -18,6 +39,15 @@ import { OrderTotals } from '../../ui/order-totals';
 
     .title {
       font-size: var(--text-xl);
+    }
+
+    .title__count {
+      margin-inline-start: 0.375rem;
+      font-size: var(--text-md);
+      font-weight: 400;
+      letter-spacing: 0;
+      color: var(--color-text-muted);
+      font-variant-numeric: tabular-nums;
     }
 
     .layout {
@@ -32,10 +62,7 @@ import { OrderTotals } from '../../ui/order-totals';
     }
 
     .summary {
-      display: grid;
       gap: 1.5rem;
-      padding: 1.75rem;
-      background: var(--color-surface);
 
       @media (min-width: 64rem) {
         position: sticky;
@@ -43,23 +70,57 @@ import { OrderTotals } from '../../ui/order-totals';
       }
     }
 
-    .summary__title {
-      font-size: var(--text-md);
-      letter-spacing: 0;
+    .summary__body {
+      display: grid;
+      gap: 1.5rem;
     }
 
-    .summary__note {
+    .summary__note,
+    .summary__problem {
       font-size: var(--text-sm);
       color: var(--color-text-muted);
     }
 
-    .empty {
+    .summary__problem {
+      color: var(--color-danger);
+    }
+
+    .pairs {
       display: grid;
-      gap: 1.25rem;
-      justify-items: start;
+      gap: 1.5rem;
+      margin-top: 4rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--color-border);
+    }
+
+    .pairs__title {
+      font-size: var(--text-md);
+      letter-spacing: 0;
+    }
+
+    .pairs__grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 2.5rem 0.75rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+
+      @media (min-width: 48rem) {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 1rem;
+      }
     }
   `,
 })
 export class BagPage {
+  private readonly catalog = inject(CatalogStore);
   protected readonly bag = inject(Bag);
+  /** The floor around what is already in the bag, without repeating it. */
+  protected readonly pairs = computed(() =>
+    piecesToPairWith(
+      this.catalog.pieces(),
+      this.bag.items().map((line) => line.productId),
+    ),
+  );
 }

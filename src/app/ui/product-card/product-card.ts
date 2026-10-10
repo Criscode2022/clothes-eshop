@@ -1,16 +1,19 @@
 import { Component, ElementRef, computed, inject, input, signal, viewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucidePlus } from '@ng-icons/lucide';
+import { HlmBadge } from '@spartan-ng/helm/badge';
 import { BagDrawer } from '../../shop/bag-drawer';
 import { clothColor, isSoldOut, variantsByColor } from '../../shop/catalog';
 import type { Product, Variant } from '../../shop/catalog';
 import { MoneyPipe } from '../../shop/money.pipe';
-import { Icon } from '../icon';
 import { PiecePhoto } from '../piece-photo';
 
 /** A piece on the floor. Its sizes open over the photograph, so a size goes into the bag without leaving the page. */
 @Component({
   selector: 'app-product-card',
-  imports: [Icon, MoneyPipe, PiecePhoto, RouterLink],
+  imports: [HlmBadge, MoneyPipe, NgIcon, PiecePhoto, RouterLink],
+  providers: [provideIcons({ lucidePlus })],
   templateUrl: './product-card.html',
   styleUrl: './product-card.scss',
   host: { '(keydown.escape)': 'closeSizes()' },

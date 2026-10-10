@@ -1,23 +1,27 @@
 import { Component, ElementRef, afterNextRender, inject, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideX } from '@ng-icons/lucide';
 import { filter, skip } from 'rxjs';
 import { Bag } from '../shop/bag';
+import { BagDrawer } from '../shop/bag-drawer';
 import { BagPersistence } from '../shop/bag-persistence';
-import { Icon } from '../ui/icon';
 import { BagPanel } from './bag-panel/bag-panel';
 import { SiteFooter } from './site-footer';
 import { SiteHeader } from './site-header/site-header';
 
 @Component({
   selector: 'app-shell',
-  imports: [BagPanel, Icon, RouterOutlet, SiteFooter, SiteHeader],
+  imports: [BagPanel, NgIcon, RouterOutlet, SiteFooter, SiteHeader],
+  providers: [provideIcons({ lucideX })],
   templateUrl: './shell.html',
   styleUrl: './shell.scss',
 })
 export class Shell {
   private readonly main = viewChild.required<ElementRef<HTMLElement>>('main');
   protected readonly bag = inject(Bag);
+  protected readonly drawer = inject(BagDrawer);
 
   constructor() {
     const router = inject(Router);

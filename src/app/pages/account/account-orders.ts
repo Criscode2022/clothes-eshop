@@ -1,5 +1,11 @@
 import { Component, computed, inject, resource } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideChevronRight, lucideCircleAlert, lucideReceipt } from '@ng-icons/lucide';
+import { HlmAlertImports } from '@spartan-ng/helm/alert';
+import { HlmEmptyImports } from '@spartan-ng/helm/empty';
+import { HlmItemImports } from '@spartan-ng/helm/item';
+import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import { paymentLabel } from '../../shop/checkout';
 import type { ShopOrder } from '../../shop/checkout';
 import { MoneyPipe } from '../../shop/money.pipe';
@@ -7,10 +13,24 @@ import { newestOrdersFirst } from '../../shop/order-queue';
 import { ShopClient } from '../../shop/shop-client';
 import { ShopSession } from '../../shop/shop-session';
 import { FulfillmentBadge } from '../../ui/fulfillment-badge';
+import { Reveal } from '../../ui/reveal';
+import { ShopButtonImports } from '../../ui/shop-button';
 
 @Component({
   selector: 'app-account-orders',
-  imports: [FulfillmentBadge, MoneyPipe, RouterLink],
+  imports: [
+    FulfillmentBadge,
+    HlmAlertImports,
+    HlmEmptyImports,
+    HlmItemImports,
+    HlmSkeleton,
+    MoneyPipe,
+    NgIcon,
+    Reveal,
+    RouterLink,
+    ShopButtonImports,
+  ],
+  providers: [provideIcons({ lucideChevronRight, lucideCircleAlert, lucideReceipt })],
   templateUrl: './account-orders.html',
   styles: `
     .account {
@@ -35,44 +55,62 @@ import { FulfillmentBadge } from '../../ui/fulfillment-badge';
 
     .orders {
       display: grid;
+      gap: 0.5rem;
       max-width: 52rem;
       margin: 0;
       padding: 0;
       list-style: none;
-      border-top: 1px solid var(--color-text);
     }
 
     .order {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 0.5rem 1.5rem;
-      align-items: center;
-      padding-block: 1.25rem;
-      font-size: var(--text-ui);
-      border-bottom: 1px solid var(--color-border);
+      min-height: 4.5rem;
+      padding-inline: 1.25rem;
+      text-decoration: none;
+      transition:
+        border-color var(--duration-fast) ease-out,
+        background-color var(--duration-fast) ease-out;
 
-      @media (min-width: 48rem) {
-        grid-template-columns: 9rem minmax(0, 1fr) 8rem auto;
+      &:hover {
+        border-color: var(--color-text);
+
+        .order__go {
+          translate: 0.25rem 0;
+        }
       }
     }
 
     .order__reference {
-      font-weight: 500;
       font-variant-numeric: tabular-nums;
     }
 
-    .order__meta {
-      color: var(--color-text-muted);
+    .order__end {
+      gap: 1.25rem;
     }
 
     .order__total {
       font-variant-numeric: tabular-nums;
     }
 
+    .order__go {
+      font-size: 1.125rem;
+      color: var(--color-text-muted);
+      transition: translate var(--duration-base) var(--ease-out);
+    }
+
+    .order-skeleton {
+      height: 4.5rem;
+    }
+
     .state {
       display: grid;
       gap: 1.25rem;
       justify-items: start;
+      max-width: 36rem;
+    }
+
+    .empty {
+      max-width: 52rem;
+      border: 1px solid var(--color-border);
     }
   `,
 })

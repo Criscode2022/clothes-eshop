@@ -1,15 +1,21 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormField, form, min, minLength, required, submit } from '@angular/forms/signals';
 import { Router } from '@angular/router';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideCircleAlert } from '@ng-icons/lucide';
+import { HlmAlertImports } from '@spartan-ng/helm/alert';
+import { HlmSpinner } from '@spartan-ng/helm/spinner';
 import { CATEGORIES } from '../../shop/catalog';
 import { centsFromDollars } from '../../shop/money';
 import { ShopClient } from '../../shop/shop-client';
+import { ShopButtonImports } from '../../ui/shop-button';
 import { TextField } from '../../ui/text-field';
 
 /** A new piece goes on the floor with its first size and color; more sizes are added on its page. */
 @Component({
   selector: 'app-new-piece',
-  imports: [FormField, TextField],
+  imports: [FormField, HlmAlertImports, HlmSpinner, NgIcon, ShopButtonImports, TextField],
+  providers: [provideIcons({ lucideCircleAlert })],
   templateUrl: './new-piece.html',
   styles: `
     .new-piece {

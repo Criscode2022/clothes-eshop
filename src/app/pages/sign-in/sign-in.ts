@@ -1,8 +1,15 @@
 import { Component, inject, signal } from '@angular/core';
 import { email, form, minLength, required, submit } from '@angular/forms/signals';
 import { Router, RouterLink } from '@angular/router';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideChevronRight, lucideCircleAlert } from '@ng-icons/lucide';
+import { HlmAlertImports } from '@spartan-ng/helm/alert';
+import { HlmBadge } from '@spartan-ng/helm/badge';
+import { HlmItemImports } from '@spartan-ng/helm/item';
+import { HlmSpinner } from '@spartan-ng/helm/spinner';
 import type { ShopRole } from '../../shop/access';
 import { ShopClient } from '../../shop/shop-client';
+import { ShopButtonImports } from '../../ui/shop-button';
 import { TextField } from '../../ui/text-field';
 
 /** The demo people who open each part of the shop. They share one floor password; none of this is a secret. */
@@ -33,7 +40,17 @@ const OPENS: Record<ShopRole, string> = {
 
 @Component({
   selector: 'app-sign-in',
-  imports: [RouterLink, TextField],
+  imports: [
+    HlmAlertImports,
+    HlmBadge,
+    HlmItemImports,
+    HlmSpinner,
+    NgIcon,
+    RouterLink,
+    ShopButtonImports,
+    TextField,
+  ],
+  providers: [provideIcons({ lucideChevronRight, lucideCircleAlert })],
   templateUrl: './sign-in.html',
   styleUrl: './sign-in.scss',
 })

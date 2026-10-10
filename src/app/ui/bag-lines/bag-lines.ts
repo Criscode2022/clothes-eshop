@@ -5,11 +5,12 @@ import type { BagLine } from '../../shop/bag';
 import { MoneyPipe } from '../../shop/money.pipe';
 import { PiecePhoto } from '../piece-photo';
 import { QuantityStepper } from '../quantity-stepper';
+import { ShopButtonImports } from '../shop-button';
 
 /** The bag's lines, each with its photo, size, price, and quantity controls. */
 @Component({
   selector: 'app-bag-lines',
-  imports: [MoneyPipe, PiecePhoto, QuantityStepper, RouterLink],
+  imports: [MoneyPipe, PiecePhoto, QuantityStepper, RouterLink, ShopButtonImports],
   templateUrl: './bag-lines.html',
   styleUrl: './bag-lines.scss',
 })

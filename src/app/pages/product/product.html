@@ -1,8 +1,9 @@
 @if (product(); as piece) {
   <article class="pdp page" [class.pdp--bar]="buyBarShown()">
     <div class="pdp__grid">
-      <div class="pdp__media">
+      <div class="pdp__media" appPhotoLoupe>
         <app-piece-photo
+          class="pdp__photo"
           [pieceId]="piece.id"
           [color]="color()"
           [alt]="piece.name"
@@ -12,17 +13,24 @@
       </div>
 
       <div class="pdp__panel">
-        <nav class="crumbs" aria-label="Breadcrumb">
-          <ol role="list">
-            <li><a routerLink="/">Shop</a></li>
-            <li>
-              <a [routerLink]="['/category', piece.category]">{{ categoryName() }}</a>
+        <nav hlmBreadcrumb aria-label="Breadcrumb">
+          <ol hlmBreadcrumbList>
+            <li hlmBreadcrumbItem><a hlmBreadcrumbLink link="/">Shop</a></li>
+            <li hlmBreadcrumbSeparator></li>
+            <li hlmBreadcrumbItem>
+              <a hlmBreadcrumbLink [link]="['/category', piece.category]">{{ categoryName() }}</a>
             </li>
-            <li aria-current="page">{{ piece.name }}</li>
+            <li hlmBreadcrumbSeparator></li>
+            <li hlmBreadcrumbItem>
+              <span hlmBreadcrumbPage>{{ piece.name }}</span>
+            </li>
           </ol>
         </nav>
-        <h1 class="pdp__name">{{ piece.name }}</h1>
-        <p class="pdp__price">{{ piece.priceCents | money }}</p>
+
+        <div class="pdp__heading">
+          <h1 class="pdp__name">{{ piece.name }}</h1>
+          <p class="pdp__price">{{ piece.priceCents | money }}</p>
+        </div>
         <p class="pdp__summary">{{ piece.summary }}</p>
 
         <form class="buy" (submit)="addToBag(); $event.preventDefault()">
@@ -56,6 +64,7 @@
           <fieldset
             #sizeGroup
             class="buy__group"
+            [class.buy__group--asking]="sizeHintShown()"
             tabindex="-1"
             [attr.aria-describedby]="sizeHintShown() ? 'size-hint' : null"
           >
@@ -78,65 +87,68 @@
                 </label>
               }
             </div>
-            @if (sizeHintShown()) {
-              <p id="size-hint" class="field__error">Choose a size to add it to your bag.</p>
-            }
+            <p class="buy__stock" aria-live="polite">
+              @if (sizeHintShown()) {
+                <span id="size-hint" class="buy__hint">Choose a size to add it to your bag.</span>
+              } @else if (stock(); as current) {
+                <span [class.buy__stock--low]="current.state === 'low'">{{ current.note }}</span>
+              } @else {
+                Choose a size.
+              }
+            </p>
           </fieldset>
 
-          <p class="buy__stock" aria-live="polite">
-            @if (stock(); as current) {
-              <span [class.buy__stock--low]="current.state === 'low'">{{ current.note }}</span>
-            } @else if (!sizeHintShown()) {
-              Choose a size.
-            }
-          </p>
-
-          <button #buyButton type="submit" class="button button--primary button--block">
-            Add to bag
-          </button>
+          <button #buyButton hlmBtn type="submit" class="w-full">Add to bag</button>
         </form>
 
         <ul class="assurances" role="list">
           <li>
+            <ng-icon name="lucideTruck" class="assurances__icon" />
             @if (shipsFree()) {
               This piece ships free.
             } @else {
               Shipping is $8.00, and free from $200.00.
             }
           </li>
-          <li>No card needed: pay at the shop, by bank transfer, or in cash on delivery.</li>
+          <li>
+            <ng-icon name="lucideBanknote" class="assurances__icon" />
+            No card needed: pay at the shop, by bank transfer, or in cash on delivery.
+          </li>
         </ul>
 
-        <div class="details">
-          @if (composition() || care()) {
-            <details open>
-              <summary>Cloth and care <app-icon name="chevron-down" [size]="18" /></summary>
-              <div class="details__body">
-                @if (composition()) {
-                  <p>{{ composition() }}</p>
-                }
-                @if (care()) {
-                  <p>{{ care() }}</p>
-                }
-              </div>
-            </details>
-          }
-          <details>
-            <summary>Fit <app-icon name="chevron-down" [size]="18" /></summary>
-            <div class="details__body">
-              <p>{{ fit() }}</p>
-            </div>
-          </details>
-        </div>
+        <section class="details" aria-labelledby="details-title">
+          <h2 id="details-title" class="sr-only">About this piece</h2>
+          <hlm-accordion type="multiple">
+            @if (composition() || care()) {
+              <hlm-accordion-item [isOpened]="true">
+                <hlm-accordion-trigger>Cloth and care</hlm-accordion-trigger>
+                <hlm-accordion-content>
+                  @if (composition()) {
+                    <p>{{ composition() }}</p>
+                  }
+                  @if (care()) {
+                    <p>{{ care() }}</p>
+                  }
+                </hlm-accordion-content>
+              </hlm-accordion-item>
+            }
+            <hlm-accordion-item>
+              <hlm-accordion-trigger>Fit</hlm-accordion-trigger>
+              <hlm-accordion-content>
+                <p>{{ fit() }}</p>
+              </hlm-accordion-content>
+            </hlm-accordion-item>
+          </hlm-accordion>
+        </section>
       </div>
     </div>
 
     @if (more().length > 0) {
       <section class="related" aria-labelledby="related-title">
-        <h2 id="related-title" class="related__title">More from the floor</h2>
+        <h2 id="related-title" class="related__title" appReveal>More from the floor</h2>
         <ul class="related__grid" role="list">
-          @for (other of more(); track other.id) {
-            <li><app-product-card [product]="other" /></li>
+          @for (other of more(); track other.id; let index = $index) {
+            <li appReveal [revealOrder]="index"><app-product-card [product]="other" /></li>
           }
         </ul>
       </section>
@@ -149,15 +161,19 @@
         <span class="buy-bar__name">{{ piece.name }}</span>
         <span>{{ piece.priceCents | money }}</span>
       </p>
-      <button type="button" class="button button--primary" (click)="addToBag()">
+      <button hlmBtn type="button" (click)="addToBag()">
         {{ variant() ? 'Add to bag' : 'Choose a size' }}
       </button>
     </div>
   }
 } @else {
-  <section class="missing page" aria-labelledby="missing-title">
-    <h1 id="missing-title" class="pdp__name">That piece is not on the floor</h1>
-    <p>It may have sold out or been taken off the floor.</p>
-    <p><a routerLink="/">Return to the shop</a></p>
+  <section hlmEmpty class="missing page" aria-labelledby="missing-title">
+    <div hlmEmptyHeader>
+      <h1 id="missing-title" hlmEmptyTitle>That piece is not on the floor</h1>
+      <p hlmEmptyDescription>It may have sold out or been taken off the floor.</p>
+    </div>
+    <div hlmEmptyContent>
+      <a hlmBtn routerLink="/">Return to the shop</a>
+    </div>
   </section>
 }

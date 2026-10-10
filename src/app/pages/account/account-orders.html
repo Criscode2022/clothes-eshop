@@ -8,30 +8,49 @@
 
   @if (orders.error()) {
     <div class="state">
-      <p class="notice notice--error" role="alert">{{ orders.error()?.message }}</p>
-      <a class="button button--primary" routerLink="/sign-in">Sign in again</a>
+      <div hlmAlert variant="destructive">
+        <ng-icon name="lucideCircleAlert" />
+        <p hlmAlertDescription>{{ orders.error()?.message }}</p>
+      </div>
+      <a hlmBtn routerLink="/sign-in">Sign in again</a>
     </div>
   } @else if (orders.hasValue()) {
     @if (newestFirst().length === 0) {
-      <div class="state">
-        <p>No orders under this name yet. Orders you place while signed in appear here.</p>
-        <a class="button button--primary" routerLink="/">Shop the floor</a>
-      </div>
+      <section hlmEmpty class="empty" aria-labelledby="no-orders-title">
+        <div hlmEmptyHeader>
+          <div hlmEmptyMedia variant="icon"><ng-icon name="lucideReceipt" /></div>
+          <h2 id="no-orders-title" hlmEmptyTitle>No orders under this name yet</h2>
+          <p hlmEmptyDescription>Orders you place while signed in appear here.</p>
+        </div>
+        <div hlmEmptyContent>
+          <a hlmBtn routerLink="/">Shop the floor</a>
+        </div>
+      </section>
     } @else {
       <ul class="orders" role="list">
-        @for (order of newestFirst(); track order.reference) {
-          <li class="order">
-            <a class="order__reference" [routerLink]="['/order', order.reference]">{{
-              order.reference
-            }}</a>
-            <span class="order__meta">{{ summary(order) }}</span>
-            <span class="order__total">{{ order.totalCents | money }}</span>
-            <app-fulfillment-badge [state]="order.fulfillment" />
+        @for (order of newestFirst(); track order.reference; let index = $index) {
+          <li appReveal [revealOrder]="index">
+            <a hlmItem variant="outline" class="order" [routerLink]="['/order', order.reference]">
+              <span hlmItemContent>
+                <span hlmItemTitle class="order__reference">{{ order.reference }}</span>
+                <span hlmItemDescription>{{ summary(order) }}</span>
+              </span>
+              <span hlmItemActions class="order__end">
+                <span class="order__total">{{ order.totalCents | money }}</span>
+                <app-fulfillment-badge [state]="order.fulfillment" />
+                <ng-icon name="lucideChevronRight" class="order__go" />
+              </span>
+            </a>
           </li>
         }
       </ul>
     }
   } @else {
-    <p role="status">Loading your orders.</p>
+    <div class="orders" aria-hidden="true">
+      @for (row of [0, 1, 2]; track row) {
+        <hlm-skeleton class="order-skeleton" />
+      }
+    </div>
+    <p class="sr-only" role="status">Loading your orders.</p>
   }
 </div>

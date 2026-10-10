@@ -70,6 +70,7 @@ export interface StaffSection {
       }
 
       a {
+        position: relative;
         display: inline-flex;
         align-items: center;
         min-height: 2.75rem;
@@ -77,14 +78,33 @@ export interface StaffSection {
         white-space: nowrap;
         text-decoration: none;
         color: var(--color-text-muted);
+        transition: color var(--duration-fast) ease-out;
+
+        &::after {
+          content: '';
+          position: absolute;
+          inset-inline: 0;
+          bottom: -1px;
+          height: 2px;
+          background: currentColor;
+          transform: scaleX(0);
+          transition: transform var(--duration-base) var(--ease-out);
+        }
 
         &:hover {
           color: var(--color-text);
         }
 
+        &:hover::after {
+          transform: scaleX(0.35);
+        }
+
         &.is-current {
           color: var(--color-text);
-          box-shadow: inset 0 -2px 0 var(--color-text);
+
+          &::after {
+            transform: none;
+          }
         }
       }
     }

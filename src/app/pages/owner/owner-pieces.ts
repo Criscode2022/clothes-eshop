@@ -1,6 +1,11 @@
 import { Component, computed, inject, input, linkedSignal, signal } from '@angular/core';
 import { FormField, form, min, required, submit } from '@angular/forms/signals';
 import { RouterLink } from '@angular/router';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideCircleAlert } from '@ng-icons/lucide';
+import { HlmAlertImports } from '@spartan-ng/helm/alert';
+import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
+import { HlmTableImports } from '@spartan-ng/helm/table';
 import { categoryName } from '../../shop/catalog';
 import type { Product } from '../../shop/catalog';
 import { CatalogStore } from '../../shop/catalog-store';
@@ -8,13 +13,27 @@ import { centsFromDollars, dollarsFromCents } from '../../shop/money';
 import { MoneyPipe } from '../../shop/money.pipe';
 import { ShopClient } from '../../shop/shop-client';
 import { PiecePhoto } from '../../ui/piece-photo';
+import { ShopButtonImports } from '../../ui/shop-button';
 import { TextField } from '../../ui/text-field';
 import { StockField } from '../staff/stock-field';
 
 /** Every piece on one side, the chosen one's price, sizes, and stock on the other. */
 @Component({
   selector: 'app-owner-pieces',
-  imports: [FormField, MoneyPipe, PiecePhoto, RouterLink, StockField, TextField],
+  imports: [
+    FormField,
+    HlmAlertImports,
+    HlmSkeleton,
+    HlmTableImports,
+    MoneyPipe,
+    NgIcon,
+    PiecePhoto,
+    RouterLink,
+    ShopButtonImports,
+    StockField,
+    TextField,
+  ],
+  providers: [provideIcons({ lucideCircleAlert })],
   templateUrl: './owner-pieces.html',
   styleUrl: './owner-pieces.scss',
 })

@@ -7,7 +7,8 @@
 .media {
   position: relative;
   aspect-ratio: 2 / 3;
-  overflow: hidden;
+  // Clip, not hidden: a hidden overflow can still be scrolled by focus, which would slide the photograph.
+  overflow: clip;
   background: var(--color-surface);
 }
 
@@ -16,12 +17,25 @@
   height: 100%;
 }
 
+// The photograph leans in slowly under the pointer, the way you step toward a rail.
+.media__photo {
+  transition: transform var(--duration-photo) var(--ease-out);
+}
+
+@media (hover: hover) {
+  .media:hover .media__photo {
+    transform: scale(1.045);
+  }
+}
+
 .media__flag {
   position: absolute;
   left: 0.75rem;
   bottom: 0.75rem;
-  padding: 0.25rem 0.5rem;
+  height: 1.5rem;
+  padding-inline: 0.5rem;
   font-size: var(--text-sm);
+  font-weight: 400;
   background: var(--color-canvas);
 }
 
@@ -39,14 +53,23 @@
   background: var(--color-canvas);
   border: 0;
   cursor: pointer;
+  transition:
+    background-color var(--duration-fast) ease-out,
+    color var(--duration-fast) ease-out;
 
-  app-icon {
-    transition: transform var(--duration-fast) var(--ease-out);
+  &:hover {
+    color: var(--color-on-accent);
+    background: var(--color-accent);
   }
 
-  &[aria-expanded='true'] app-icon {
+  &[aria-expanded='true'] .quick-add__icon {
     transform: rotate(45deg);
   }
+}
+
+.quick-add__icon {
+  font-size: 1.125rem;
+  transition: transform var(--duration-base) var(--ease-out);
 }
 
 // The sizes sit hidden over the foot of the photograph until the toggle or a hover opens them.
@@ -57,19 +80,16 @@
   display: grid;
   gap: 0.5rem;
   padding: 0.75rem 3.75rem 0.75rem 0.75rem;
-  background: color-mix(in srgb, var(--color-canvas) 94%, transparent);
+  background: var(--color-canvas);
   visibility: hidden;
-  opacity: 0;
-  transform: translateY(0.75rem);
+  transform: translateY(101%);
   transition:
-    opacity var(--duration-fast) ease-out,
     transform var(--duration-base) var(--ease-out),
-    visibility 0s linear var(--duration-fast);
+    visibility 0s linear var(--duration-base);
 }
 
 .sizes--open {
   visibility: visible;
-  opacity: 1;
   transform: none;
   transition-delay: 0s;
 }
@@ -77,10 +97,14 @@
 @media (hover: hover) {
   .media:hover .sizes {
     visibility: visible;
-    opacity: 1;
     transform: none;
     transition-delay: 0s;
   }
+}
+
+.sizes__hint {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
 }
 
 .sizes__row {
@@ -106,6 +130,10 @@
   background: var(--color-canvas);
   border: 1px solid var(--color-border);
   cursor: pointer;
+  transition:
+    background-color var(--duration-fast) ease-out,
+    border-color var(--duration-fast) ease-out,
+    color var(--duration-fast) ease-out;
 
   &:hover:not(:disabled) {
     color: var(--color-on-accent);
@@ -113,10 +141,28 @@
     border-color: var(--color-accent);
   }
 
+  &:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+
   &:disabled {
     color: var(--color-text-muted);
     text-decoration: line-through;
+    background: var(--color-surface);
     cursor: not-allowed;
+  }
+}
+
+// Each size follows the one before it as the panel rises.
+.sizes--open .sizes__size {
+  animation: rise-in var(--duration-base) var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 35ms + 60ms);
+}
+
+@media (hover: hover) {
+  .media:hover .sizes__size {
+    animation: rise-in var(--duration-base) var(--ease-out) both;
+    animation-delay: calc(var(--i, 0) * 35ms + 60ms);
   }
 }
 
@@ -134,14 +180,12 @@
   font-size: inherit;
   font-weight: 500;
   letter-spacing: 0;
+}
 
-  a {
-    text-decoration: none;
-
-    &:hover {
-      text-decoration: underline;
-    }
-  }
+// Pointing anywhere at the piece draws the line under its name.
+:host(:hover) .info__name .sweep {
+  background-position-x: 0;
+  background-size: 100% 1px;
 }
 
 .info__price {

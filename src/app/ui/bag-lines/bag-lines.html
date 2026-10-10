@@ -17,7 +17,7 @@
       <div class="line__body">
         <div class="line__head">
           <p class="line__name">
-            <a [routerLink]="['/product', line.productId]">{{ line.name }}</a>
+            <a class="sweep" [routerLink]="['/product', line.productId]">{{ line.name }}</a>
           </p>
           <p class="line__total">{{ line.lineCents | money }}</p>
         </div>
@@ -32,7 +32,7 @@
             [label]="describe(line)"
             (changed)="setQuantity(line, $event)"
           />
-          <button type="button" class="text-button" (click)="remove(line)">
+          <button hlmBtn variant="link" size="sm" (click)="remove(line)">
             Remove<span class="sr-only"> {{ describe(line) }}</span>
           </button>
         </div>

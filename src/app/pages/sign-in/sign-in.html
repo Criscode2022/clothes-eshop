@@ -12,7 +12,10 @@
       <h2 id="sign-in-title" class="panel__title">Sign in</h2>
       <form class="panel__form" novalidate (submit)="signIn(); $event.preventDefault()">
         @if (errorMessage()) {
-          <p class="notice notice--error" role="alert">{{ errorMessage() }}</p>
+          <div hlmAlert variant="destructive">
+            <ng-icon name="lucideCircleAlert" />
+            <p hlmAlertDescription>{{ errorMessage() }}</p>
+          </div>
         }
         <app-text-field
           inputId="sign-in-email"
@@ -29,12 +32,18 @@
           [field]="signInForm.password"
         />
         <button
+          hlmBtn
           type="submit"
-          class="button button--primary button--block"
+          class="w-full"
           [disabled]="signingIn()"
           [attr.aria-busy]="signingIn()"
         >
-          {{ signingIn() ? 'Signing in' : 'Sign in' }}
+          @if (signingIn()) {
+            <hlm-spinner aria-hidden="true" />
+            Signing in
+          } @else {
+            Sign in
+          }
         </button>
       </form>
 
@@ -49,16 +58,21 @@
           @for (account of floorAccounts; track account.email) {
             <li>
               <button
+                hlmItem
+                variant="outline"
                 type="button"
                 class="floor__account"
                 [disabled]="signingIn()"
                 (click)="useFloorAccount(account.email)"
               >
-                <span>
-                  <span class="floor__name">{{ account.name }}</span>
-                  <span class="floor__email">{{ account.email }}</span>
+                <span hlmItemContent>
+                  <span hlmItemTitle>{{ account.name }}</span>
+                  <span hlmItemDescription>{{ account.email }}</span>
                 </span>
-                <span class="floor__role">{{ opens(account.role) }}</span>
+                <span hlmItemActions>
+                  <span hlmBadge variant="secondary">{{ opens(account.role) }}</span>
+                  <ng-icon name="lucideChevronRight" class="floor__go" />
+                </span>
               </button>
             </li>
           }
@@ -73,7 +87,10 @@
       </p>
       <form class="panel__form" novalidate (submit)="createAccount(); $event.preventDefault()">
         @if (accountMessage()) {
-          <p class="notice notice--error" role="alert">{{ accountMessage() }}</p>
+          <div hlmAlert variant="destructive">
+            <ng-icon name="lucideCircleAlert" />
+            <p hlmAlertDescription>{{ accountMessage() }}</p>
+          </div>
         }
         <app-text-field
           inputId="account-name"
@@ -97,12 +114,19 @@
           [field]="accountForm.password"
         />
         <button
+          hlmBtn
+          variant="outline"
           type="submit"
-          class="button button--block"
+          class="w-full"
           [disabled]="creating()"
           [attr.aria-busy]="creating()"
         >
-          {{ creating() ? 'Creating account' : 'Create account' }}
+          @if (creating()) {
+            <hlm-spinner aria-hidden="true" />
+            Creating account
+          } @else {
+            Create account
+          }
         </button>
       </form>
     </section>

@@ -18,6 +18,18 @@ describe('Shell', () => {
     return document.querySelector<HTMLElement>('main#main-content')!;
   }
 
+  /** The bag sheet, found the way assistive technology finds it: a dialog named by its "Bag" title. */
+  function bagSheet(): HTMLElement | null {
+    return (
+      [...document.querySelectorAll<HTMLElement>('[role="dialog"]')].find((dialog) =>
+        document
+          .getElementById(dialog.getAttribute('aria-labelledby') ?? '')
+          ?.textContent?.trim()
+          .startsWith('Bag'),
+      ) ?? null
+    );
+  }
+
   beforeEach(async () => {
     localStorage.clear();
     TestBed.configureTestingModule({
@@ -70,17 +82,18 @@ describe('Shell', () => {
   });
 
   it('opens the bag from the header and closes it when the shopper moves on', async () => {
-    const bag = document.querySelector<HTMLDialogElement>('dialog[aria-labelledby="bag-title"]')!;
     const bagButton = [...document.querySelectorAll('header button')].find((button) =>
       button.textContent?.includes('Bag'),
     ) as HTMLButtonElement;
 
     bagButton.click();
     await harness.fixture.whenStable();
-    expect(bag.hasAttribute('open')).toBe(true);
-    expect(bag.textContent).toContain('Your bag is empty.');
+    expect(bagButton.getAttribute('aria-expanded')).toBe('true');
+    expect(bagSheet()?.textContent).toContain('Your bag is empty');
 
     await harness.navigateByUrl('/second');
-    expect(bag.hasAttribute('open')).toBe(false);
+    await harness.fixture.whenStable();
+    expect(bagSheet()).toBeNull();
+    expect(bagButton.getAttribute('aria-expanded')).toBe('false');
   });
 });

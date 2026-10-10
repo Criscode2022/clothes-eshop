@@ -1,5 +1,13 @@
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideChevronRight, lucideCircleAlert, lucideInbox, lucideSearch } from '@ng-icons/lucide';
+import { HlmAlertImports } from '@spartan-ng/helm/alert';
+import { HlmEmptyImports } from '@spartan-ng/helm/empty';
+import { HlmInputGroupImports } from '@spartan-ng/helm/input-group';
+import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
+import { HlmSpinner } from '@spartan-ng/helm/spinner';
+import { HlmTableImports } from '@spartan-ng/helm/table';
 import { fulfillmentActions, fulfillmentName, paymentLabel } from '../../shop/checkout';
 import type { Fulfillment, ShopOrder } from '../../shop/checkout';
 import { MoneyPipe } from '../../shop/money.pipe';
@@ -7,12 +15,25 @@ import { QUEUE_VIEWS, ordersInView, queueCounts } from '../../shop/order-queue';
 import type { QueueView } from '../../shop/order-queue';
 import { ShopClient } from '../../shop/shop-client';
 import { FulfillmentBadge } from '../../ui/fulfillment-badge';
-import { Icon } from '../../ui/icon';
+import { ShopButtonImports } from '../../ui/shop-button';
 
 /** Every order the signed-in staff member may see, filtered by state, with each order's next step one click away. */
 @Component({
   selector: 'app-order-queue',
-  imports: [FulfillmentBadge, Icon, MoneyPipe, RouterLink],
+  imports: [
+    FulfillmentBadge,
+    HlmAlertImports,
+    HlmEmptyImports,
+    HlmInputGroupImports,
+    HlmSkeleton,
+    HlmSpinner,
+    HlmTableImports,
+    MoneyPipe,
+    NgIcon,
+    RouterLink,
+    ShopButtonImports,
+  ],
+  providers: [provideIcons({ lucideChevronRight, lucideCircleAlert, lucideInbox, lucideSearch })],
   templateUrl: './order-queue.html',
   styleUrl: './order-queue.scss',
 })

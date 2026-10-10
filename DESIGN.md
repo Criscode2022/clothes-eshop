@@ -126,7 +126,7 @@ Marlow's floor is a white room hung with eight pieces. The page itself is white,
 
 Density changes by job. The storefront is spacious, with large portraits and few words. The checkout is calm and single-column, with the total always in view. The desk and backoffice tighten into condensed, tabular tables built for daily repetition. All of them share the same palette, type, and controls, so a worker on the desk and a shopper on the floor are in the same shop.
 
-Motion is sparse and answers actions. The opening spread settles once on load; a piece's photograph carries over from the floor to its page through a view transition; the bag and the menu slide in from the edge; a line just added to the bag flashes once. Reduced motion collapses all of it.
+Motion answers the shopper and stays quiet otherwise. The opening spread settles once on load; a piece's photograph carries over from the floor to its page through a view transition. Under the pointer, photographs lean in slowly and underlines draw in from the left; on a card the sizes rise over the photograph one after another. Sections and rows below the fold rise into place once, from a slight blur, the first time they reach the viewport. The header tucks away while the shopper reads down a page and returns on the way up. The bag and the menu slide in from the edge; the bag count bumps when it changes; a line just added to the bag flashes once. A placed order draws its check and fills its track. Reduced motion collapses all of it, and nothing waits for the viewport when motion is reduced or the page is printed.
 
 **Key Characteristics:**
 
@@ -134,6 +134,7 @@ Motion is sparse and answers actions. The opening spread settles once on load; a
 - One family, Archivo, stretched by its width axis: expanded for the wordmark, normal for reading, condensed for staff data.
 - Square corners everywhere except the bag count and color swatches.
 - Flat at rest: depth comes from grey fills and the scrim behind sheets.
+- Built on Spartan UI (Brain plus the `lyra` Helm style), themed entirely from these tokens.
 - Prices, sizes, and stock always in plain words with tabular figures.
 
 ## Colors
@@ -195,15 +196,16 @@ The dark scheme keeps the same roles: ground #121212, panels #1c1c1b and #262625
 
 Content sits in a centered container up to 90rem wide with a fluid gutter of clamp(1rem, 3.2vw, 2.5rem); spacing follows 0.25rem steps, with more space above a heading than below it. Breakpoints are 40rem, 48rem, 64rem, and 80rem.
 
-- **Floor:** a full-bleed spread of three 2:3 portraits about half the window high (one portrait on a phone), then the opening line beside the terms, then a product grid of 2, 3, and 4 columns at the phone, tablet, and wide breakpoints, with 2.5–3rem between rows.
+- **Floor:** a full-bleed spread of three 2:3 portraits about half the window high (one portrait on a phone), each with a white label naming the piece and its price (shown on hover where hover exists, always on touch); then the opening line beside the terms; then a product grid of 2, 3, and 4 columns at the phone, tablet, and wide breakpoints, with 2.5–3rem between rows; then the "Cloth and care" note (the merino flat lay beside the atelier's own words) and "Shop by category", one photograph per room.
+- **Bag:** the lines beside a sticky summary card, then "More from the floor": pieces around the first one in the bag that it does not hold yet and are not sold out.
 - **Category:** from 64rem, a split: title, fit note, and filters in a sticky left column, the pieces two-up on the right.
-- **Product:** from 64rem, the photograph sized to the window's height beside a 20–27rem buy panel, centered as one composition; on a phone the photograph runs edge to edge and a fixed buy bar appears once the main button scrolls away.
+- **Product:** from 64rem, the photograph sized to the window's height beside a 20–27rem buy panel, centered as one composition; under a mouse the photograph magnifies 1.6 times around the pointer so the cloth can be read. On a phone the photograph runs edge to edge and a fixed buy bar appears once the main button scrolls away.
 - **Checkout:** a form of at most 40rem beside a sticky 20–26rem summary, inside a 76rem container; on a phone the summary folds into a bar showing the total.
 - **Staff:** a title, a lede, link tabs for sections, then full-width tables that scroll sideways on small screens.
 
 ## Elevation & Depth
 
-Flat at rest. Depth is tonal: grey panels for summaries and details, a darker grey for selection, and a scrim (black at 36% in light, 60% in dark) behind the bag and menu sheets. The bag notice toast is the single shadowed element, because it floats over content it does not belong to.
+Flat at rest. Depth is tonal: grey panels for summaries and details, a darker grey for selection, and a scrim (black at 36% in light, 60% in dark) behind the bag and menu sheets, with no blur. Spartan's sheet shadow and card ring are removed. The bag notice toast is the single shadowed element, because it floats over content it does not belong to.
 
 ### Shadow Vocabulary
 
@@ -219,13 +221,17 @@ Square. Buttons, inputs, size boxes, chips, panels, sheets, and photographs all 
 
 ## Components
 
+### Spartan underneath
+
+Every control is a Spartan part: Brain for behavior and accessibility, Helm (`lyra`, the square and flat style) for structure. Spartan's semantic names (`--primary`, `--accent`, `--border`, `--card`, ...) are aliases of these tokens in `src/tailwind.css`, with `--radius: 0`, so Spartan follows dark mode through the tokens. The generated Helm files stay as the CLI wrote them. Two thin layers carry Marlow's scale on top: `ShopButton` gives every `hlmBtn` the shop's heights, and an unlayered block in `src/styles.scss` sets the type, padding, and focus outline of Spartan's `data-slot` parts. Icons are Lucide through ng-icons at a 1.5px stroke, one set for Spartan's parts and the shop's own.
+
 ### Buttons
 
-- **Shape:** square (0), 3rem tall, 1.5rem side padding; a 2.25rem small size serves table rows.
-- **Primary:** Ink Black fill, white label at 500 weight. Hover mixes 20% of the ground into the black.
-- **Secondary:** 1px Ink Black outline on the ground; hover fills Fitting-Room Grey.
-- **Text button:** an underlined caption-size action (Remove, Cancel, Keep, Copy reference) for secondary actions that sit inline.
-- **Disabled:** Chalk Grey fill with Graphite text. Busy buttons carry aria-busy and change their label ("Placing order").
+- **Shape:** square (0), 3rem tall, 1.5rem side padding; a 2.25rem small size serves table rows; icon buttons are 2.75rem touch targets.
+- **Primary** (`hlmBtn`): Ink Black fill, white label at 500 weight. Hover mixes 15% of the ground into the black; a press nudges it down 1px.
+- **Secondary** (`variant="outline"`): 1px Ink Black outline on the ground; hover fills Fitting-Room Grey.
+- **Text button** (`variant="link"`): an underlined caption-size action (Remove, Cancel, Keep, Copy reference) for secondary actions that sit inline; the underline thickens on hover.
+- **Disabled:** Chalk Grey fill with Graphite text, out of the tab order. Busy buttons carry aria-busy, show Spartan's spinner, and change their label ("Placing order").
 
 ### Chips
 
@@ -234,25 +240,36 @@ Square. Buttons, inputs, size boxes, chips, panels, sheets, and photographs all 
 
 ### Cards / Containers
 
-- **Product card:** a 2:3 photograph over the name and price; no frame, no shadow. A white square plus button at the photograph's foot opens the sizes, which slide up over the photograph (also on hover where hover exists). A piece with no photograph shows a grey panel with its cloth swatch and "No photograph yet".
-- **Summary panel:** Fitting-Room Grey, 1.75rem padding, square; holds order lines, totals, and the free-shipping meter.
+- **Product card:** a 2:3 photograph over the name and price; no frame, no shadow. The photograph leans in (1.045) over 1.2s under the pointer, and the name's underline draws in. A white square plus button at the photograph's foot opens the sizes, which rise over the photograph on a white bar, each size a beat after the last (also on hover where hover exists). The frame clips with `overflow: clip`, so returning focus can never scroll the photograph. A piece with nothing left shows a Spartan badge, "Sold out". A piece with no photograph shows a grey panel with its cloth swatch and "No photograph yet".
+- **Summary panel:** a Spartan card in Fitting-Room Grey, 1.75rem padding, square, no ring; holds order lines, totals, and the free-shipping meter (Spartan's progress bar at 2px).
+- **Empty states:** Spartan's empty part: a grey icon tile, a 1.25rem title, one line of direction, and the next action (Shop the floor). Used for the empty bag, an empty checkout, no orders, a closed area, and staff views with nothing in them.
+- **Loading:** Spartan skeletons in Chalk Grey shaped like the rows they stand in for, with the loading sentence kept for screen readers.
+- **Alerts:** Spartan's destructive alert on a Fitting-Room Grey fill with a circled-alert icon and the problem in words.
 
 ### Inputs / Fields
 
 - **Style:** 2.75rem tall, 1px Field Stroke border, white ground, square, 1rem text so phones never zoom.
 - **Focus:** the border turns Ink Black with a 2px Ink Black outline.
 - **Error:** the border turns Oxblood Error, the message sits under the field and is linked with aria-describedby; the first invalid field takes focus on submit, and nothing typed is lost.
-- **Choices:** payment methods are bordered rows around native radios; the checked row gets an Ink Black border. Sizes are boxes around visually hidden radios; sold-out sizes are struck through on grey and disabled.
+- **Choices:** payment methods are bordered rows around native radios with a Lucide mark (shop, bank, cash); the checked row gets an Ink Black border. Sizes are boxes around visually hidden radios; sold-out sizes are struck through on grey and disabled. Asked to add without a size, the row nudges once and the line under it says what to do.
+- **Signal Forms fields** stay on the shop's `TextField` (a native input with the `.input` look) rather than Spartan's input, because Spartan's input marks a required field invalid before it is touched.
 
 ### Navigation
 
-- **Header:** sticky, white, with a Hairline bottom border. On desktop: the wordmark, departments at label size, then Atelier, the account links, and Bag with a black count pill. The current page is underlined with a 0.45em offset. On a phone: a menu button, the centered wordmark, and the bag icon.
-- **Menu and bag:** native modal dialogs that slide in from the left and right edges over a scrim, close on Escape, backdrop click, or navigation, and return focus to their buttons.
-- **Staff sections:** link tabs with a 2px Ink Black underline on the current section.
+- **Header:** sticky, white, with a Hairline bottom border; it tucks away while the shopper scrolls down past the first screen and returns on any scroll up or when something inside it takes focus. On desktop: the wordmark, departments at label size, then Atelier, the account links, and Bag with a black count pill. Links draw a 1px underline in from the left on hover; the current page keeps it. On a phone: a menu button, the centered wordmark, and the bag icon with the count on its corner.
+- **Menu and bag:** Spartan sheets (CDK dialogs) that slide in from the left and right edges over the scrim (420ms in, 260ms out), close on Escape, scrim click, or navigation, and return focus to their buttons. Both load with `@defer` on idle, or the moment they are asked to open, so the overlay code stays out of the first page. The menu's rooms arrive one after another.
+- **Breadcrumb:** Spartan's breadcrumb with chevrons, caption size, on the product page.
+- **Staff sections:** link tabs whose 2px Ink Black underline grows under the current section.
 
 ### Status badge
 
-A small dot plus the state's name: Placed in Ink Black, Picking and Ready in Rust Notice, Completed in Bottle Green, Cancelled in Oxblood Error. The name always carries the meaning.
+An outlined Spartan badge holding a small dot and the state's name: Placed in Ink Black, Picking and Ready in Rust Notice, Completed in Bottle Green, Cancelled in Oxblood Error. The name always carries the meaning.
+
+### Details and lists
+
+- **Accordion:** the product's Cloth and care (open) and Fit, as Spartan accordion items at label size, the chevron turning with the panel.
+- **Items:** the floor accounts on sign-in and the client's orders are outlined Spartan items that darken their border on hover and nudge their chevron.
+- **Tables:** the desk and backoffice use Spartan's table parts at the condensed data width, with an Ink Black rule under the header and a Fitting-Room Grey picking list under an opened order.
 
 ## Do's and Don'ts
 
@@ -264,6 +281,7 @@ A small dot plus the state's name: Placed in Ink Black, Picking and Ready in Rus
 - **Do** mark selection and state with a fill or a word; the color dot only assists.
 - **Do** underline links inside running text, and keep focus outlines visible (2px Ink Black, 3px offset).
 - **Do** use Archivo's width axis for new roles: condensed (84%) only in dense staff tables, expanded (125%) only for the wordmark.
+- **Do** reach for a Spartan part before writing markup, import `ShopButtonImports` rather than `HlmButton` alone, and change Spartan's look through the tokens or the unlayered `data-slot` block, never by editing the generated Helm files.
 
 ### Don't:
 

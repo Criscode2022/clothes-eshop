@@ -17,10 +17,12 @@ import { ShopSession } from '../shop/shop-session';
           <div>
             <h2 class="footer__heading">Shop</h2>
             <ul role="list">
-              <li><a routerLink="/">Shop all</a></li>
+              <li><a class="sweep" routerLink="/">Shop all</a></li>
               @for (category of categories; track category.slug) {
                 <li>
-                  <a [routerLink]="['/category', category.slug]">{{ category.name }}</a>
+                  <a class="sweep" [routerLink]="['/category', category.slug]">{{
+                    category.name
+                  }}</a>
                 </li>
               }
             </ul>
@@ -28,20 +30,24 @@ import { ShopSession } from '../shop/shop-session';
           <div>
             <h2 class="footer__heading">Help</h2>
             <ul role="list">
-              <li><a routerLink="/atelier">Atelier</a></li>
-              <li><a routerLink="/atelier" fragment="shipping">Shipping and payment</a></li>
-              <li><a routerLink="/atelier" fragment="orders">How an order leaves</a></li>
+              <li><a class="sweep" routerLink="/atelier">Atelier</a></li>
+              <li>
+                <a class="sweep" routerLink="/atelier" fragment="shipping">Shipping and payment</a>
+              </li>
+              <li>
+                <a class="sweep" routerLink="/atelier" fragment="orders">How an order leaves</a>
+              </li>
             </ul>
           </div>
           <div>
             <h2 class="footer__heading">Account</h2>
             <ul role="list">
               @if (session.current()?.role === 'client') {
-                <li><a routerLink="/account/orders">Your orders</a></li>
+                <li><a class="sweep" routerLink="/account/orders">Your orders</a></li>
               } @else if (!session.current()) {
-                <li><a routerLink="/sign-in">Sign in</a></li>
+                <li><a class="sweep" routerLink="/sign-in">Sign in</a></li>
               }
-              <li><a routerLink="/bag">Bag</a></li>
+              <li><a class="sweep" routerLink="/bag">Bag</a></li>
             </ul>
           </div>
         </nav>
@@ -56,7 +62,7 @@ import { ShopSession } from '../shop/shop-session';
   `,
   styles: `
     .footer {
-      margin-top: 6rem;
+      margin-top: 7rem;
       font-size: var(--text-sm);
       border-top: 1px solid var(--color-border);
     }
@@ -99,18 +105,14 @@ import { ShopSession } from '../shop/shop-session';
       a {
         display: inline-block;
         padding-block: 0.25rem;
-        text-decoration: none;
-
-        &:hover {
-          text-decoration: underline;
-        }
       }
     }
 
     .footer__heading {
       font-size: var(--text-sm);
-      font-weight: 600;
+      font-weight: 500;
       letter-spacing: 0;
+      color: var(--color-text-muted);
     }
 
     .footer__base {

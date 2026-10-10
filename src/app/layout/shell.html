@@ -15,14 +15,16 @@
 
 <app-site-footer />
 
-<app-bag-panel />
+@defer (on idle; when drawer.isOpen()) {
+  <app-bag-panel />
+}
 
 <div class="toast-region" role="status">
   @if (bag.noticeMessage(); as notice) {
     <p class="toast" animate.enter="line-enter" animate.leave="line-leave">
       <span>{{ notice }}</span>
       <button type="button" class="toast__close" (click)="dismissNotice()">
-        <app-icon name="close" [size]="16" />
+        <ng-icon name="lucideX" />
         <span class="sr-only">Dismiss</span>
       </button>
     </p>

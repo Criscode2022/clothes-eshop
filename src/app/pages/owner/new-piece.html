@@ -7,7 +7,10 @@
   <h2 id="new-piece-title" class="title">New piece</h2>
 
   @if (errorMessage()) {
-    <p class="notice notice--error" role="alert">{{ errorMessage() }}</p>
+    <div hlmAlert variant="destructive">
+      <ng-icon name="lucideCircleAlert" />
+      <p hlmAlertDescription>{{ errorMessage() }}</p>
+    </div>
   }
 
   <fieldset class="group">
@@ -72,13 +75,13 @@
   </fieldset>
 
   <div class="actions">
-    <button
-      type="submit"
-      class="button button--primary"
-      [disabled]="saving()"
-      [attr.aria-busy]="saving()"
-    >
-      {{ saving() ? 'Adding piece' : 'Add piece to the floor' }}
+    <button hlmBtn type="submit" [disabled]="saving()" [attr.aria-busy]="saving()">
+      @if (saving()) {
+        <hlm-spinner aria-hidden="true" />
+        Adding piece
+      } @else {
+        Add piece to the floor
+      }
     </button>
     <p class="note">It shows on the floor right away. Pieces added here have no photograph.</p>
   </div>

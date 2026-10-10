@@ -8,8 +8,9 @@ import type { Fulfillment } from '../shop/checkout';
   template: `
     @if (steps().length > 0) {
       <ol class="track" aria-label="Order progress">
-        @for (step of steps(); track step.state) {
+        @for (step of steps(); track step.state; let index = $index) {
           <li
+            [style.--i]="index"
             class="track__step"
             [class.track__step--done]="step.status === 'done'"
             [class.track__step--current]="step.status === 'current'"
@@ -46,15 +47,27 @@ import type { Fulfillment } from '../shop/checkout';
     .track__mark {
       position: relative;
       height: 2px;
+      overflow: hidden;
       background: var(--color-border);
+
+      &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: var(--color-text);
+        transform: scaleX(0);
+        transform-origin: left;
+      }
     }
 
     .track__step--done,
     .track__step--current {
       color: var(--color-text);
 
-      .track__mark {
-        background: var(--color-text);
+      .track__mark::after {
+        transform: none;
+        animation: fill-x var(--duration-slow) var(--ease-out) both;
+        animation-delay: calc(var(--i, 0) * 220ms + 200ms);
       }
     }
 

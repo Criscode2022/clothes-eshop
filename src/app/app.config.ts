@@ -1,6 +1,7 @@
 import { provideHttpClient, withFetch } from '@angular/common/http';
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideClientHydration } from '@angular/platform-browser';
+import { provideNgIconsConfig } from '@ng-icons/core';
 import {
   provideRouter,
   withComponentInputBinding,
@@ -22,5 +23,7 @@ export const appConfig: ApplicationConfig = {
     ),
     provideHttpClient(withFetch()),
     provideClientHydration(),
+    // Lucide at the shop's own line weight, so Spartan's icons and ours read as one set.
+    provideNgIconsConfig({ strokeWidth: 1.5 }),
   ],
 };

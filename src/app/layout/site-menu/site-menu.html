@@ -1,0 +1,62 @@
+<hlm-sheet
+  [id]="'site-menu'"
+  side="left"
+  [state]="open() ? 'open' : 'closed'"
+  (stateChanged)="stateChanged($event)"
+>
+  <hlm-sheet-content
+    *hlmSheetPortal
+    [showCloseButton]="false"
+    class="menu data-[side=left]:w-[min(24rem,88vw)] data-[side=left]:sm:max-w-none"
+  >
+    <hlm-sheet-header class="menu__head">
+      <h2 hlmSheetTitle class="sr-only">Menu</h2>
+      <span class="wordmark" aria-hidden="true">Marlow</span>
+      <button hlmSheetClose hlmBtn variant="ghost" size="icon" aria-label="Close menu">
+        <ng-icon name="lucideX" />
+      </button>
+    </hlm-sheet-header>
+
+    <nav class="menu__nav" aria-label="Menu">
+      <ul role="list" class="menu__list">
+        <li class="menu__item" style="--i: 0">
+          <a routerLink="/" class="menu__link"><span class="menu__name">Shop all</span></a>
+        </li>
+        @for (category of categories; track category.slug; let index = $index) {
+          <li class="menu__item" [style.--i]="index + 1">
+            <a [routerLink]="['/category', category.slug]" class="menu__link">
+              <span class="menu__name">{{ category.name }}</span>
+              <span class="menu__count">{{ countIn(category.slug) }}</span>
+            </a>
+          </li>
+        }
+      </ul>
+      <ul role="list" class="menu__list menu__list--quiet">
+        <li class="menu__item" style="--i: 5"><a routerLink="/atelier">Atelier</a></li>
+        @if (session.current()) {
+          @if (isClient()) {
+            <li class="menu__item" style="--i: 6">
+              <a routerLink="/account/orders">Your orders</a>
+            </li>
+          }
+          @if (showDesk()) {
+            <li class="menu__item" style="--i: 6"><a routerLink="/desk">Desk</a></li>
+          }
+          @if (showOwner()) {
+            <li class="menu__item" style="--i: 7"><a routerLink="/owner">Backoffice</a></li>
+          }
+          <li class="menu__item" style="--i: 8">
+            <button hlmBtn variant="link" type="button" (click)="signOut.emit()">Sign out</button>
+          </li>
+        } @else {
+          <li class="menu__item" style="--i: 6"><a routerLink="/sign-in">Sign in</a></li>
+        }
+      </ul>
+    </nav>
+
+    <p class="menu__terms">
+      Free shipping from $200. No card needed: pay at the shop, by bank transfer, or in cash on
+      delivery.
+    </p>
+  </hlm-sheet-content>
+</hlm-sheet>

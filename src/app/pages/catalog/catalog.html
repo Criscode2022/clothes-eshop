@@ -7,19 +7,17 @@
           [class.spread__tile--lead]="index === 1"
           [routerLink]="['/product', tile.piece.id]"
         >
-          <img
-            [ngSrc]="tile.src"
-            width="800"
-            height="1200"
-            [priority]="index === 1"
-            [alt]="tile.piece.name"
-          />
+          <img [ngSrc]="tile.src" width="800" height="1200" [priority]="index === 1" alt="" />
+          <span class="spread__caption">
+            <span class="spread__name">{{ tile.piece.name }}</span>
+            <span class="spread__price">{{ tile.piece.priceCents | money }}</span>
+          </span>
         </a>
       }
     </div>
   }
 
-  <section class="intro page" aria-labelledby="intro-title">
+  <section class="intro page" aria-labelledby="intro-title" appReveal>
     <h1 id="intro-title" class="intro__title">
       A small <span class="whitespace-nowrap">ready-to-wear</span> floor
     </h1>
@@ -29,9 +27,9 @@
         piece names its cloth and how to care for it.
       </p>
       <ul class="terms" role="list">
-        <li><app-icon name="check" [size]="16" />Free shipping from $200</li>
-        <li><app-icon name="check" [size]="16" />No card needed</li>
-        <li><app-icon name="check" [size]="16" />Check out as a guest</li>
+        <li><ng-icon name="lucideCheck" class="terms__icon" />Free shipping from $200</li>
+        <li><ng-icon name="lucideCheck" class="terms__icon" />No card needed</li>
+        <li><ng-icon name="lucideCheck" class="terms__icon" />Check out as a guest</li>
       </ul>
     </div>
   </section>
@@ -43,6 +41,9 @@
     </div>
     <ng-container *ngTemplateOutlet="grid" />
   </section>
+
+  <app-cloth-note />
+  <app-category-index />
 } @else if (category(); as current) {
   <div class="split page">
     <header class="category">
@@ -56,13 +57,17 @@
     </section>
   </div>
 } @else {
-  <section class="missing page" aria-labelledby="missing-title">
-    <h1 id="missing-title" class="category__title">That category is not on the floor</h1>
-    <p>The floor has four:</p>
-    <ul class="missing__list" role="list">
+  <section hlmEmpty class="missing page" aria-labelledby="missing-title">
+    <div hlmEmptyHeader>
+      <h1 id="missing-title" hlmEmptyTitle>That category is not on the floor</h1>
+      <p hlmEmptyDescription>The floor has four.</p>
+    </div>
+    <ul hlmEmptyContent class="missing__list" role="list">
       @for (item of categories; track item.slug) {
         <li>
-          <a [routerLink]="['/category', item.slug]">{{ item.name }}</a>
+          <a class="chip" [routerLink]="['/category', item.slug]"
+            >{{ item.name }} <span class="chip__count">{{ countIn(item.slug) }}</span></a
+          >
         </li>
       }
     </ul>
@@ -74,20 +79,22 @@
     <ul role="list">
       <li>
         <a
+          class="chip"
           routerLink="/"
           routerLinkActive="is-current"
           ariaCurrentWhenActive="page"
           [routerLinkActiveOptions]="{ exact: true }"
-          >All <span class="filters__count">{{ countIn(null) }}</span></a
+          >All <span class="chip__count">{{ countIn(null) }}</span></a
         >
       </li>
       @for (item of categories; track item.slug) {
         <li>
           <a
+            class="chip"
             [routerLink]="['/category', item.slug]"
             routerLinkActive="is-current"
             ariaCurrentWhenActive="page"
-            >{{ item.name }} <span class="filters__count">{{ countIn(item.slug) }}</span></a
+            >{{ item.name }} <span class="chip__count">{{ countIn(item.slug) }}</span></a
           >
         </li>
       }
@@ -101,7 +108,7 @@
   } @else {
     <ul class="grid" [class.grid--pair]="!isFloor()" role="list">
       @for (piece of pieces(); track piece.id; let index = $index) {
-        <li>
+        <li appReveal [revealOrder]="index % 4">
           <app-product-card [product]="piece" [priority]="!isFloor() && index < 2" />
         </li>
       }

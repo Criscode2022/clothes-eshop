@@ -1,55 +1,75 @@
-<dialog
-  #dialog
-  class="sheet sheet--end"
-  aria-labelledby="bag-title"
-  [attr.aria-describedby]="addedLine() ? 'bag-added' : null"
-  (close)="drawer.close()"
-  (click)="closeFromBackdrop($event)"
+<hlm-sheet
+  side="right"
+  [state]="drawer.isOpen() ? 'open' : 'closed'"
+  (stateChanged)="stateChanged($event)"
 >
-  <div class="sheet__panel">
-    <header class="head">
-      <h2 id="bag-title" class="head__title">
-        Bag <span class="head__count">{{ bag.count() }}</span>
+  <hlm-sheet-content
+    *hlmSheetPortal
+    [showCloseButton]="false"
+    class="bag data-[side=right]:w-full data-[side=right]:sm:max-w-md"
+  >
+    <hlm-sheet-header class="bag__head">
+      <h2 hlmSheetTitle class="bag__title">
+        Bag <span class="bag__count">{{ bag.count() }}</span>
       </h2>
-      <button type="button" class="icon-button" (click)="close()">
-        <app-icon name="close" />
-        <span class="sr-only">Close bag</span>
+      <button hlmSheetClose hlmBtn variant="ghost" size="icon" aria-label="Close bag">
+        <ng-icon name="lucideX" />
       </button>
-    </header>
+    </hlm-sheet-header>
 
     @if (bag.detailed().length === 0) {
-      <div class="empty">
-        <p>Your bag is empty.</p>
-        <a class="button button--primary" routerLink="/">Shop the floor</a>
+      <div hlmEmpty class="bag__empty">
+        <div hlmEmptyHeader>
+          <div hlmEmptyMedia variant="icon"><ng-icon name="lucideShoppingBag" /></div>
+          <h3 hlmEmptyTitle>Your bag is empty</h3>
+          <p hlmEmptyDescription>
+            Choose a size on any piece and it waits here until you check out.
+          </p>
+        </div>
+        <div hlmEmptyContent>
+          <a hlmBtn routerLink="/" class="w-full">Shop the floor</a>
+          <ul class="bag__rooms" role="list">
+            @for (category of categories; track category.slug) {
+              <li>
+                <a class="sweep" [routerLink]="['/category', category.slug]">{{ category.name }}</a>
+              </li>
+            }
+          </ul>
+        </div>
       </div>
     } @else {
       @if (addedLine(); as line) {
-        <p id="bag-added" class="added">
-          <app-icon name="check" [size]="18" />
+        <p hlmSheetDescription class="bag__added">
+          <ng-icon name="lucideCheck" class="bag__added-icon" />
           <span>Added {{ line.name }}, {{ line.color }} {{ line.size }}.</span>
         </p>
       }
 
-      <div class="body">
+      @if (bag.quote(); as quote) {
+        <div class="bag__progress">
+          <app-free-shipping [subtotalCents]="quote.subtotalCents" />
+        </div>
+      }
+
+      <div class="bag__body">
         <app-bag-lines [lines]="bag.detailed()" [highlight]="drawer.justAdded()" />
       </div>
 
-      <footer class="foot">
+      <hlm-sheet-footer class="bag__foot">
         @if (bag.quote(); as quote) {
-          <app-free-shipping [subtotalCents]="quote.subtotalCents" />
           <app-order-totals
             [subtotalCents]="quote.subtotalCents"
             [shippingCents]="quote.shippingCents"
             [totalCents]="quote.totalCents"
           />
-          <a class="button button--primary button--block" routerLink="/checkout">Check out</a>
-          <a class="foot__link" routerLink="/bag">View bag</a>
+          <a hlmBtn routerLink="/checkout" class="w-full">Check out</a>
+          <a hlmBtn variant="link" size="sm" routerLink="/bag" class="self-center">View bag</a>
         } @else {
-          <p class="notice notice--error">
+          <p class="bag__problem" role="alert">
             A size in your bag changed on the floor. Lower its quantity or remove it to check out.
           </p>
         }
-      </footer>
+      </hlm-sheet-footer>
     }
-  </div>
-</dialog>
+  </hlm-sheet-content>
+</hlm-sheet>

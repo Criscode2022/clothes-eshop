@@ -9,30 +9,44 @@
   </div>
 
   @if (loading()) {
-    <p class="stock__empty" role="status">Loading stock.</p>
+    <div class="skeletons" aria-hidden="true">
+      @for (row of [0, 1, 2, 3]; track row) {
+        <hlm-skeleton class="skeletons__row" />
+      }
+    </div>
+    <p class="sr-only" role="status">Loading stock.</p>
   } @else if (loadError()) {
-    <div class="stock__empty">
-      <p class="notice notice--error" role="alert">{{ loadError() }}</p>
-      <button type="button" class="button" (click)="load()">Try again</button>
+    <div class="stock__state">
+      <div hlmAlert variant="destructive">
+        <ng-icon name="lucideCircleAlert" />
+        <p hlmAlertDescription>{{ loadError() }}</p>
+      </div>
+      <button hlmBtn variant="outline" type="button" (click)="load()">Try again</button>
     </div>
   } @else if (pieces().length === 0) {
-    <p class="stock__empty">Every size has more than two on hand.</p>
+    <div hlmEmpty class="stock__empty">
+      <div hlmEmptyHeader>
+        <div hlmEmptyMedia variant="icon"><ng-icon name="lucidePackageCheck" /></div>
+        <p hlmEmptyTitle>Nothing is running low</p>
+        <p hlmEmptyDescription>Every size has more than two on hand.</p>
+      </div>
+    </div>
   } @else {
-    <div class="table-scroll" role="region" aria-label="Stock table" tabindex="0">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th scope="col">Piece</th>
-            <th scope="col">Color</th>
-            <th scope="col">Size</th>
-            <th scope="col">On hand</th>
-            <th scope="col">Floor shows</th>
+    <div hlmTableContainer role="region" aria-label="Stock table" tabindex="0">
+      <table hlmTable class="data-table">
+        <thead hlmTHead>
+          <tr hlmTr>
+            <th hlmTh scope="col">Piece</th>
+            <th hlmTh scope="col">Color</th>
+            <th hlmTh scope="col">Size</th>
+            <th hlmTh scope="col">On hand</th>
+            <th hlmTh scope="col">Floor shows</th>
           </tr>
         </thead>
         @for (group of pieces(); track group.product.id) {
-          <tbody class="group">
+          <tbody hlmTBody class="group">
             @for (variant of group.variants; track variant.id; let first = $first) {
-              <tr>
+              <tr hlmTr>
                 @if (first) {
                   <th scope="rowgroup" [attr.rowspan]="group.variants.length" class="group__piece">
                     <span class="group__photo">
@@ -41,12 +55,12 @@
                     {{ group.product.name }}
                   </th>
                 }
-                <td>{{ variant.color }}</td>
-                <td>{{ variant.size }}</td>
-                <td>
+                <td hlmTd>{{ variant.color }}</td>
+                <td hlmTd>{{ variant.size }}</td>
+                <td hlmTd>
                   <app-stock-field [variant]="variant" [label]="label(group.product, variant)" />
                 </td>
-                <td>
+                <td hlmTd>
                   <span
                     class="note"
                     [class.note--low]="stockState(variant.stock) === 'low'"

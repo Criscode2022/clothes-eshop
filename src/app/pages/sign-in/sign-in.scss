@@ -74,42 +74,37 @@
 
 .floor__list {
   display: grid;
+  gap: 0.5rem;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .floor__account {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  width: 100%;
-  min-height: 3.5rem;
-  padding: 0.5rem 0;
-  font-size: var(--text-ui);
+  min-height: 3.75rem;
   text-align: start;
-  color: inherit;
-  background: none;
-  border: 0;
-  border-bottom: 1px solid var(--color-border);
   cursor: pointer;
+  transition:
+    border-color var(--duration-fast) ease-out,
+    background-color var(--duration-fast) ease-out;
 
-  &:hover:not(:disabled) .floor__name {
-    text-decoration: underline;
+  &:hover:not(:disabled) {
+    border-color: var(--color-text);
+    background: var(--color-hover);
+
+    .floor__go {
+      translate: 0.25rem 0;
+    }
   }
 
   &:disabled {
     cursor: progress;
-  }
-
-  > span:first-child {
-    display: grid;
+    opacity: 0.6;
   }
 }
 
-.floor__email,
-.floor__role {
-  font-size: var(--text-sm);
+.floor__go {
+  font-size: 1.125rem;
   color: var(--color-text-muted);
+  transition: translate var(--duration-base) var(--ease-out);
 }

@@ -1,0 +1,79 @@
+:host {
+  display: contents;
+}
+
+.menu__head {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem 0.5rem 1.5rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.menu__nav {
+  display: grid;
+  gap: 2.25rem;
+  padding: 2rem 1.5rem;
+  overflow-y: auto;
+}
+
+.menu__list {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  a {
+    text-decoration: none;
+  }
+}
+
+// The links arrive one after another as the sheet slides in.
+.menu__item {
+  animation: rise-in var(--duration-slow) var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 45ms + 120ms);
+}
+
+.menu__link {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-block: 0.625rem;
+  font-size: var(--text-xl);
+  letter-spacing: -0.02em;
+  border-bottom: 1px solid var(--color-border);
+
+  &:hover .menu__name {
+    translate: 0.375rem 0;
+  }
+}
+
+.menu__name {
+  display: inline-block;
+  transition: translate var(--duration-base) var(--ease-out);
+}
+
+.menu__count {
+  font-size: var(--text-sm);
+  letter-spacing: 0;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.menu__list--quiet {
+  gap: 0.25rem;
+  font-size: var(--text-md);
+
+  a {
+    display: block;
+    padding-block: 0.375rem;
+  }
+}
+
+.menu__terms {
+  margin-top: auto;
+  padding: 1.25rem 1.5rem 1.5rem;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  border-top: 1px solid var(--color-border);
+}

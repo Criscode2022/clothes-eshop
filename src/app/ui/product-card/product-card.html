@@ -1,6 +1,7 @@
 <div class="media">
   <a class="media__link" [routerLink]="['/product', product().id]" tabindex="-1" aria-hidden="true">
     <app-piece-photo
+      class="media__photo"
       [pieceId]="product().id"
       [color]="colors()[0] ?? ''"
       [priority]="priority()"
@@ -9,7 +10,7 @@
   </a>
 
   @if (soldOut()) {
-    <p class="media__flag">Sold out</p>
+    <span hlmBadge variant="secondary" class="media__flag">Sold out</span>
   } @else {
     <button
       #quickAdd
@@ -19,7 +20,7 @@
       [attr.aria-controls]="panelId()"
       (click)="toggleSizes()"
     >
-      <app-icon name="plus" [size]="18" />
+      <ng-icon name="lucidePlus" class="quick-add__icon" />
       <span class="sr-only">Quick add {{ product().name }}</span>
     </button>
     <div
@@ -29,15 +30,19 @@
       role="group"
       [attr.aria-label]="'Sizes of ' + product().name"
     >
+      @if (colors().length === 1) {
+        <p class="sizes__hint" aria-hidden="true">Add a size</p>
+      }
       @for (group of colorGroups(); track group.color) {
         <div class="sizes__row">
           @if (colors().length > 1) {
             <span class="sizes__color">{{ group.color }}</span>
           }
-          @for (variant of group.variants; track variant.id) {
+          @for (variant of group.variants; track variant.id; let index = $index) {
             <button
               type="button"
               class="sizes__size"
+              [style.--i]="index"
               [disabled]="variant.stock < 1"
               [attr.aria-label]="sizeLabel(variant)"
               (click)="add(variant)"
@@ -53,7 +58,7 @@
 
 <div class="info">
   <h3 class="info__name">
-    <a [routerLink]="['/product', product().id]">{{ product().name }}</a>
+    <a class="sweep" [routerLink]="['/product', product().id]">{{ product().name }}</a>
   </h3>
   <p class="info__price">{{ product().priceCents | money }}</p>
   @if (colors().length > 1) {
