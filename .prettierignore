@@ -6,6 +6,7 @@ GEMINI.md
 third_party/
 
 # Skills written for this repository (SKILLS.lock.md lists them) are formatted like the rest of the code.
+!.agents/skills/ai-elements/
 !.agents/skills/angular-material/
 !.agents/skills/angular-native/
 !.agents/skills/angular-ssr/

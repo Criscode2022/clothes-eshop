@@ -30,7 +30,7 @@ The skills live in `.agents/skills/`. Claude Code reaches the same folders throu
 - **Angular code:** `angular-developer`. Only when creating a new app: `angular-new-app`.
 - **The app type:** `angular-ssr`, `ionic-pwa`, or `angular-native`, as the section above says.
 - **UI:** `frontend-design` first, then `impeccable` to critique and polish. No generic AI styling: no decorative gradients, no identical card grids, no all-caps eyebrow labels, no motion nobody asked for.
-- **UI libraries,** only when the user asks for one or `package.json` already has it: `angular-material` for Angular Material, `tailwind-angular` for Tailwind CSS. Without one, style with component SCSS and the tokens in `src/styles.scss`.
+- **UI libraries:** Spartan UI and Tailwind CSS are already installed. Load `spartan` for components and `tailwind-angular` for utilities. Theme both from the tokens in `src/styles.scss`. The brand fill is `bg-primary`. Spartan's `bg-accent` is a hover surface, not the brand. Load `ai-elements` for conversation UI (messages, a prompt, reasoning, tool calls, sources). Load `angular-material` only when the user asks for Angular Material or `package.json` already has `@angular/material`. Ionic and Angular Native keep the component rules in their own skills.
 - **Every code change:** `clean-code`.
 - **Neon data and access rules:** `neon-data-api-rls` for tables, RLS policies, roles, and Data API calls from Angular. `neon-auth`, Neon's official skill, for the login flow.
 - **Designs in pen.dev:** `pen-dev-angular` for anything on the pen.dev canvas or in a `.pen` file, together with `frontend-design` and `impeccable`. It loads pen.dev's own instructions through the `pencil` MCP server.
@@ -48,7 +48,9 @@ Skills are instructions. The MCP servers are the action layer.
 ## Code map
 
 - `src/app/layout/shell.*`: the layout. It owns the skip link, the `main` landmark, and moving focus after navigation.
-- `src/app/pages/home/`: the one routed page, loaded lazily from `app.routes.ts`.
+- `src/app/pages/home/` and `src/app/pages/assistant/`: the routed pages, loaded lazily from `app.routes.ts`. Assistant is the conversation UI. It keeps messages in memory and does not call a model.
+- `src/app/ui/helm/`: Spartan components copied in by `@spartan-ng/cli`. Add more with `ng g @spartan-ng/cli:ui --name=<component>`. Leave generated files alone except to fix a break.
+- `src/app/ui/ai-elements/`: Angular conversation components built on Spartan. Use these instead of the React AI Elements package.
 - `src/app/features/notes/`: placeholder data. Components inject `NotesRepository`. Its factory returns `InMemoryNotesRepository` until Neon is connected.
 - `templates/webmcp.example.ts`: the WebMCP template. Do not register WebMCP tools in `src/` unless the user asks.
 - `design/`: pen.dev design files (`.pen`), once the project has any. Change them only in pen.dev or through its `pencil` MCP tools, never as text.

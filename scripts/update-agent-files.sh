@@ -14,7 +14,8 @@ angular-new-app|https://github.com/angular/skills|angular-new-app|MIT, declared 
 clean-code|https://github.com/markoa/clean-code-skill|skills/clean-code|MIT, see third_party/clean-code-skill/
 frontend-design|https://github.com/anthropics/skills|skills/frontend-design|Apache-2.0, LICENSE.txt inside the skill
 impeccable|https://github.com/pbakaus/impeccable|.agents/skills/impeccable|Apache-2.0, see third_party/impeccable/
-neon-auth|https://github.com/neondatabase/agent-skills|skills/neon-auth|Apache-2.0, see third_party/neon-agent-skills/'
+neon-auth|https://github.com/neondatabase/agent-skills|skills/neon-auth|Apache-2.0, see third_party/neon-agent-skills/
+spartan|https://github.com/spartan-ng/spartan|skills/spartan|MIT, https://github.com/spartan-ng/spartan'
 
 ANGULAR_CONTEXT_URL='https://angular.dev/assets/context'
 
