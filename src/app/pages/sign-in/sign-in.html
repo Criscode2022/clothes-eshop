@@ -7,6 +7,15 @@
     </p>
   </header>
 
+  @if (accountDeleted) {
+    <div hlmAlert class="deleted">
+      <ng-icon name="lucideCheck" />
+      <p hlmAlertDescription>
+        Your account is deleted. Orders you placed stay with the shop without a link to you.
+      </p>
+    </div>
+  }
+
   <div class="panels">
     <section class="panel" aria-labelledby="sign-in-title">
       <h2 id="sign-in-title" class="panel__title">Sign in</h2>
@@ -31,6 +40,7 @@
           autocomplete="current-password"
           [field]="signInForm.password"
         />
+        <p class="panel__forgot"><a routerLink="/forgot-password">Forgot your password?</a></p>
         <button
           hlmBtn
           type="submit"

@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideChevronRight, lucideCircleAlert, lucideReceipt } from '@ng-icons/lucide';
 import { HlmAlertImports } from '@spartan-ng/helm/alert';
+import { HlmBreadcrumbImports } from '@spartan-ng/helm/breadcrumb';
 import { HlmEmptyImports } from '@spartan-ng/helm/empty';
 import { HlmItemImports } from '@spartan-ng/helm/item';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
@@ -21,6 +22,7 @@ import { ShopButtonImports } from '../../ui/shop-button';
   imports: [
     FulfillmentBadge,
     HlmAlertImports,
+    HlmBreadcrumbImports,
     HlmEmptyImports,
     HlmItemImports,
     HlmSkeleton,

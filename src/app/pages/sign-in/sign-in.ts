@@ -2,7 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { email, form, minLength, required, submit } from '@angular/forms/signals';
 import { Router, RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideChevronRight, lucideCircleAlert } from '@ng-icons/lucide';
+import { lucideCheck, lucideChevronRight, lucideCircleAlert } from '@ng-icons/lucide';
 import { HlmAlertImports } from '@spartan-ng/helm/alert';
 import { HlmBadge } from '@spartan-ng/helm/badge';
 import { HlmItemImports } from '@spartan-ng/helm/item';
@@ -26,7 +26,7 @@ const FLOOR_ACCOUNTS: readonly {
 const FLOOR_PASSWORD = 'marlow-floor';
 
 const LANDING: Record<ShopRole, string> = {
-  client: '/account/orders',
+  client: '/account',
   worker: '/desk',
   owner: '/owner',
 };
@@ -50,7 +50,7 @@ const OPENS: Record<ShopRole, string> = {
     ShopButtonImports,
     TextField,
   ],
-  providers: [provideIcons({ lucideChevronRight, lucideCircleAlert })],
+  providers: [provideIcons({ lucideCheck, lucideChevronRight, lucideCircleAlert })],
   templateUrl: './sign-in.html',
   styleUrl: './sign-in.scss',
 })
@@ -58,6 +58,9 @@ export class SignIn {
   private readonly shop = inject(ShopClient);
   private readonly router = inject(Router);
 
+  /** True when the account page has just deleted the account and sent the person here. */
+  protected readonly accountDeleted =
+    inject(Router).currentNavigation()?.extras.state?.['accountDeleted'] === true;
   protected readonly floorAccounts = FLOOR_ACCOUNTS;
   protected readonly floorPassword = FLOOR_PASSWORD;
   protected readonly signingIn = signal(false);

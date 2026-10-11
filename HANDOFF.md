@@ -16,6 +16,10 @@ Written 2026-10-08 at the end of a working session (2026-10-03 to 2026-10-08). I
 
 Later work rebuilt the UI on Spartan while keeping the White Room look. Where this file and the code disagree, trust `DESIGN.md` (section "Spartan underneath") and `APP.md` (Decisions and Rules), which were updated with it. In short: Spartan Brain plus the `lyra` Helm style in `src/app/ui/helm/` (left as generated), tokens aliased in `src/tailwind.css`, `ShopButtonImports` for every `hlmBtn`, Lucide icons through ng-icons (the authored `ui/icon.ts` and `ui/dialog.ts` are gone), the bag drawer and phone menu as deferred Spartan sheets, scroll reveals through `appReveal`, a hover loupe on product photos, and two new floor sections. 64 tests in 14 files; axe clean over 23 states.
 
+### Update, 2026-10-11: accounts and email (branch `account-and-email`)
+
+Added "Your account" at `/account` (change name and password, delete the account; orders are kept and unlinked), password recovery at `/forgot-password` and `/reset-password`, and email from the Node server through nodemailer and Gmail (order confirmation, "account is open" after sign-up, and reset links once Neon's `send.magic_link` webhook points at `/api/neon-auth/webhook`). Session tokens are now random. `APP.md` has the decisions and a Configuration section with every environment variable and the webhook setup. Without Gmail settings, emails land as HTML files in `tmp/mail-outbox/`. 112 tests in 21 files.
+
 ---
 
 ## 2. Resume at a new location

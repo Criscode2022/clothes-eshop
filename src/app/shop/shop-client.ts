@@ -1,3 +1,4 @@
+import { DOCUMENT } from '@angular/common';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Service, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
@@ -7,7 +8,8 @@ import type { CartLine } from './cart';
 import type { ContactDetails, Fulfillment, ShippingDetails, ShopOrder } from './checkout';
 import type { Product } from './catalog';
 import { CatalogStore } from './catalog-store';
-import { neonAuthSignOut, neonAuthToken } from './neon-browser';
+import { NeonAuth } from './neon-auth';
+import { accountKindOf } from './session-tokens';
 import { ShopSession } from './shop-session';
 
 export interface PlaceOrderBody {
@@ -27,6 +29,8 @@ export class ShopClient {
   private readonly http = inject(HttpClient);
   private readonly session = inject(ShopSession);
   private readonly catalog = inject(CatalogStore);
+  private readonly neon = inject(NeonAuth);
+  private readonly document = inject(DOCUMENT);
 
   async signIn(email: string, password: string): Promise<Actor> {
     const response = await this.request<SessionResponse>(
@@ -43,21 +47,51 @@ export class ShopClient {
     return this.adoptNeon(await this.neonToken('sign-in', email, password));
   }
 
+  /** The server sends the "your account is open" email when it sees a session that follows a sign-up. */
   async signUpWithNeon(name: string, email: string, password: string): Promise<Actor> {
-    return this.adoptNeon(await this.neonToken('sign-up', email, password, name));
+    return this.adoptNeon(await this.neonToken('sign-up', email, password, name), true);
   }
 
   async signOut(): Promise<void> {
-    const neon = this.session.token().startsWith('session-');
+    const neon = accountKindOf(this.session.token()) === 'neon';
     await this.request<{ signedOut: boolean }>('DELETE', '/api/session', null, true);
     this.session.clear();
     if (neon) {
-      try {
-        await neonAuthSignOut();
-      } catch {
-        // The shop session is already gone. The auth cookie expires on its own.
-      }
+      await this.signOutOfNeon();
     }
+  }
+
+  async renameAccount(name: string): Promise<Actor> {
+    const response = await this.request<{ actor: Actor }>('PATCH', '/api/account', { name }, true);
+    this.session.adopt(response.actor, this.session.token());
+    return response.actor;
+  }
+
+  async changePassword(currentPassword: string, newPassword: string): Promise<void> {
+    await this.neonCall(() =>
+      this.neon.changePassword(this.signedInEmail(), currentPassword, newPassword),
+    );
+  }
+
+  /**
+   * Signing in again with the password proves it is the person, not a forgotten open tab. The server
+   * checks that fresh sign-in before it unlinks the orders and removes the account.
+   */
+  async deleteAccount(password: string): Promise<void> {
+    const token = await this.neonToken('sign-in', this.signedInEmail(), password);
+    await this.request<{ deleted: boolean }>('DELETE', '/api/account', { token }, true);
+    this.session.clear();
+    await this.signOutOfNeon();
+  }
+
+  /** The link in the email comes back to this shop's reset page. */
+  requestPasswordReset(email: string): Promise<void> {
+    const redirectTo = `${this.document.location.origin}/reset-password`;
+    return this.neonCall(() => this.neon.requestPasswordReset(email, redirectTo));
+  }
+
+  resetPassword(token: string, newPassword: string): Promise<void> {
+    return this.neonCall(() => this.neon.resetPassword(token, newPassword));
   }
 
   placeOrder(body: PlaceOrderBody): Promise<ShopOrder> {
@@ -145,31 +179,56 @@ export class ShopClient {
     return product;
   }
 
-  private async adoptNeon(token: string): Promise<Actor> {
+  private async adoptNeon(token: string, signedUp = false): Promise<Actor> {
     const response = await this.request<SessionResponse>(
       'POST',
       '/api/session/neon',
-      { token },
+      { token, signedUp },
       false,
     );
     this.session.adopt(response.actor, response.token);
     return response.actor;
   }
 
-  private async neonToken(
+  private neonToken(
     mode: 'sign-in' | 'sign-up',
     email: string,
     password: string,
     name = '',
   ): Promise<string> {
+    return this.neonCall(() => this.neon.sessionToken(mode, email, password, name));
+  }
+
+  /** Neon Auth's errors reach the page as the shop's own, with Neon's message when it gives one. */
+  private async neonCall<T>(call: () => Promise<T>): Promise<T> {
     try {
-      return await neonAuthToken(mode, email, password, name);
+      return await call();
     } catch (error) {
       if (error instanceof ShopRuleError) {
         throw error;
       }
-      throw new ShopRuleError(error instanceof Error ? error.message : 'Sign-in failed.');
+      throw new ShopRuleError(
+        error instanceof Error && error.message
+          ? error.message
+          : 'Neon Auth could not finish that.',
+      );
     }
+  }
+
+  private async signOutOfNeon(): Promise<void> {
+    try {
+      await this.neon.signOut();
+    } catch {
+      // The shop session is already gone. The auth cookie expires on its own.
+    }
+  }
+
+  private signedInEmail(): string {
+    const email = this.session.current()?.email;
+    if (!email) {
+      throw new ShopRuleError('Sign in to change your account.');
+    }
+    return email;
   }
 
   private async request<T>(

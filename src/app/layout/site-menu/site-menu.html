@@ -34,6 +34,7 @@
       <ul role="list" class="menu__list menu__list--quiet">
         <li class="menu__item" style="--i: 5"><a routerLink="/atelier">Atelier</a></li>
         @if (session.current()) {
+          <li class="menu__item" style="--i: 6"><a routerLink="/account">Your account</a></li>
           @if (isClient()) {
             <li class="menu__item" style="--i: 6">
               <a routerLink="/account/orders">Your orders</a>

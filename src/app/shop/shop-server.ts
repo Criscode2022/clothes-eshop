@@ -16,6 +16,8 @@ import {
   setVariantStock,
 } from './order-book';
 import type { NewPiece, NewVariant } from './order-book';
+import { accountKindOf, newSessionToken } from './session-tokens';
+import type { AccountKind } from './session-tokens';
 
 /**
  * Floor accounts for the shop before Neon Auth is configured.
@@ -58,7 +60,6 @@ const FLOOR_ACCOUNTS: readonly (Actor & { readonly password: string })[] = [
 export const FLOOR_PASSWORD_HINT = FLOOR_PASSWORD;
 
 const sessions = new Map<string, Actor>();
-let nextToken = 1;
 
 export interface ShopHttpResult {
   readonly status: number;
@@ -68,7 +69,6 @@ export interface ShopHttpResult {
 export function resetShopServer(): void {
   resetShop();
   sessions.clear();
-  nextToken = 1;
 }
 
 /**
@@ -88,7 +88,12 @@ export function handleShopHttp(
   }
 }
 
-function dispatch(method: string, path: string, body: unknown, authorization: string | null): ShopHttpResult {
+function dispatch(
+  method: string,
+  path: string,
+  body: unknown,
+  authorization: string | null,
+): ShopHttpResult {
   const actor = actorFrom(authorization);
   if (method === 'POST' && path === '/api/session') {
     return signIn(body);
@@ -117,7 +122,10 @@ function dispatch(method: string, path: string, body: unknown, authorization: st
 
   const fulfillment = path.match(/^\/api\/orders\/([^/]+)\/fulfillment$/);
   if (method === 'POST' && fulfillment) {
-    return { status: 200, body: moveFulfillment(actor, decode(fulfillment[1]), parseFulfillment(body)) };
+    return {
+      status: 200,
+      body: moveFulfillment(actor, decode(fulfillment[1]), parseFulfillment(body)),
+    };
   }
 
   const orderPath = path.match(/^\/api\/orders\/([^/]+)$/);
@@ -149,10 +157,40 @@ function dispatch(method: string, path: string, body: unknown, authorization: st
 
 /** Opens a server session for an actor the database already accepted. The browser does not choose the role. */
 export function openSession(actor: Actor): { token: string; actor: Actor } {
-  const token = `session-${nextToken}`;
-  nextToken += 1;
+  const token = newSessionToken('neon');
   sessions.set(token, actor);
   return { token, actor };
+}
+
+/** The person behind a request and the kind of account they signed in with, or null without a session. */
+export function sessionOf(
+  authorization: string | null,
+): { readonly actor: Actor; readonly kind: AccountKind } | null {
+  const token = tokenFrom(authorization);
+  const actor = token ? sessions.get(token) : undefined;
+  const kind = token ? accountKindOf(token) : null;
+  return actor && kind ? { actor, kind } : null;
+}
+
+/** Every open session of one account shows its new name at once. */
+export function renameSessionsOf(actorId: string, name: string): Actor | null {
+  let renamed: Actor | null = null;
+  for (const [token, actor] of sessions) {
+    if (actor.id === actorId) {
+      renamed = { ...actor, name };
+      sessions.set(token, renamed);
+    }
+  }
+  return renamed;
+}
+
+/** Signs an account out everywhere, as when it is deleted. */
+export function endSessionsOf(actorId: string): void {
+  for (const [token, actor] of sessions) {
+    if (actor.id === actorId) {
+      sessions.delete(token);
+    }
+  }
 }
 
 function signIn(body: unknown): ShopHttpResult {
@@ -161,21 +199,24 @@ function signIn(body: unknown): ShopHttpResult {
   const password = readString(record, 'password');
   const account = FLOOR_ACCOUNTS.find((item) => item.email === email && item.password === password);
   if (!account) {
-    return { status: 401, body: { message: 'That email and password do not match a floor account.' } };
+    return {
+      status: 401,
+      body: { message: 'That email and password do not match a floor account.' },
+    };
   }
-  const actor: Actor = { id: account.id, role: account.role, name: account.name, email: account.email };
-  const token = `floor-${nextToken}`;
-  nextToken += 1;
+  const actor: Actor = {
+    id: account.id,
+    role: account.role,
+    name: account.name,
+    email: account.email,
+  };
+  const token = newSessionToken('floor');
   sessions.set(token, actor);
   return { status: 200, body: { token, actor } };
 }
 
 function actorFrom(authorization: string | null): Actor | null {
-  const token = tokenFrom(authorization);
-  if (!token) {
-    return null;
-  }
-  return sessions.get(token) ?? null;
+  return sessionOf(authorization)?.actor ?? null;
 }
 
 function tokenFrom(authorization: string | null): string | null {

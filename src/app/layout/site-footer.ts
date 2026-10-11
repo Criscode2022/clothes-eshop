@@ -42,10 +42,14 @@ import { ShopSession } from '../shop/shop-session';
           <div>
             <h2 class="footer__heading">Account</h2>
             <ul role="list">
-              @if (session.current()?.role === 'client') {
-                <li><a class="sweep" routerLink="/account/orders">Your orders</a></li>
-              } @else if (!session.current()) {
+              @if (session.current(); as person) {
+                <li><a class="sweep" routerLink="/account">Your account</a></li>
+                @if (person.role === 'client') {
+                  <li><a class="sweep" routerLink="/account/orders">Your orders</a></li>
+                }
+              } @else {
                 <li><a class="sweep" routerLink="/sign-in">Sign in</a></li>
+                <li><a class="sweep" routerLink="/forgot-password">Forgot your password</a></li>
               }
               <li><a class="sweep" routerLink="/bag">Bag</a></li>
             </ul>

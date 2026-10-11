@@ -8,11 +8,7 @@ import {
 } from './access';
 import type { Actor } from './access';
 import { ShopRuleError } from './cart';
-import {
-  cloneProducts,
-  isCategorySlug,
-  SEED_PRODUCTS,
-} from './catalog';
+import { cloneProducts, isCategorySlug, SEED_PRODUCTS } from './catalog';
 import type { CategorySlug, Product, Variant } from './catalog';
 import { assertCheckoutDraft, assertNoCardData, transitionFulfillment } from './checkout';
 import type { CheckoutDraft, Fulfillment, ShopOrder } from './checkout';
@@ -95,7 +91,11 @@ export function listCatalog(): Product[] {
   return cloneProducts(readState().products);
 }
 
-export function placeOrder(draft: CheckoutDraft, actor: Actor | null, rawBody: unknown = draft): ShopOrder {
+export function placeOrder(
+  draft: CheckoutDraft,
+  actor: Actor | null,
+  rawBody: unknown = draft,
+): ShopOrder {
   assertNoCardData(rawBody);
   const current = readState();
   const quote = assertCheckoutDraft(draft, current.products);
@@ -129,6 +129,19 @@ export function placeOrder(draft: CheckoutDraft, actor: Actor | null, rawBody: u
   return order;
 }
 
+/** A deleted account's orders stay in the book so they can ship and be accounted for, without the link to it. */
+export function unlinkClientOrders(clientId: string): number {
+  const current = readState();
+  const linked = current.orders.filter((order) => order.clientId === clientId).length;
+  writeState({
+    ...current,
+    orders: current.orders.map((order) =>
+      order.clientId === clientId ? { ...order, clientId: null } : order,
+    ),
+  });
+  return linked;
+}
+
 export function orderByReference(reference: string, actor: Actor | null): ShopOrder {
   const order = readState().orders.find((item) => item.reference === reference);
   if (!order || !canReadOrder(actor, order)) {
@@ -141,7 +154,11 @@ export function listOrders(actor: Actor | null): ShopOrder[] {
   return ordersVisibleTo(actor, readState().orders);
 }
 
-export function moveFulfillment(actor: Actor | null, reference: string, target: Fulfillment): ShopOrder {
+export function moveFulfillment(
+  actor: Actor | null,
+  reference: string,
+  target: Fulfillment,
+): ShopOrder {
   if (!canChangeFulfillment(actor)) {
     throw new ShopRuleError('Only shop staff can move an order.');
   }
@@ -167,11 +184,17 @@ export function setVariantStock(actor: Actor | null, variantId: string, stock: n
   const product = productWithVariant(variantId);
   return replaceProduct({
     ...product,
-    variants: product.variants.map((variant) => (variant.id === variantId ? { ...variant, stock } : variant)),
+    variants: product.variants.map((variant) =>
+      variant.id === variantId ? { ...variant, stock } : variant,
+    ),
   });
 }
 
-export function setProductPrice(actor: Actor | null, productId: string, priceCents: number): Product {
+export function setProductPrice(
+  actor: Actor | null,
+  productId: string,
+  priceCents: number,
+): Product {
   if (!canChangePrice(actor)) {
     throw new ShopRuleError('Only the owner can change a price.');
   }
@@ -248,7 +271,9 @@ function requireProduct(productId: string): Product {
 }
 
 function productWithVariant(variantId: string): Product {
-  const product = readState().products.find((item) => item.variants.some((variant) => variant.id === variantId));
+  const product = readState().products.find((item) =>
+    item.variants.some((variant) => variant.id === variantId),
+  );
   if (!product) {
     throw new ShopRuleError('That size is no longer on the floor.');
   }

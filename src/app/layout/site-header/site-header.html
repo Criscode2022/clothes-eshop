@@ -48,35 +48,32 @@
         ariaCurrentWhenActive="page"
         >Atelier</a
       >
+      @if (showDesk()) {
+        <a
+          class="tool sweep"
+          routerLink="/desk"
+          routerLinkActive="is-current"
+          ariaCurrentWhenActive="page"
+          >Desk</a
+        >
+      }
+      @if (showOwner()) {
+        <a
+          class="tool sweep"
+          routerLink="/owner"
+          routerLinkActive="is-current"
+          ariaCurrentWhenActive="page"
+          >Backoffice</a
+        >
+      }
       @if (session.current()) {
-        @if (isClient()) {
-          <a
-            class="tool sweep"
-            routerLink="/account/orders"
-            routerLinkActive="is-current"
-            ariaCurrentWhenActive="page"
-            >Orders</a
-          >
-        }
-        @if (showDesk()) {
-          <a
-            class="tool sweep"
-            routerLink="/desk"
-            routerLinkActive="is-current"
-            ariaCurrentWhenActive="page"
-            >Desk</a
-          >
-        }
-        @if (showOwner()) {
-          <a
-            class="tool sweep"
-            routerLink="/owner"
-            routerLinkActive="is-current"
-            ariaCurrentWhenActive="page"
-            >Backoffice</a
-          >
-        }
-        <button type="button" class="tool tool--button sweep" (click)="signOut()">Sign out</button>
+        <a
+          class="tool sweep"
+          routerLink="/account"
+          routerLinkActive="is-current"
+          ariaCurrentWhenActive="page"
+          >Account</a
+        >
       } @else {
         <a
           class="tool sweep"

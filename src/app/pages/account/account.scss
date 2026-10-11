@@ -1,0 +1,153 @@
+.account {
+  display: grid;
+  gap: 0;
+  max-width: 64rem;
+  padding-block: 2.5rem 0;
+}
+
+.head {
+  display: grid;
+  gap: 0.5rem;
+  padding-bottom: 2.5rem;
+}
+
+.head__title {
+  font-size: var(--text-xl);
+}
+
+.head__lede {
+  font-size: var(--text-ui);
+  color: var(--color-text-muted);
+}
+
+// A settings page: what a section is for on the left, the controls on the right.
+.block {
+  display: grid;
+  gap: 1.25rem;
+  padding-block: 2rem;
+  border-top: 1px solid var(--color-border);
+
+  @media (min-width: 48rem) {
+    grid-template-columns: minmax(0, 15rem) minmax(0, 28rem);
+    gap: 4rem;
+  }
+}
+
+.block__about {
+  display: grid;
+  gap: 0.375rem;
+  align-content: start;
+}
+
+.block__title {
+  font-size: var(--text-md);
+  letter-spacing: 0;
+}
+
+.block__note {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.block__body {
+  display: grid;
+  gap: 1.25rem;
+  align-content: start;
+}
+
+.block__text {
+  font-size: var(--text-ui);
+  color: var(--color-text-muted);
+}
+
+.facts {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+  font-size: var(--text-ui);
+
+  dt {
+    font-size: var(--text-sm);
+    font-weight: 500;
+  }
+
+  dd {
+    margin: 0.25rem 0 0;
+  }
+}
+
+.readonly {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.readonly__label {
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.readonly__value {
+  font-size: var(--text-md);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  align-items: center;
+}
+
+.status {
+  font-size: var(--text-sm);
+  color: var(--color-positive);
+}
+
+.link-row {
+  min-height: 4rem;
+  text-decoration: none;
+  transition:
+    border-color var(--duration-fast) ease-out,
+    background-color var(--duration-fast) ease-out;
+
+  &:hover {
+    border-color: var(--color-text);
+
+    .link-row__go {
+      translate: 0.25rem 0;
+    }
+  }
+}
+
+.link-row__go {
+  font-size: 1.125rem;
+  color: var(--color-text-muted);
+  transition: translate var(--duration-base) var(--ease-out);
+}
+
+// The confirmation that sits over the page: a white panel, square, at Marlow's sizes.
+.confirm {
+  width: min(28rem, calc(100vw - 2rem));
+  max-width: none;
+  gap: 1.25rem;
+  padding: 1.75rem;
+  font-size: var(--text-ui);
+  box-shadow: none;
+}
+
+.confirm__title {
+  font-size: var(--text-lg);
+  font-weight: 500;
+}
+
+.confirm__text {
+  font-size: var(--text-ui);
+}
+
+.confirm__form {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.confirm__actions {
+  gap: 0.75rem;
+}

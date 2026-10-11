@@ -68,6 +68,11 @@ function enqueue<T>(job: () => Promise<T>): Promise<T> {
   return run;
 }
 
+/** Runs other database work in the same line as pulls and pushes, so it never lands between them. */
+export function inShopDatabaseQueue<T>(job: () => Promise<T>): Promise<T> {
+  return enqueue(job);
+}
+
 export function shopDatabaseConfigured(): boolean {
   return Boolean(process.env['DATABASE_URL']);
 }
@@ -83,7 +88,10 @@ export function reportShopError(error: unknown): void {
 }
 
 /** Rebuilds the floor from slug rows. Seeded pieces stay in floor order so the index lead does not move. */
-export function productsFromRows(productRows: readonly ProductRecord[], variantRows: readonly VariantRecord[]): Product[] {
+export function productsFromRows(
+  productRows: readonly ProductRecord[],
+  variantRows: readonly VariantRecord[],
+): Product[] {
   const variantsByProduct = new Map<string, VariantRecord[]>();
   for (const row of variantRows) {
     const list = variantsByProduct.get(row.product_slug) ?? [];
@@ -344,11 +352,16 @@ async function sqlClient(): Promise<Query | null> {
 }
 
 function compareProducts(left: Product, right: Product): number {
-  return rank(SEED_ORDER, left.id) - rank(SEED_ORDER, right.id) || left.name.localeCompare(right.name);
+  return (
+    rank(SEED_ORDER, left.id) - rank(SEED_ORDER, right.id) || left.name.localeCompare(right.name)
+  );
 }
 
 function compareVariants(left: VariantRecord, right: VariantRecord): number {
-  return rank(SIZE_ORDER, left.size) - rank(SIZE_ORDER, right.size) || left.color.localeCompare(right.color);
+  return (
+    rank(SIZE_ORDER, left.size) - rank(SIZE_ORDER, right.size) ||
+    left.color.localeCompare(right.color)
+  );
 }
 
 function rank(order: readonly string[], value: string): number {
@@ -388,5 +401,8 @@ function lineIdentity(
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '');
-  return { productId: product?.id ?? fallback, variantId: `${fallback}-${size}-${color}`.toLowerCase() };
+  return {
+    productId: product?.id ?? fallback,
+    variantId: `${fallback}-${size}-${color}`.toLowerCase(),
+  };
 }

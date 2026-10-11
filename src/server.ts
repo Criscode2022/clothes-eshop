@@ -5,11 +5,27 @@ import {
   writeResponseToNodeResponse,
 } from '@angular/ssr/node';
 import express from 'express';
+import type { Request, Response } from 'express';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { adoptNeonSession } from './app/shop/neon-adopt';
+import { handleAccountHttp } from './app/shop/account-server';
+import type { AccountServerDeps } from './app/shop/account-server';
+import type { ShopOrder } from './app/shop/checkout';
+import { neonAccountDirectory } from './app/shop/neon-accounts';
+import { adoptNeonSession, verifyFreshNeonSignIn } from './app/shop/neon-adopt';
 import { pullNeon, pushNeon, reportShopError, shopDatabaseConfigured } from './app/shop/neon-book';
+import { NEON_AUTH_URL } from './app/shop/neon-public';
 import { handleShopHttp } from './app/shop/shop-server';
+import { mailerFromEnv } from './mail/mailer';
+import {
+  DeliveredEvents,
+  eventIdOf,
+  handleNeonAuthEvent,
+  neonAuthKeys,
+  verifyNeonWebhook,
+  WebhookRejected,
+} from './mail/neon-auth-webhook';
+import { ShopMail } from './mail/shop-mail';
 
 loadLocalEnv();
 
@@ -17,6 +33,26 @@ const browserDistFolder = join(import.meta.dirname, '../browser');
 
 const app = express();
 const angularApp = new AngularNodeAppEngine();
+
+/** Gmail when GMAIL_USER and GMAIL_APP_PASSWORD are set, otherwise HTML files in tmp/mail-outbox. */
+const shopMail = new ShopMail(mailerFromEnv(), shopUrl(), reportShopError);
+const accounts: AccountServerDeps = {
+  directory: neonAccountDirectory(),
+  verifyFreshSignIn: verifyFreshNeonSignIn,
+  now: Date.now,
+};
+const neonAuthUrl = process.env['NEON_AUTH_URL'] || NEON_AUTH_URL;
+const webhookKeys = neonAuthKeys(neonAuthUrl);
+const deliveredEvents = new DeliveredEvents();
+
+/**
+ * Neon Auth calls this for the emails it would otherwise send itself (password reset links, codes), and the
+ * shop sends them through its own mailer. It signs the exact bytes, so the body is read as text before the
+ * JSON parser below sees it. Register it for `send.magic_link` at a public HTTPS address (see APP.md).
+ */
+app.post('/api/neon-auth/webhook', express.text({ type: '*/*', limit: '64kb' }), (req, res) => {
+  void receiveNeonAuthWebhook(req, res);
+});
 
 app.use(express.json());
 
@@ -75,6 +111,7 @@ if (isMainModule(import.meta.url) || process.env['pm_id']) {
     }
 
     console.log(`Node Express server listening on http://localhost:${port}`);
+    console.log(`Mail: ${shopMail.description}`);
   });
 }
 
@@ -93,7 +130,15 @@ async function serveApi(
     await pullNeon();
   }
   if (method.toUpperCase() === 'POST' && path === '/api/session/neon') {
-    return adoptNeonSession(body);
+    const adoption = await adoptNeonSession(body);
+    if (adoption.identity) {
+      void shopMail.accountCreated(adoption.identity, adoption.signedUp);
+    }
+    return adoption.result;
+  }
+  const account = await handleAccountHttp(method, path, body, authorization, accounts);
+  if (account) {
+    return account;
   }
   const result = handleShopHttp(method, path, body, authorization);
   if (shopDatabaseConfigured() && writesShop(method, path, result.status)) {
@@ -104,7 +149,53 @@ async function serveApi(
       throw error;
     }
   }
+  if (placesOrder(method, path, result.status)) {
+    void shopMail.orderPlaced(result.body as ShopOrder);
+  }
   return result;
+}
+
+/** Only a verified delivery sends email; a retry of one already handled is acknowledged and dropped. */
+async function receiveNeonAuthWebhook(req: Request, res: Response): Promise<void> {
+  try {
+    const event = await verifyNeonWebhook(
+      typeof req.body === 'string' ? req.body : '',
+      {
+        signature: req.header('x-neon-signature') ?? '',
+        kid: req.header('x-neon-signature-kid') ?? '',
+        timestamp: req.header('x-neon-timestamp') ?? '',
+      },
+      webhookKeys,
+    );
+    const id = eventIdOf(event);
+    if (id && deliveredEvents.has(id)) {
+      res.status(200).end();
+      return;
+    }
+    await handleNeonAuthEvent(event, shopMail);
+    if (id) {
+      deliveredEvents.add(id);
+    }
+    res.status(200).end();
+  } catch (error) {
+    if (error instanceof WebhookRejected) {
+      res.status(401).end();
+      return;
+    }
+    reportShopError(error);
+    // A 5xx makes Neon Auth retry, and the person is told the email could not be sent if every try fails.
+    res.status(500).end();
+  }
+}
+
+function placesOrder(method: string, path: string, status: number): boolean {
+  return method.toUpperCase() === 'POST' && path === '/api/orders' && status === 201;
+}
+
+/** The address links in emails point to: SHOP_URL in production, this machine otherwise. */
+function shopUrl(): string {
+  const configured = process.env['SHOP_URL']?.trim().replace(/\/+$/, '');
+  return configured || `http://localhost:${process.env['PORT'] || 4200}`;
 }
 
 function writesShop(method: string, path: string, status: number): boolean {
@@ -115,7 +206,11 @@ function writesShop(method: string, path: string, status: number): boolean {
   if (verb === 'GET' || verb === 'HEAD' || verb === 'DELETE') {
     return false;
   }
-  return path.startsWith('/api/orders') || path.startsWith('/api/products') || path.startsWith('/api/variants');
+  return (
+    path.startsWith('/api/orders') ||
+    path.startsWith('/api/products') ||
+    path.startsWith('/api/variants')
+  );
 }
 
 /** Reads a gitignored `.env` when the process was not given the variables. Never logs the values. */
@@ -138,7 +233,10 @@ function loadLocalEnv(): void {
       continue;
     }
     let value = trimmed.slice(eq + 1).trim();
-    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
       value = value.slice(1, -1);
     }
     process.env[key] = value;

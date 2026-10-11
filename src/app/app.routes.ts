@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import { Shell } from './layout/shell';
-import { clientGuard, deskGuard, ownerGuard } from './shop/staff.guard';
+import { clientGuard, deskGuard, ownerGuard, signedInGuard } from './shop/staff.guard';
 
 const orderQueue = () => import('./pages/staff/order-queue').then((m) => m.OrderQueue);
 
@@ -48,6 +48,23 @@ export const routes: Routes = [
         path: 'sign-in',
         title: 'Sign in | Marlow',
         loadComponent: () => import('./pages/sign-in/sign-in').then((m) => m.SignIn),
+      },
+      {
+        path: 'forgot-password',
+        title: 'Forgot your password | Marlow',
+        loadComponent: () =>
+          import('./pages/password/forgot-password').then((m) => m.ForgotPassword),
+      },
+      {
+        path: 'reset-password',
+        title: 'New password | Marlow',
+        loadComponent: () => import('./pages/password/reset-password').then((m) => m.ResetPassword),
+      },
+      {
+        path: 'account',
+        title: 'Your account | Marlow',
+        canActivate: [signedInGuard],
+        loadComponent: () => import('./pages/account/account').then((m) => m.AccountPage),
       },
       {
         path: 'account/orders',

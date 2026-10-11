@@ -29,7 +29,6 @@ export class SiteHeader {
   protected readonly categories = CATEGORIES;
   protected readonly menuOpen = signal(false);
   protected readonly tucked = signal(false);
-  protected readonly isClient = computed(() => this.session.current()?.role === 'client');
   protected readonly showDesk = computed(() => canOpenArea('desk', this.session.current()));
   protected readonly showOwner = computed(() => canOpenArea('owner', this.session.current()));
 

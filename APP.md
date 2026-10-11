@@ -32,6 +32,25 @@ Visitors and clients cannot open the desk or the backoffice. A worker cannot ope
 - The bag drawer and the phone menu are Spartan sheets inside `@defer` blocks (on idle, or as soon as they are asked to open), which keeps the CDK overlay and tailwind-merge out of the first page and the initial bundle under budget.
 - The floor ends with a "Cloth and care" note and a "Shop by category" index; the bag page suggests "More from the floor" through `piecesToPairWith`. Motion includes scroll reveals, chosen by the owner on 2026-10-11, through the `appReveal` directive, which only hides what starts below the fold and never under reduced motion.
 - Adding a size keeps opening the bag drawer on the line just added; the owner declined toasts for it on 2026-10-11.
+- Accounts (2026-10-11): `/account` is "Your account" for anyone signed in. A Neon account changes its name there (the Node server writes `neon_auth.user` and `public.profiles` in one transaction), changes its password through Neon Auth after re-entering the current one, and deletes itself after re-entering the password: the browser signs in again, the server accepts that fresh token only for the same person within 5 minutes, then unlinks the account's orders and deletes the `neon_auth.user` row in one transaction (everything else cascades). Orders are kept, unlinked, by the owner's choice. Staff accounts cannot delete themselves. Floor accounts are read-only. Neon Auth cannot change an account's email yet, so the page shows it read-only. Name changes and deletion need `DATABASE_URL`; without it the server answers 503.
+- Shop session tokens are random (`floor_<uuid>`, `neon_<uuid>`), never sequential, because a session can now delete an account.
+- Email (2026-10-11): the Node server sends mail with nodemailer through Gmail SMTP and an app password. It sends the order confirmation after an order is stored, and "Your Marlow account is open" once, straight after a Neon sign-up (no confirmation asked). Without Gmail settings it writes each email as an HTML file to `tmp/mail-outbox/` for development. Mail never blocks an order or a sign-in; failures are logged.
+- Password recovery: `/forgot-password` asks Neon Auth for a reset link that returns to `/reset-password?token=…`; the page answers the same whether or not the email has an account. Neon Auth keeps the token. Neon sends that email itself (its shared sender) until its `send.magic_link` webhook is registered; then Neon calls `POST /api/neon-auth/webhook` and the shop sends the link through Gmail with its own template. The server checks Neon's Ed25519 signature against the branch JWKS, refuses deliveries older than 5 minutes, and drops retries it already handled.
+
+## Configuration
+
+Set these in the gitignored `.env` (or the host's environment). None of them may appear in a tracked file.
+
+| Variable             | Read by     | Meaning                                                                                                                               |
+| -------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`       | Node server | Neon connection string. Secret. Needed to change or delete accounts.                                                                  |
+| `GMAIL_USER`         | Node server | The Gmail address mail is sent from.                                                                                                  |
+| `GMAIL_APP_PASSWORD` | Node server | A Google app password for that address (Google account, Security, 2-Step Verification on, App passwords). Secret. Spaces are ignored. |
+| `MAIL_FROM`          | Node server | Optional sender line, such as `Marlow <shop@gmail.com>`. Gmail only allows addresses set up on that account.                          |
+| `SHOP_URL`           | Node server | Where links in emails point, such as `https://marlow.shop`. Defaults to `http://localhost:$PORT` (4200 under `ng serve`).             |
+| `MAIL_OUTBOX`        | Node server | Optional folder for the development outbox.                                                                                           |
+
+To send Neon Auth's reset emails through Gmail, register the webhook once per branch, at a public HTTPS address (Neon refuses `localhost`; use the deployed host, or a tunnel such as ngrok in development): Neon Console, Auth, Configuration, Webhooks, URL `https://<host>/api/neon-auth/webhook`, event `send.magic_link`, timeout 5 seconds. The CLI form is `neon neon-auth config webhook update --enabled --url https://<host>/api/neon-auth/webhook --enabled-events send.magic_link --timeout 5`. Also add the production origin to Neon Auth's trusted domains, or the reset link cannot return to the shop.
 
 ## Rules
 
@@ -41,5 +60,7 @@ Visitors and clients cannot open the desk or the backoffice. A worker cannot ope
 - Shared styles in `src/styles.scss` sit in Tailwind's `base` and `components` layers, so utilities can override them. The one exception is the unlayered block for Spartan's `data-slot` parts, which has to win over Helm's utility classes.
 - Guest checkout stays on the public path. Do not put a sign-in wall in front of it.
 - Do not put payment-provider calls or email sending in browser code.
+- Send mail only through `ShopMail` in `src/mail/`; it decides when each email goes and keeps a failed email from failing the request.
+- Never log or commit `GMAIL_APP_PASSWORD`; the server only names the sending account.
 - Import `ShopButtonImports`, not `HlmButton` alone, wherever a template uses `hlmBtn`.
 - Change Spartan's look through the tokens or the unlayered `data-slot` block in `src/styles.scss`; leave `src/app/ui/helm/` as generated.

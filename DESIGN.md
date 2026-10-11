@@ -231,6 +231,7 @@ Every control is a Spartan part: Brain for behavior and accessibility, Helm (`ly
 - **Primary** (`hlmBtn`): Ink Black fill, white label at 500 weight. Hover mixes 15% of the ground into the black; a press nudges it down 1px.
 - **Secondary** (`variant="outline"`): 1px Ink Black outline on the ground; hover fills Fitting-Room Grey.
 - **Text button** (`variant="link"`): an underlined caption-size action (Remove, Cancel, Keep, Copy reference) for secondary actions that sit inline; the underline thickens on hover.
+- **Destructive** (`variant="destructive"`): Oxblood Error text on a 10% Oxblood wash; used only for deleting an account, and only after a confirm dialog.
 - **Disabled:** Chalk Grey fill with Graphite text, out of the tab order. Busy buttons carry aria-busy, show Spartan's spinner, and change their label ("Placing order").
 
 ### Chips
@@ -245,6 +246,8 @@ Every control is a Spartan part: Brain for behavior and accessibility, Helm (`ly
 - **Empty states:** Spartan's empty part: a grey icon tile, a 1.25rem title, one line of direction, and the next action (Shop the floor). Used for the empty bag, an empty checkout, no orders, a closed area, and staff views with nothing in them.
 - **Loading:** Spartan skeletons in Chalk Grey shaped like the rows they stand in for, with the loading sentence kept for screen readers.
 - **Alerts:** Spartan's destructive alert on a Fitting-Room Grey fill with a circled-alert icon and the problem in words.
+- **Settings sections:** the account page is a column of sections divided by Hairline rules, each with its title and one line of purpose on the left and its form or action on the right (stacked on a phone). Read-only facts are a label over the value. Saving reports in a status line beside the button rather than a toast.
+- **Confirm dialog:** Spartan's alert dialog, square and shadowless on the scrim, 28rem wide; it says what is lost and what is kept, asks for the password, and offers "Keep the account" before the destructive action. Focus starts in the password field.
 
 ### Inputs / Fields
 
@@ -256,7 +259,7 @@ Every control is a Spartan part: Brain for behavior and accessibility, Helm (`ly
 
 ### Navigation
 
-- **Header:** sticky, white, with a Hairline bottom border; it tucks away while the shopper scrolls down past the first screen and returns on any scroll up or when something inside it takes focus. On desktop: the wordmark, departments at label size, then Atelier, the account links, and Bag with a black count pill. Links draw a 1px underline in from the left on hover; the current page keeps it. On a phone: a menu button, the centered wordmark, and the bag icon with the count on its corner.
+- **Header:** sticky, white, with a Hairline bottom border; it tucks away while the shopper scrolls down past the first screen and returns on any scroll up or when something inside it takes focus. On desktop: the wordmark, departments at label size, then Atelier, Desk or Backoffice for staff, Account once signed in (Sign in before), and Bag with a black count pill. Links draw a 1px underline in from the left on hover; the current page keeps it. On a phone: a menu button, the centered wordmark, and the bag icon with the count on its corner.
 - **Menu and bag:** Spartan sheets (CDK dialogs) that slide in from the left and right edges over the scrim (420ms in, 260ms out), close on Escape, scrim click, or navigation, and return focus to their buttons. Both load with `@defer` on idle, or the moment they are asked to open, so the overlay code stays out of the first page. The menu's rooms arrive one after another.
 - **Breadcrumb:** Spartan's breadcrumb with chevrons, caption size, on the product page.
 - **Staff sections:** link tabs whose 2px Ink Black underline grows under the current section.
