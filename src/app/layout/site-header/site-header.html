@@ -2,7 +2,7 @@
   <div class="bar page">
     <button
       type="button"
-      class="menu-button"
+      class="icon-button menu-button"
       aria-label="Menu"
       aria-haspopup="dialog"
       [attr.aria-expanded]="menuOpen()"
@@ -66,16 +66,39 @@
           >Backoffice</a
         >
       }
-      @if (session.current()) {
-        <a
-          class="tool sweep"
-          routerLink="/account"
-          routerLinkActive="is-current"
-          ariaCurrentWhenActive="page"
-          >Account</a
-        >
+      @if (session.current(); as actor) {
+        <div class="account">
+          <a
+            class="tool sweep"
+            routerLink="/account"
+            routerLinkActive="is-current"
+            ariaCurrentWhenActive="page"
+            [routerLinkActiveOptions]="{ exact: true }"
+            ><span class="sr-only">Your account: </span
+            ><span class="account__name">{{ actor.name }}</span></a
+          >
+          @if (showOrders()) {
+            <a
+              class="tool sweep"
+              routerLink="/account/orders"
+              routerLinkActive="is-current"
+              ariaCurrentWhenActive="page"
+              >Orders</a
+            >
+          }
+          <button
+            type="button"
+            class="icon-button sign-out"
+            aria-label="Sign out"
+            title="Sign out"
+            (click)="signOut()"
+          >
+            <ng-icon name="lucideLogOut" />
+          </button>
+        </div>
       } @else {
         <a
+          #signInLink
           class="tool sweep"
           routerLink="/sign-in"
           routerLinkActive="is-current"

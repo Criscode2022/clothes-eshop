@@ -215,12 +215,14 @@ describe('account pages', () => {
     expect(document.getElementById('reset-new')).toBeNull();
   });
 
-  it('offers Account in the header once someone is signed in', async () => {
+  it('offers the account under their name in the header once someone is signed in', async () => {
     await render('/', 'neon');
 
-    const header = document.querySelector('header')?.textContent ?? '';
-    expect(header).toContain('Account');
-    expect(header).not.toContain('Sign in');
+    const header = document.querySelector('header');
+    expect(header?.querySelector('a[href="/account"]')?.textContent).toContain(
+      'Your account: Ada Lovelace',
+    );
+    expect(header?.textContent).not.toContain('Sign in');
   });
 });
 

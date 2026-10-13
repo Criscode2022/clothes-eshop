@@ -125,6 +125,36 @@ describe('shop routes', () => {
     expect(document.querySelector('[role="dialog"]')?.textContent).toContain('Keep shopping');
   });
 
+  it('shows a signed-in client their name, their orders, and a way to sign out', async () => {
+    const { fixture } = await render('/');
+    adopt(fixture, 'avery@marlow.shop');
+    await settle(fixture);
+    const header = (): HTMLElement => document.querySelector('header')!;
+
+    expect(header().querySelector('a[href="/account"]')?.textContent).toContain('Avery Cole');
+    expect(header().querySelector('a[href="/account/orders"]')?.textContent?.trim()).toBe('Orders');
+    expect(header().querySelector('a[href="/sign-in"]')).toBeNull();
+
+    await clickLabelled(fixture, 'header', 'Sign out');
+
+    expect(TestBed.inject(ShopSession).current()).toBeNull();
+    expect(header().textContent).not.toContain('Avery Cole');
+    expect(header().querySelector('a[href="/sign-in"]')).not.toBeNull();
+    expect(document.activeElement).toBe(header().querySelector('a[href="/sign-in"]'));
+  });
+
+  it('gives staff their desk in the header instead of client orders', async () => {
+    const { fixture } = await render('/');
+    adopt(fixture, 'jordan@marlow.shop');
+    await settle(fixture);
+    const header = document.querySelector('header')!;
+
+    expect(header.querySelector('a[href="/account"]')?.textContent).toContain('Jordan Hale');
+    expect(header.querySelector('a[href="/desk"]')).not.toBeNull();
+    expect(header.querySelector('a[href="/account/orders"]')).toBeNull();
+    expect(header.querySelector('button[aria-label="Sign out"]')).not.toBeNull();
+  });
+
   it('shows the piece in the color the shopper picks', async () => {
     const { fixture } = await render('/product/wool-overcoat');
     const photo = (): HTMLImageElement | null => document.querySelector('.pdp__media img');

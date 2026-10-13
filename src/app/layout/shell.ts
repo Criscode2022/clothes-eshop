@@ -8,12 +8,13 @@ import { Bag } from '../shop/bag';
 import { BagDrawer } from '../shop/bag-drawer';
 import { BagPersistence } from '../shop/bag-persistence';
 import { BagPanel } from './bag-panel/bag-panel';
+import { PageLoading } from './page-loading';
 import { SiteFooter } from './site-footer';
 import { SiteHeader } from './site-header/site-header';
 
 @Component({
   selector: 'app-shell',
-  imports: [BagPanel, NgIcon, RouterOutlet, SiteFooter, SiteHeader],
+  imports: [BagPanel, NgIcon, PageLoading, RouterOutlet, SiteFooter, SiteHeader],
   providers: [provideIcons({ lucideX })],
   templateUrl: './shell.html',
   styleUrl: './shell.scss',

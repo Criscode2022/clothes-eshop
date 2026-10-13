@@ -4,6 +4,7 @@ import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { BagDrawer } from '../shop/bag-drawer';
+import { LOADING_DELAY_MS } from './page-loading';
 import { Shell } from './shell';
 
 @Component({ template: '<h1>First page</h1>' })
@@ -12,8 +13,25 @@ class FirstPage {}
 @Component({ template: '<h1>Second page</h1>' })
 class SecondPage {}
 
+/** Holds the slow page back until the test lets it through. */
+let openSlowPage: (open: boolean) => void = () => undefined;
+
 describe('Shell', () => {
   let harness: RouterTestingHarness;
+
+  /** What a screen reader hears while a page is on its way. */
+  function loadingStatus(): string {
+    return document.querySelector('app-page-loading [role="status"]')?.textContent?.trim() ?? '';
+  }
+
+  function loadingVeil(): HTMLElement | null {
+    return document.querySelector('app-page-loading .veil');
+  }
+
+  async function wait(ms: number): Promise<void> {
+    await new Promise((resolve) => setTimeout(resolve, ms));
+    harness.fixture.detectChanges();
+  }
 
   function main(): HTMLElement {
     return document.querySelector<HTMLElement>('main#main-content')!;
@@ -43,6 +61,11 @@ describe('Shell', () => {
             children: [
               { path: '', component: FirstPage },
               { path: 'second', component: SecondPage },
+              {
+                path: 'slow',
+                component: SecondPage,
+                canActivate: [() => new Promise<boolean>((open) => (openSlowPage = open))],
+              },
             ],
           },
         ]),
@@ -123,5 +146,28 @@ describe('Shell', () => {
     expect(TestBed.inject(BagDrawer).isOpen()).toBe(false);
     expect(TestBed.inject(Router).url).toBe('/');
     expect(main().textContent).toContain('First page');
+  });
+
+  it('veils the page with a spinner while a page change is slow, and lifts it when the page arrives', async () => {
+    const arriving = harness.navigateByUrl('/slow');
+
+    await wait(LOADING_DELAY_MS + 50);
+    expect(loadingVeil()).not.toBeNull();
+    expect(loadingStatus()).toBe('Loading the page');
+
+    openSlowPage(true);
+    await arriving;
+    await harness.fixture.whenStable();
+    expect(main().textContent).toContain('Second page');
+    expect(loadingVeil()).toBeNull();
+    expect(loadingStatus()).toBe('');
+  });
+
+  it('never veils a page change that arrives quickly', async () => {
+    await harness.navigateByUrl('/second');
+
+    await wait(LOADING_DELAY_MS + 50);
+    expect(loadingVeil()).toBeNull();
+    expect(loadingStatus()).toBe('');
   });
 });
