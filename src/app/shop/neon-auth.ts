@@ -1,6 +1,20 @@
-import { Service } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { Service, inject } from '@angular/core';
 import type { VanillaBetterAuthClient as AuthClient } from '@neondatabase/auth';
-import { NEON_AUTH_URL } from './neon-public';
+import { NEON_AUTH_RELAY_PATH, NEON_AUTH_URL } from './neon-public';
+
+/**
+ * Safari, and every browser on an iPhone or iPad (they all run on Safari's engine), refuses cookies from
+ * another site, so it would forget Neon Auth's session on every reload.
+ */
+export function isSafari(userAgent: string): boolean {
+  return /AppleWebKit\//.test(userAgent) && !/(Chrome|Chromium)\//.test(userAgent);
+}
+
+/** Safari reaches Neon Auth through the shop's own domain, where its cookie is first-party; others go direct. */
+export function neonAuthBaseUrl(origin: string, userAgent: string): string {
+  return isSafari(userAgent) ? `${origin}${NEON_AUTH_RELAY_PATH}` : NEON_AUTH_URL;
+}
 
 /** Neon Auth answers `{ error }` instead of throwing; this turns that into an error the page can show. */
 function failIfRefused(result: { error?: { message?: string } | null }, fallback: string): void {
@@ -15,6 +29,7 @@ function failIfRefused(result: { error?: { message?: string } | null }, fallback
  */
 @Service()
 export class NeonAuth {
+  private readonly document = inject(DOCUMENT);
   private client: Promise<AuthClient> | null = null;
 
   /** Signs in or creates the account, and returns the token the shop server turns into a session. */
@@ -82,13 +97,15 @@ export class NeonAuth {
   }
 
   private auth(): Promise<AuthClient> {
-    this.client ??= connect();
+    const userAgent = this.document.defaultView?.navigator.userAgent ?? '';
+    this.client ??= connect(neonAuthBaseUrl(this.document.location.origin, userAgent));
     return this.client;
   }
 }
 
-async function connect(): Promise<AuthClient> {
+async function connect(baseUrl: string): Promise<AuthClient> {
   const { createAuthClient } = await import('@neondatabase/auth');
-  const client = createAuthClient(NEON_AUTH_URL);
+  // Assigned first: returned directly, the return type would steer the SDK's generic to the wrong adapter.
+  const client = createAuthClient(baseUrl);
   return client;
 }

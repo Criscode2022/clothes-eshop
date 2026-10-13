@@ -13,8 +13,9 @@ import type { AccountServerDeps } from './app/shop/account-server';
 import type { ShopOrder } from './app/shop/checkout';
 import { neonAccountDirectory } from './app/shop/neon-accounts';
 import { adoptNeonSession, verifyFreshNeonSignIn } from './app/shop/neon-adopt';
+import { relayNeonAuth } from './app/shop/neon-auth-relay';
 import { pullNeon, pushNeon, reportShopError, shopDatabaseConfigured } from './app/shop/neon-book';
-import { NEON_AUTH_URL } from './app/shop/neon-public';
+import { NEON_AUTH_RELAY_PATH, NEON_AUTH_URL } from './app/shop/neon-public';
 import { handleShopHttp } from './app/shop/shop-server';
 import { mailerFromEnv } from './mail/mailer';
 import {
@@ -52,6 +53,22 @@ const deliveredEvents = new DeliveredEvents();
  */
 app.post('/api/neon-auth/webhook', express.text({ type: '*/*', limit: '64kb' }), (req, res) => {
   void receiveNeonAuthWebhook(req, res);
+});
+
+/**
+ * Safari refuses Neon Auth's cookie on Neon's own domain, so its auth calls come through here and the
+ * session cookie becomes the shop's own. Other browsers talk to Neon Auth directly. Passwords pass
+ * through on their way to Neon Auth; nothing here logs or keeps them.
+ */
+app.use(NEON_AUTH_RELAY_PATH, express.text({ type: '*/*', limit: '64kb' }), (req, res) => {
+  void relayNeonAuth(neonAuthUrl, webRequestOf(req), req.path.replace(/^\//, ''))
+    .then((response) => sendWebResponse(response, res))
+    .catch((error: unknown) => {
+      reportShopError(error);
+      if (!res.headersSent) {
+        res.status(502).json({ message: 'Neon Auth could not be reached.' });
+      }
+    });
 });
 
 app.use(express.json());
@@ -241,4 +258,35 @@ function loadLocalEnv(): void {
     }
     process.env[key] = value;
   }
+}
+
+/** The Express request as a web Request, which Neon Auth's SDK reads. Only GET and HEAD carry no body. */
+function webRequestOf(req: Request): globalThis.Request {
+  const headers = new Headers();
+  for (const [name, value] of Object.entries(req.headers)) {
+    if (typeof value === 'string') {
+      headers.set(name, value);
+    }
+  }
+  const hasBody = req.method !== 'GET' && req.method !== 'HEAD' && typeof req.body === 'string';
+  return new globalThis.Request(`${req.protocol}://${req.get('host')}${req.originalUrl}`, {
+    method: req.method,
+    headers,
+    body: hasBody ? req.body : undefined,
+  });
+}
+
+/** Writes a web Response to Express, keeping each Set-Cookie header separate. */
+async function sendWebResponse(response: globalThis.Response, res: Response): Promise<void> {
+  res.status(response.status);
+  response.headers.forEach((value, name) => {
+    if (name !== 'set-cookie') {
+      res.setHeader(name, value);
+    }
+  });
+  const cookies = response.headers.getSetCookie();
+  if (cookies.length > 0) {
+    res.setHeader('set-cookie', cookies);
+  }
+  res.send(Buffer.from(await response.arrayBuffer()));
 }
