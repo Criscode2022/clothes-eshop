@@ -8,6 +8,7 @@ import type { CartLine } from './cart';
 import type { ContactDetails, Fulfillment, ShippingDetails, ShopOrder } from './checkout';
 import type { Product } from './catalog';
 import { CatalogStore } from './catalog-store';
+import { NeonAccountHint } from './neon-account-hint';
 import { NeonAuth } from './neon-auth';
 import { accountKindOf } from './session-tokens';
 import { ShopSession } from './shop-session';
@@ -30,7 +31,9 @@ export class ShopClient {
   private readonly session = inject(ShopSession);
   private readonly catalog = inject(CatalogStore);
   private readonly neon = inject(NeonAuth);
+  private readonly neonHint = inject(NeonAccountHint);
   private readonly document = inject(DOCUMENT);
+  private resumed: Promise<void> | null = null;
 
   async signIn(email: string, password: string): Promise<Actor> {
     const response = await this.request<SessionResponse>(
@@ -50,6 +53,15 @@ export class ShopClient {
   /** The server sends the "your account is open" email when it sees a session that follows a sign-up. */
   async signUpWithNeon(name: string, email: string, password: string): Promise<Actor> {
     return this.adoptNeon(await this.neonToken('sign-up', email, password, name), true);
+  }
+
+  /**
+   * After a reload, brings back the Neon account Neon Auth's cookie still holds. It runs once per page
+   * load, and guards wait for it, so a reload on a signed-in page does not bounce to sign-in.
+   */
+  resumeSession(): Promise<void> {
+    this.resumed ??= this.resumeNeonSession();
+    return this.resumed;
   }
 
   async signOut(): Promise<void> {
@@ -94,7 +106,9 @@ export class ShopClient {
     return this.neonCall(() => this.neon.resetPassword(token, newPassword));
   }
 
-  placeOrder(body: PlaceOrderBody): Promise<ShopOrder> {
+  /** Waits for a reload's session first, so a signed-in client's order is never stored as a guest's. */
+  async placeOrder(body: PlaceOrderBody): Promise<ShopOrder> {
+    await this.resumeSession();
     return this.request<ShopOrder>('POST', '/api/orders', body, true);
   }
 
@@ -187,7 +201,24 @@ export class ShopClient {
       false,
     );
     this.session.adopt(response.actor, response.token);
+    this.neonHint.remember();
     return response.actor;
+  }
+
+  private async resumeNeonSession(): Promise<void> {
+    if (this.session.isSignedIn() || !this.neonHint.isSet()) {
+      return;
+    }
+    try {
+      const token = await this.neon.currentSessionToken();
+      if (token) {
+        await this.adoptNeon(token);
+      } else {
+        this.neonHint.forget();
+      }
+    } catch {
+      // Neon Auth or the shop did not answer. The visitor stays signed out, and the next load asks again.
+    }
   }
 
   private neonToken(
@@ -216,6 +247,7 @@ export class ShopClient {
   }
 
   private async signOutOfNeon(): Promise<void> {
+    this.neonHint.forget();
     try {
       await this.neon.signOut();
     } catch {

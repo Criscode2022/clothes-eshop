@@ -37,6 +37,16 @@ export class NeonAuth {
     return token;
   }
 
+  /** The token for the account Neon Auth's cookie still holds from an earlier visit, or null when it holds none. */
+  async currentSessionToken(): Promise<string | null> {
+    const auth = await this.auth();
+    const session = await auth.getSession();
+    if (!session.data?.session) {
+      return null;
+    }
+    return (await auth.token()).data?.token ?? null;
+  }
+
   async signOut(): Promise<void> {
     await (await this.auth()).signOut();
   }

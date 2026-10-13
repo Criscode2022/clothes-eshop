@@ -14,6 +14,7 @@ import type { Actor } from '../../shop/access';
 import { handleAccountHttp } from '../../shop/account-server';
 import type { AccountDirectory } from '../../shop/account-server';
 import { NeonAuth } from '../../shop/neon-auth';
+import { ShopClient } from '../../shop/shop-client';
 import {
   FLOOR_PASSWORD_HINT,
   handleShopHttp,
@@ -29,17 +30,28 @@ const ADA: Actor = {
   email: 'ada@example.com',
 };
 
-/** Neon Auth as the pages see it, without a network: it records what the pages asked for. */
+/**
+ * Neon Auth as the pages see it, without a network: it records what the pages asked for.
+ * `signedIn` stands for its cookie, which outlives a reload.
+ */
 class FakeNeonAuth {
   readonly calls: string[] = [];
+  signedIn = false;
 
   async sessionToken(mode: string, email: string, password: string): Promise<string> {
     this.calls.push(`${mode} ${email} ${password}`);
+    this.signedIn = true;
     return 'fresh-jwt';
+  }
+
+  async currentSessionToken(): Promise<string | null> {
+    this.calls.push('current-session');
+    return this.signedIn ? 'fresh-jwt' : null;
   }
 
   async signOut(): Promise<void> {
     this.calls.push('sign-out');
+    this.signedIn = false;
   }
 
   async changePassword(email: string, current: string, next: string): Promise<void> {
@@ -71,6 +83,15 @@ describe('account pages', () => {
     const url = new URL(req.url, 'http://marlow.test');
     if (!url.pathname.startsWith('/api/')) {
       return next(req);
+    }
+    if (url.pathname === '/api/session/neon') {
+      // The real server asks the Data API; here only the fake's token is a Marlow account.
+      const token = (req.body as { token?: unknown } | null)?.token;
+      return token === 'fresh-jwt'
+        ? of(new HttpResponse({ status: 200, body: openSession(ADA) }))
+        : throwError(
+            () => new HttpErrorResponse({ status: 401, error: { message: 'No account.' } }),
+          );
     }
     const authorization = req.headers.get('Authorization');
     const answer = handleAccountHttp(req.method, url.pathname, req.body, authorization, {
@@ -206,6 +227,54 @@ describe('account pages', () => {
 
     expect(neon.calls).toEqual(['reset abc123 brand-new-pass']);
     expect(document.body.textContent).toContain('Your password is changed');
+  });
+
+  describe('after a reload', () => {
+    it('keeps a Neon account signed in from the Neon Auth cookie', async () => {
+      await render('/');
+      await TestBed.inject(ShopClient).signInWithNeon('ada@example.com', 'my-password');
+
+      await render('/account');
+
+      expect(TestBed.inject(Router).url).toBe('/account');
+      expect(TestBed.inject(ShopSession).current()?.name).toBe('Ada Lovelace');
+      expect(document.querySelector('header a[href="/account"]')?.textContent).toContain(
+        'Ada Lovelace',
+      );
+    });
+
+    it('stays signed out after signing out, without asking Neon Auth', async () => {
+      await render('/');
+      const client = TestBed.inject(ShopClient);
+      await client.signInWithNeon('ada@example.com', 'my-password');
+      await client.signOut();
+      neon.calls.length = 0;
+
+      await render('/account');
+
+      expect(TestBed.inject(Router).url).toBe('/sign-in');
+      expect(neon.calls).toEqual([]);
+    });
+
+    it('lets the account go once Neon Auth no longer holds it, and stops asking', async () => {
+      await render('/');
+      await TestBed.inject(ShopClient).signInWithNeon('ada@example.com', 'my-password');
+      neon.signedIn = false;
+
+      await render('/account');
+      expect(TestBed.inject(Router).url).toBe('/sign-in');
+
+      neon.calls.length = 0;
+      await render('/');
+      expect(neon.calls).toEqual([]);
+    });
+
+    it('never asks Neon Auth for a guest', async () => {
+      await render('/account');
+
+      expect(TestBed.inject(Router).url).toBe('/sign-in');
+      expect(neon.calls).toEqual([]);
+    });
   });
 
   it('explains an expired link instead of showing a form that cannot work', async () => {

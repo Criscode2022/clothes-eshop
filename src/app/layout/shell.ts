@@ -7,6 +7,7 @@ import { filter, skip } from 'rxjs';
 import { Bag } from '../shop/bag';
 import { BagDrawer } from '../shop/bag-drawer';
 import { BagPersistence } from '../shop/bag-persistence';
+import { ShopClient } from '../shop/shop-client';
 import { BagPanel } from './bag-panel/bag-panel';
 import { PageLoading } from './page-loading';
 import { SiteFooter } from './site-footer';
@@ -27,12 +28,15 @@ export class Shell {
   constructor() {
     const router = inject(Router);
     const persistence = inject(BagPersistence);
-    // The saved bag lives in the browser. Bringing it back after the first render keeps hydration intact.
+    const shop = inject(ShopClient);
+    // The saved bag and the signed-in account live in the browser. Bringing them back after the
+    // first render keeps hydration intact.
     afterNextRender(() => {
       const storage = browserStorage();
       if (storage) {
         persistence.start(storage);
       }
+      void shop.resumeSession();
     });
     // Leave focus alone on the first page load. After each later navigation, move it to the
     // new content so keyboard and screen reader users start reading the page that just changed.
