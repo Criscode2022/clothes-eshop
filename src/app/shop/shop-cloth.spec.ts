@@ -1,5 +1,6 @@
+import { existsSync } from 'node:fs';
 import { SEED_PRODUCTS } from './catalog';
-import { compositionOf, fitNote, morePieces, relatedPieces } from './cloth';
+import { compositionOf, fitNote, morePieces, portraitSrc, relatedPieces } from './cloth';
 import { centsUntilFreeShipping } from './money';
 import { ordersFromRows, productsFromRows, referenceAfter } from './neon-book';
 import type { LineRecord, OrderRecord, ProductRecord, VariantRecord } from './neon-book';
@@ -32,6 +33,34 @@ describe('cloth and shipping remainder', () => {
       'merino-crew',
     ]);
     expect(morePieces(SEED_PRODUCTS, shirt, 2)).toHaveLength(2);
+  });
+});
+
+describe('photographs by color', () => {
+  it('shows a piece in the color asked for', () => {
+    expect(portraitSrc('wool-overcoat', 'Charcoal')).toBe('/garments/wool-overcoat.jpg');
+    expect(portraitSrc('wool-overcoat', 'Camel')).toBe('/garments/wool-overcoat-camel.jpg');
+  });
+
+  it('uses the first photograph when no color is asked for', () => {
+    expect(portraitSrc('wool-overcoat')).toBe('/garments/wool-overcoat.jpg');
+    expect(portraitSrc('field-jacket', '')).toBe('/garments/field-jacket.jpg');
+  });
+
+  it('has no photograph for a color nobody photographed, rather than another color', () => {
+    expect(portraitSrc('oxford-shirt', 'Navy')).toBeNull();
+    expect(portraitSrc('owner-added-piece', 'Ink')).toBeNull();
+  });
+
+  it('has a photograph on disk for every color on the seeded floor', () => {
+    const missing = SEED_PRODUCTS.flatMap((product) =>
+      product.variants
+        .map((variant) => portraitSrc(product.id, variant.color))
+        .filter((src) => !src || !existsSync(`public${src}`))
+        .map((src) => `${product.id}: ${src ?? 'none'}`),
+    );
+
+    expect(missing).toEqual([]);
   });
 });
 

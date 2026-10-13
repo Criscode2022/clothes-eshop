@@ -3,7 +3,7 @@ import { Component, computed, input } from '@angular/core';
 import { clothColor } from '../shop/catalog';
 import { portraitSrc } from '../shop/cloth';
 
-/** A piece's photograph, or a quiet stand-in in its cloth color for pieces the owner has not photographed yet. */
+/** A piece's photograph in its cloth color, or a quiet stand-in in that color when there is no photograph of it yet. */
 @Component({
   selector: 'app-piece-photo',
   imports: [NgOptimizedImage],
@@ -71,14 +71,14 @@ import { portraitSrc } from '../shop/cloth';
 })
 export class PiecePhoto {
   readonly pieceId = input.required<string>();
-  /** The cloth color the stand-in shows when there is no photograph. */
+  /** The cloth color to show: the photograph in that color, or the stand-in's swatch when there is none. */
   readonly color = input('');
   readonly alt = input('');
   readonly priority = input(false);
   /** Names the photograph for the view transition between the floor and the piece's page. */
   readonly transitionName = input('');
 
-  protected readonly src = computed(() => portraitSrc(this.pieceId()));
+  protected readonly src = computed(() => portraitSrc(this.pieceId(), this.color()));
   protected readonly swatch = computed(() => {
     const color = clothColor(this.color());
     return color === 'transparent' ? 'var(--color-surface-strong)' : color;

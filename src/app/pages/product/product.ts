@@ -75,6 +75,11 @@ export class ProductPage {
         ?.color ?? ''
     );
   });
+  /** The photograph follows the chosen color, so its description names it. */
+  protected readonly photoAlt = computed(() => {
+    const name = this.product()?.name ?? '';
+    return this.color() ? `${name} in ${this.color()}` : name;
+  });
   protected readonly sizes = computed(
     () => this.colorGroups().find((group) => group.color === this.color())?.variants ?? [],
   );

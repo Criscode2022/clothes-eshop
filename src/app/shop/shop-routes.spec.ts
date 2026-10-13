@@ -125,6 +125,19 @@ describe('shop routes', () => {
     expect(document.querySelector('[role="dialog"]')?.textContent).toContain('Keep shopping');
   });
 
+  it('shows the piece in the color the shopper picks', async () => {
+    const { fixture } = await render('/product/wool-overcoat');
+    const photo = (): HTMLImageElement | null => document.querySelector('.pdp__media img');
+
+    expect(photo()?.getAttribute('src')).toBe('/garments/wool-overcoat.jpg');
+    expect(photo()?.alt).toBe('Charcoal Wool Overcoat in Charcoal');
+
+    await choose(fixture, 'input[name="color"][value="Camel"]');
+
+    expect(photo()?.getAttribute('src')).toBe('/garments/wool-overcoat-camel.jpg');
+    expect(photo()?.alt).toBe('Charcoal Wool Overcoat in Camel');
+  });
+
   it('asks for a size instead of guessing one', async () => {
     const { fixture } = await render('/product/oxford-shirt');
 

@@ -1,14 +1,18 @@
 import type { CategorySlug, Product } from './catalog';
 
-const PORTRAITS = new Set([
-  'wool-overcoat',
-  'field-jacket',
-  'merino-crew',
-  'ribbed-cardigan',
-  'pleated-trouser',
-  'wide-trouser',
-  'oxford-shirt',
-  'silk-tunic',
+/**
+ * The colors each seeded piece is photographed in. The first is its cover, `/garments/<id>.jpg`;
+ * each other color is `/garments/<id>-<color>.jpg`.
+ */
+const PORTRAITS = new Map<string, readonly string[]>([
+  ['wool-overcoat', ['Charcoal', 'Camel']],
+  ['field-jacket', ['Camel']],
+  ['merino-crew', ['Ink']],
+  ['ribbed-cardigan', ['Oat']],
+  ['pleated-trouser', ['Charcoal']],
+  ['wide-trouser', ['Stone']],
+  ['oxford-shirt', ['White']],
+  ['silk-tunic', ['Ivory']],
 ]);
 
 const NOTES: Record<string, { readonly composition: string; readonly care: string }> = {
@@ -57,9 +61,20 @@ const FIT: Record<CategorySlug, string> = {
     'The oxford is a dress-shirt fit. The silk tunic is cut loose and meant to be worn untucked.',
 };
 
-/** Portrait path for a seeded piece. Owner-added pieces have no photograph yet. */
-export function portraitSrc(id: string): string | null {
-  return PORTRAITS.has(id) ? `/garments/${id}.jpg` : null;
+/**
+ * Portrait path for a seeded piece in a cloth color, or its cover when no color is given.
+ * A color nobody photographed has none, so a piece is never shown in a color it is not.
+ * Owner-added pieces have no photograph yet.
+ */
+export function portraitSrc(id: string, color = ''): string | null {
+  const colors = PORTRAITS.get(id);
+  if (!colors) {
+    return null;
+  }
+  if (!color || color === colors[0]) {
+    return `/garments/${id}.jpg`;
+  }
+  return colors.includes(color) ? `/garments/${id}-${color.toLowerCase()}.jpg` : null;
 }
 
 export function compositionOf(product: Product): string {
