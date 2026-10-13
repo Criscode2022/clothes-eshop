@@ -1,5 +1,5 @@
 import { SEED_PRODUCTS } from './catalog';
-import { compositionOf, fitNote, morePieces, piecesToPairWith, relatedPieces } from './cloth';
+import { compositionOf, fitNote, morePieces, relatedPieces } from './cloth';
 import { centsUntilFreeShipping } from './money';
 import { ordersFromRows, productsFromRows, referenceAfter } from './neon-book';
 import type { LineRecord, OrderRecord, ProductRecord, VariantRecord } from './neon-book';
@@ -32,24 +32,6 @@ describe('cloth and shipping remainder', () => {
       'merino-crew',
     ]);
     expect(morePieces(SEED_PRODUCTS, shirt, 2)).toHaveLength(2);
-  });
-
-  it('pairs the bag with pieces it does not hold yet, leaving out what is sold out', () => {
-    const floor = SEED_PRODUCTS.map((product) =>
-      product.id === 'wool-overcoat'
-        ? { ...product, variants: product.variants.map((item) => ({ ...item, stock: 0 })) }
-        : product,
-    );
-
-    const pairs = piecesToPairWith(floor, ['oxford-shirt', 'silk-tunic']);
-
-    expect(pairs.map((product) => product.id)).toEqual([
-      'field-jacket',
-      'merino-crew',
-      'ribbed-cardigan',
-      'pleated-trouser',
-    ]);
-    expect(piecesToPairWith(floor, [])).toEqual([]);
   });
 });
 

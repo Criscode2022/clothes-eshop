@@ -184,7 +184,16 @@
           [totalCents]="quote.totalCents"
         />
         <app-free-shipping [subtotalCents]="quote.subtotalCents" />
-        <p class="summary__edit"><a routerLink="/bag">Change the bag</a></p>
+        <p>
+          <button
+            type="button"
+            class="summary__edit"
+            aria-haspopup="dialog"
+            (click)="drawer.open()"
+          >
+            Change the bag
+          </button>
+        </p>
       </div>
     </ng-template>
   } @else {

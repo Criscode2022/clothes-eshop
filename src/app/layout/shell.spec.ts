@@ -1,8 +1,9 @@
 import { provideHttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
+import { BagDrawer } from '../shop/bag-drawer';
 import { Shell } from './shell';
 
 @Component({ template: '<h1>First page</h1>' })
@@ -95,5 +96,32 @@ describe('Shell', () => {
     await harness.fixture.whenStable();
     expect(bagSheet()).toBeNull();
     expect(bagButton.getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('opens the bag from the footer', async () => {
+    const footerBag = [...document.querySelectorAll('footer button')].find(
+      (button) => button.textContent?.trim() === 'Bag',
+    ) as HTMLButtonElement;
+
+    footerBag.click();
+    await harness.fixture.whenStable();
+
+    expect(bagSheet()?.textContent).toContain('Your bag is empty');
+  });
+
+  it('closes the bag on the same page when the shopper keeps shopping', async () => {
+    TestBed.inject(BagDrawer).add('oxford-shirt', 'oxford-shirt-m-white');
+    await harness.fixture.whenStable();
+    const keepShopping = [...bagSheet()!.querySelectorAll('button')].find(
+      (button) => button.textContent?.trim() === 'Keep shopping',
+    ) as HTMLButtonElement;
+    expect(bagSheet()!.querySelector('a[href="/bag"]')).toBeNull();
+
+    keepShopping.click();
+    await harness.fixture.whenStable();
+
+    expect(TestBed.inject(BagDrawer).isOpen()).toBe(false);
+    expect(TestBed.inject(Router).url).toBe('/');
+    expect(main().textContent).toContain('First page');
   });
 });

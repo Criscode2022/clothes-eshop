@@ -1,5 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { BagDrawer } from '../shop/bag-drawer';
 import { CATEGORIES } from '../shop/catalog';
 import { ShopSession } from '../shop/shop-session';
 
@@ -51,7 +52,11 @@ import { ShopSession } from '../shop/shop-session';
                 <li><a class="sweep" routerLink="/sign-in">Sign in</a></li>
                 <li><a class="sweep" routerLink="/forgot-password">Forgot your password</a></li>
               }
-              <li><a class="sweep" routerLink="/bag">Bag</a></li>
+              <li>
+                <button type="button" class="sweep" aria-haspopup="dialog" (click)="drawer.open()">
+                  Bag
+                </button>
+              </li>
             </ul>
           </div>
         </nav>
@@ -106,9 +111,14 @@ import { ShopSession } from '../shop/shop-session';
         list-style: none;
       }
 
-      a {
+      a,
+      button {
         display: inline-block;
         padding-block: 0.25rem;
+      }
+
+      button {
+        cursor: pointer;
       }
     }
 
@@ -129,4 +139,5 @@ import { ShopSession } from '../shop/shop-session';
 export class SiteFooter {
   protected readonly categories = CATEGORIES;
   protected readonly session = inject(ShopSession);
+  protected readonly drawer = inject(BagDrawer);
 }

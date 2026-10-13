@@ -219,6 +219,15 @@
   font-variant-numeric: tabular-nums;
 }
 
+// Opens the bag drawer over checkout, underlined like the links beside it.
 .summary__edit {
   font-size: var(--text-sm);
+  text-decoration-line: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.22em;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration-thickness: 2px;
+  }
 }

@@ -1,21 +1,5 @@
 @if (isFloor()) {
-  @if (spread().length > 0) {
-    <div class="spread">
-      @for (tile of spread(); track tile.piece.id; let index = $index) {
-        <a
-          class="spread__tile"
-          [class.spread__tile--lead]="index === 1"
-          [routerLink]="['/product', tile.piece.id]"
-        >
-          <img [ngSrc]="tile.src" width="800" height="1200" [priority]="index === 1" alt="" />
-          <span class="spread__caption">
-            <span class="spread__name">{{ tile.piece.name }}</span>
-            <span class="spread__price">{{ tile.piece.priceCents | money }}</span>
-          </span>
-        </a>
-      }
-    </div>
-  }
+  <app-opening-spread />
 
   <section class="intro page" aria-labelledby="intro-title" appReveal>
     <h1 id="intro-title" class="intro__title">

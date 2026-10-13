@@ -1,21 +1,17 @@
-import { NgOptimizedImage, NgTemplateOutlet } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 import { Component, computed, inject, input } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideCheck } from '@ng-icons/lucide';
 import { HlmEmptyImports } from '@spartan-ng/helm/empty';
 import { CATEGORIES, productsIn } from '../../shop/catalog';
-import type { Product } from '../../shop/catalog';
 import { CatalogStore } from '../../shop/catalog-store';
-import { fitNote, portraitSrc } from '../../shop/cloth';
-import { MoneyPipe } from '../../shop/money.pipe';
+import { fitNote } from '../../shop/cloth';
 import { ProductCard } from '../../ui/product-card/product-card';
 import { Reveal } from '../../ui/reveal';
 import { CategoryIndex } from './category-index';
 import { ClothNote } from './cloth-note';
-
-/** The three photographs of the opening spread: the outer two hold the window light at either edge. */
-const SPREAD = ['oxford-shirt', 'wool-overcoat', 'field-jacket'];
+import { OpeningSpread } from './opening-spread';
 
 /** The floor: every piece, or one category of them. */
 @Component({
@@ -24,10 +20,9 @@ const SPREAD = ['oxford-shirt', 'wool-overcoat', 'field-jacket'];
     CategoryIndex,
     ClothNote,
     HlmEmptyImports,
-    MoneyPipe,
     NgIcon,
-    NgOptimizedImage,
     NgTemplateOutlet,
+    OpeningSpread,
     ProductCard,
     Reveal,
     RouterLink,
@@ -54,19 +49,8 @@ export class Catalog {
     const category = this.category();
     return category ? fitNote(category.slug) : '';
   });
-  protected readonly spread = computed(() => spreadOf(this.catalog.pieces()));
 
   protected countIn(slug: string | null): number {
     return productsIn(this.catalog.pieces(), slug).length;
   }
-}
-
-function spreadOf(
-  products: readonly Product[],
-): { readonly piece: Product; readonly src: string }[] {
-  return SPREAD.flatMap((id) => {
-    const piece = products.find((product) => product.id === id);
-    const src = portraitSrc(id);
-    return piece && src ? [{ piece, src }] : [];
-  });
 }

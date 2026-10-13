@@ -2,7 +2,7 @@
 version: 1
 slug: "src-app-pages-desk-desk-html"
 primary_target: "src/app/pages/desk/desk.html"
-related_targets: ["src/app/pages/owner/owner.html","src/app/pages/staff/staff-orders.html","src/app/pages/bag/bag.html","src/app/pages/checkout/checkout.html","src/app/pages/order/order.html","src/app/pages/account/account-orders.html","src/app/pages/sign-in/sign-in.html"]
+related_targets: ["src/app/pages/owner/owner.html","src/app/pages/staff/staff-orders.html","src/app/pages/checkout/checkout.html","src/app/pages/order/order.html","src/app/pages/account/account-orders.html","src/app/pages/sign-in/sign-in.html"]
 ---
 
 # Task surfaces: bag, checkout, order, account, sign-in, desk, backoffice

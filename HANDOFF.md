@@ -185,7 +185,6 @@ Full record in `PRODUCT.md` (confirmed with you) and app rules in `APP.md`. Summ
 | `/category/:slug`   | `pages/catalog` (split layout)                                                       | Server |               |
 | `/product/:id`      | `pages/product`                                                                      | Server |               |
 | `/atelier`          | `pages/atelier`                                                                      | Server |               |
-| `/bag`              | `pages/bag`                                                                          | Client |               |
 | `/checkout`         | `pages/checkout` (one page)                                                          | Client |               |
 | `/order/:reference` | `pages/order`                                                                        | Client |               |
 | `/sign-in`          | `pages/sign-in`                                                                      | Client |               |
@@ -202,7 +201,7 @@ Full record in `PRODUCT.md` (confirmed with you) and app rules in `APP.md`. Summ
 
 - `shell.*`: skip link, the shipping band (`<aside aria-label="Shipping and payment">`), header, `<main>`, footer, bag panel, and a toast region (`role="status"`) for bag notices. After the first render it starts bag persistence; after each later navigation it clears the notice and focuses `<main>` (`preventScroll`).
 - `site-header/*`: sticky header with the wordmark, department nav (`aria-label="Main"`), Atelier, account links by role (Orders, Desk, Backoffice), Sign in or Sign out (sign-out navigates home), and the bag button with its count pill. On phones: a menu button, the centered wordmark, and a bag icon; the menu is a native `<dialog>` sheet sliding in from the left.
-- `bag-panel/*`: the bag drawer, a native modal `<dialog>` sliding in from the right. An `afterRenderEffect` opens and closes it from `BagDrawer.isOpen()`. It closes synchronously on `NavigationStart`, so focus returns to the bag button before the shell moves focus to `<main>`. It shows the "Added …" line (also wired to `aria-describedby`), the lines, the free-shipping meter, totals, Check out, and View bag.
+- `bag-panel/*`: the bag drawer, a native modal `<dialog>` sliding in from the right. An `afterRenderEffect` opens and closes it from `BagDrawer.isOpen()`. It closes synchronously on `NavigationStart`, so focus returns to the bag button before the shell moves focus to `<main>`. It shows the "Added …" line (also wired to `aria-describedby`), the lines, the free-shipping meter, totals, Check out, and Keep shopping (closes the drawer).
 - `site-footer.ts`: wordmark, one `<nav aria-label="Footer">` with Shop, Help, and Account groups, and the terms line.
 
 ### 6.3 Shared UI (`src/app/ui/`)
@@ -223,9 +222,8 @@ Full record in `PRODUCT.md` (confirmed with you) and app rules in `APP.md`. Summ
 
 ### 6.4 Pages (`src/app/pages/`)
 
-- `catalog/*`: the floor (`/`): a full-bleed spread of three photos (oxford shirt, overcoat, field jacket; one photo on phones), the intro ("A small ready-to-wear floor" plus terms), category filter chips with counts, and a grid of 2, 3, or 4 columns. Category pages use a split layout (title, fit note, and filters sticky on the left; two-up grid on the right). The filters and grid are shared through `ng-template`.
+- `catalog/*`: the floor (`/`): a full-bleed spread of three photos (oxford shirt, overcoat, field jacket; on phones a swiped carousel with a marker per photo), the intro ("A small ready-to-wear floor" plus terms), category filter chips with counts, and a grid of 2, 3, or 4 columns. Category pages use a split layout (title, fit note, and filters sticky on the left; two-up grid on the right). The filters and grid are shared through `ng-template`.
 - `product/*`: on desktop, the photo is sized to the window height beside a sticky panel: breadcrumb, name, price, summary, color radios, size radios ("Choose a size." or the stock note), Add to bag, assurances, and `<details>` for Cloth and care and for Fit. Below sits "More from the floor" (four pieces). On phones the photo runs edge to edge and a fixed buy bar appears once the main button is off screen.
-- `bag/*`: the full bag page with a sticky summary.
 - `checkout/*`: one page with Contact, Delivery, and Payment sections, a single Place order button, and a summary (sticky aside on desktop, a collapsible bar with the total on phones).
 - `order/*`: thank-you (only right after checkout), reference with a copy button, state badge, track, lines, totals, and payment, delivery, and contact facts.
 - `sign-in/*`: two panels (sign in, create account) plus one-tap floor accounts.

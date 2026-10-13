@@ -15,6 +15,7 @@ import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmEmptyImports } from '@spartan-ng/helm/empty';
 import { HlmSpinner } from '@spartan-ng/helm/spinner';
 import { Bag } from '../../shop/bag';
+import { BagDrawer } from '../../shop/bag-drawer';
 import { PAYMENT_METHODS } from '../../shop/checkout';
 import type { PaymentMethodId } from '../../shop/checkout';
 import { MoneyPipe } from '../../shop/money.pipe';
@@ -71,6 +72,7 @@ export class Checkout {
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
 
   protected readonly bag = inject(Bag);
+  protected readonly drawer = inject(BagDrawer);
   protected readonly session = inject(ShopSession);
   protected readonly methods = PAYMENT_METHODS;
   protected readonly methodIcons = METHOD_ICONS;

@@ -30,11 +30,6 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/atelier/atelier').then((m) => m.Atelier),
       },
       {
-        path: 'bag',
-        title: 'Bag | Marlow',
-        loadComponent: () => import('./pages/bag/bag').then((m) => m.BagPage),
-      },
-      {
         path: 'checkout',
         title: 'Checkout | Marlow',
         loadComponent: () => import('./pages/checkout/checkout').then((m) => m.Checkout),

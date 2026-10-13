@@ -63,7 +63,9 @@
             [totalCents]="quote.totalCents"
           />
           <a hlmBtn routerLink="/checkout" class="w-full">Check out</a>
-          <a hlmBtn variant="link" size="sm" routerLink="/bag" class="self-center">View bag</a>
+          <button hlmSheetClose hlmBtn variant="link" size="sm" class="self-center">
+            Keep shopping
+          </button>
         } @else {
           <p class="bag__problem" role="alert">
             A size in your bag changed on the floor. Lower its quantity or remove it to check out.

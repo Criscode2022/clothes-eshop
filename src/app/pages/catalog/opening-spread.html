@@ -1,0 +1,36 @@
+@if (tiles().length > 0) {
+  <ul class="spread" role="list" appSlideTrack #photos="slideTrack">
+    @for (tile of tiles(); track tile.piece.id; let first = $first) {
+      <li class="spread__tile">
+        <a class="spread__link" [routerLink]="['/product', tile.piece.id]">
+          <!-- The first fills a phone's screen; the others are one swipe away, so they load now too. -->
+          <img
+            [ngSrc]="tile.src"
+            width="800"
+            height="1200"
+            [priority]="first"
+            [loading]="first ? undefined : 'eager'"
+            alt=""
+          />
+          <span class="spread__caption">
+            <span class="spread__name">{{ tile.piece.name }}</span>
+            <span class="spread__price">{{ tile.piece.priceCents | money }}</span>
+          </span>
+        </a>
+      </li>
+    }
+  </ul>
+
+  <div class="spread__markers" role="group" aria-label="Photographs">
+    @for (tile of tiles(); track tile.piece.id; let index = $index) {
+      <button
+        type="button"
+        class="spread__marker"
+        [attr.aria-current]="photos.current() === index ? 'true' : null"
+        (click)="photos.show(index)"
+      >
+        <span class="sr-only">Show {{ tile.piece.name }}</span>
+      </button>
+    }
+  </div>
+}

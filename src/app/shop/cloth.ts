@@ -1,4 +1,3 @@
-import { isSoldOut } from './catalog';
 import type { CategorySlug, Product } from './catalog';
 
 const PORTRAITS = new Set([
@@ -84,23 +83,4 @@ export function relatedPieces(products: readonly Product[], product: Product): P
 export function morePieces(products: readonly Product[], product: Product, count = 4): Product[] {
   const elsewhere = products.filter((item) => item.category !== product.category);
   return [...relatedPieces(products, product), ...elsewhere].slice(0, count);
-}
-
-/**
- * Pieces to show beside a bag: the floor around the first piece in it, without anything already in
- * the bag or sold out. An empty bag has nothing to pair with.
- */
-export function piecesToPairWith(
-  products: readonly Product[],
-  bagPieceIds: readonly string[],
-  count = 4,
-): Product[] {
-  const first = products.find((product) => product.id === bagPieceIds[0]);
-  if (!first) {
-    return [];
-  }
-  const inBag = new Set(bagPieceIds);
-  return morePieces(products, first, products.length)
-    .filter((product) => !inBag.has(product.id) && !isSoldOut(product))
-    .slice(0, count);
 }

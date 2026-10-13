@@ -111,6 +111,20 @@ describe('shop routes', () => {
     );
   });
 
+  it('keeps the bag in its drawer, with no page of its own', async () => {
+    const { fixture } = await render('/bag');
+    expect(TestBed.inject(Router).url).toBe('/');
+
+    await go(fixture, '/product/oxford-shirt');
+    await choose(fixture, 'input[name="size"][value="M"]');
+    await clickButton(fixture, 'Add to bag');
+    await go(fixture, '/checkout');
+    await clickButton(fixture, 'Change the bag');
+
+    expect(TestBed.inject(Router).url).toBe('/checkout');
+    expect(document.querySelector('[role="dialog"]')?.textContent).toContain('Keep shopping');
+  });
+
   it('asks for a size instead of guessing one', async () => {
     const { fixture } = await render('/product/oxford-shirt');
 
