@@ -1,6 +1,6 @@
 import type { Actor } from './access';
 import { unlinkClientOrders } from './order-book';
-import { endSessionsOf, renameSessionsOf, sessionOf } from './shop-server';
+import { openSession, sessionOf } from './shop-server';
 import type { ShopHttpResult } from './shop-server';
 
 /** Where real (Neon) accounts live. The Node server reaches it through the database; the browser never does. */
@@ -63,7 +63,8 @@ async function rename(
     return problem(400, 'Enter your name, at least 2 letters.');
   }
   await directory.rename(actor.id, name);
-  return { status: 200, body: { actor: renameSessionsOf(actor.id, name) ?? { ...actor, name } } };
+  // The session carries the name, so the browser gets one under the new name.
+  return { status: 200, body: openSession({ ...actor, name }) };
 }
 
 async function remove(
@@ -86,7 +87,6 @@ async function remove(
   }
   await directory.remove(actor.id);
   unlinkClientOrders(actor.id);
-  endSessionsOf(actor.id);
   return { status: 200, body: { deleted: true } };
 }
 

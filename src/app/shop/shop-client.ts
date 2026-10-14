@@ -8,8 +8,8 @@ import type { CartLine } from './cart';
 import type { ContactDetails, Fulfillment, ShippingDetails, ShopOrder } from './checkout';
 import type { Product } from './catalog';
 import { CatalogStore } from './catalog-store';
-import { NeonAccountHint } from './neon-account-hint';
 import { NeonAuth } from './neon-auth';
+import { SavedSession } from './saved-session';
 import { accountKindOf } from './session-tokens';
 import { ShopSession } from './shop-session';
 
@@ -31,19 +31,14 @@ export class ShopClient {
   private readonly session = inject(ShopSession);
   private readonly catalog = inject(CatalogStore);
   private readonly neon = inject(NeonAuth);
-  private readonly neonHint = inject(NeonAccountHint);
+  private readonly saved = inject(SavedSession);
   private readonly document = inject(DOCUMENT);
   private resumed: Promise<void> | null = null;
 
   async signIn(email: string, password: string): Promise<Actor> {
-    const response = await this.request<SessionResponse>(
-      'POST',
-      '/api/session',
-      { email, password },
-      false,
+    return this.adopt(
+      await this.request<SessionResponse>('POST', '/api/session', { email, password }, false),
     );
-    this.session.adopt(response.actor, response.token);
-    return response.actor;
   }
 
   async signInWithNeon(email: string, password: string): Promise<Actor> {
@@ -56,27 +51,28 @@ export class ShopClient {
   }
 
   /**
-   * After a reload, brings back the Neon account Neon Auth's cookie still holds. It runs once per page
-   * load, and guards wait for it, so a reload on a signed-in page does not bounce to sign-in.
+   * After a reload, brings back the session this browser saved, or, once a Neon session has run out,
+   * the account Neon Auth's cookie still holds. It runs once per page load, and guards wait for it, so
+   * a reload on a signed-in page does not bounce to sign-in.
    */
   resumeSession(): Promise<void> {
-    this.resumed ??= this.resumeNeonSession();
+    this.resumed ??= this.restoreSession();
     return this.resumed;
   }
 
+  /** The session is a signed token the browser holds, so forgetting it here is signing out. */
   async signOut(): Promise<void> {
     const neon = accountKindOf(this.session.token()) === 'neon';
-    await this.request<{ signedOut: boolean }>('DELETE', '/api/session', null, true);
     this.session.clear();
+    this.saved.forget();
     if (neon) {
       await this.signOutOfNeon();
     }
   }
 
+  /** The session carries the name, so the server answers with one under the new name. */
   async renameAccount(name: string): Promise<Actor> {
-    const response = await this.request<{ actor: Actor }>('PATCH', '/api/account', { name }, true);
-    this.session.adopt(response.actor, this.session.token());
-    return response.actor;
+    return this.adopt(await this.request<SessionResponse>('PATCH', '/api/account', { name }, true));
   }
 
   async changePassword(currentPassword: string, newPassword: string): Promise<void> {
@@ -93,6 +89,7 @@ export class ShopClient {
     const token = await this.neonToken('sign-in', this.signedInEmail(), password);
     await this.request<{ deleted: boolean }>('DELETE', '/api/account', { token }, true);
     this.session.clear();
+    this.saved.forget();
     await this.signOutOfNeon();
   }
 
@@ -193,31 +190,58 @@ export class ShopClient {
     return product;
   }
 
-  private async adoptNeon(token: string, signedUp = false): Promise<Actor> {
-    const response = await this.request<SessionResponse>(
-      'POST',
-      '/api/session/neon',
-      { token, signedUp },
-      false,
-    );
+  private adopt(response: SessionResponse): Actor {
     this.session.adopt(response.actor, response.token);
-    this.neonHint.remember();
+    this.saved.save(response.token);
     return response.actor;
   }
 
-  private async resumeNeonSession(): Promise<void> {
-    if (this.session.isSignedIn() || !this.neonHint.isSet()) {
+  private async adoptNeon(token: string, signedUp = false): Promise<Actor> {
+    return this.adopt(
+      await this.request<SessionResponse>('POST', '/api/session/neon', { token, signedUp }, false),
+    );
+  }
+
+  private async restoreSession(): Promise<void> {
+    const saved = this.saved.token();
+    if (this.session.isSignedIn() || !saved) {
       return;
     }
     try {
-      const token = await this.neon.currentSessionToken();
-      if (token) {
-        await this.adoptNeon(token);
+      const session = await this.savedSessionOf(saved);
+      if (session) {
+        this.adopt(session);
+      } else if (accountKindOf(saved) === 'neon') {
+        await this.resumeNeonSession();
       } else {
-        this.neonHint.forget();
+        this.saved.forget();
       }
     } catch {
-      // Neon Auth or the shop did not answer. The visitor stays signed out, and the next load asks again.
+      // The shop or Neon Auth did not answer. The visitor stays signed out, and the next load asks again.
+    }
+  }
+
+  /** The shop's answer for a saved token: whose session it is, or null once it has ended. */
+  private async savedSessionOf(token: string): Promise<SessionResponse | null> {
+    try {
+      return await firstValueFrom(
+        this.http.get<SessionResponse>('/api/session', { headers: bearer(token) }),
+      );
+    } catch (error) {
+      if (error instanceof HttpErrorResponse && error.status === 401) {
+        return null;
+      }
+      throw error;
+    }
+  }
+
+  /** Neon Auth's cookie outlives the shop's Neon session; when it holds no account, the saved one goes. */
+  private async resumeNeonSession(): Promise<void> {
+    const token = await this.neon.currentSessionToken();
+    if (token) {
+      await this.adoptNeon(token);
+    } else {
+      this.saved.forget();
     }
   }
 
@@ -247,7 +271,6 @@ export class ShopClient {
   }
 
   private async signOutOfNeon(): Promise<void> {
-    this.neonHint.forget();
     try {
       await this.neon.signOut();
     } catch {
@@ -282,9 +305,12 @@ export class ShopClient {
   }
 
   private headers(): HttpHeaders {
-    const token = this.session.token();
-    return token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : new HttpHeaders();
+    return bearer(this.session.token());
   }
+}
+
+function bearer(token: string): HttpHeaders {
+  return token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : new HttpHeaders();
 }
 
 function messageFrom(error: unknown): string {

@@ -16,7 +16,7 @@ import { adoptNeonSession, verifyFreshNeonSignIn } from './app/shop/neon-adopt';
 import { relayNeonAuth } from './app/shop/neon-auth-relay';
 import { pullNeon, pushNeon, reportShopError, shopDatabaseConfigured } from './app/shop/neon-book';
 import { NEON_AUTH_RELAY_PATH, NEON_AUTH_URL } from './app/shop/neon-public';
-import { handleShopHttp } from './app/shop/shop-server';
+import { handleShopHttp, signSessionsWith } from './app/shop/shop-server';
 import { mailerFromEnv } from './mail/mailer';
 import {
   DeliveredEvents,
@@ -29,6 +29,9 @@ import {
 import { ShopMail } from './mail/shop-mail';
 
 loadLocalEnv();
+// Netlify runs this server as many short-lived instances. Each derives the same session key from the
+// database secret, so a session signed by one is good on the next.
+signSessionsWith(process.env['DATABASE_URL']);
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
@@ -143,6 +146,10 @@ async function serveApi(
   body: unknown,
   authorization: string | null,
 ): Promise<{ status: number; body: unknown }> {
+  if (path === '/api/session') {
+    // Signing in to a floor account or reading a saved session needs no records from the branch.
+    return handleShopHttp(method, path, body, authorization);
+  }
   if (shopDatabaseConfigured()) {
     await pullNeon();
   }

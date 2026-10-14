@@ -230,9 +230,23 @@ describe('account pages', () => {
   });
 
   describe('after a reload', () => {
-    it('keeps a Neon account signed in from the Neon Auth cookie', async () => {
+    const PAST_A_NEON_SESSION = 13 * 60 * 60_000;
+
+    afterEach(() => vi.useRealTimers());
+
+    async function signInWithNeon(): Promise<void> {
       await render('/');
       await TestBed.inject(ShopClient).signInWithNeon('ada@example.com', 'my-password');
+      neon.calls.length = 0;
+    }
+
+    function laterBy(milliseconds: number): void {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(Date.now() + milliseconds);
+    }
+
+    it('keeps a Neon account signed in from the session this browser saved', async () => {
+      await signInWithNeon();
 
       await render('/account');
 
@@ -241,13 +255,33 @@ describe('account pages', () => {
       expect(document.querySelector('header a[href="/account"]')?.textContent).toContain(
         'Ada Lovelace',
       );
+      expect(neon.calls).toEqual([]);
+    });
+
+    it('keeps a floor account signed in', async () => {
+      await render('/');
+      await TestBed.inject(ShopClient).signIn('avery@marlow.shop', FLOOR_PASSWORD_HINT);
+
+      await render('/account');
+
+      expect(TestBed.inject(Router).url).toBe('/account');
+      expect(TestBed.inject(ShopSession).current()?.name).toBe('Avery Cole');
+    });
+
+    it('asks Neon Auth again once the saved session has run out', async () => {
+      await signInWithNeon();
+      laterBy(PAST_A_NEON_SESSION);
+
+      await render('/account');
+
+      expect(TestBed.inject(Router).url).toBe('/account');
+      expect(TestBed.inject(ShopSession).current()?.name).toBe('Ada Lovelace');
+      expect(neon.calls).toEqual(['current-session']);
     });
 
     it('stays signed out after signing out, without asking Neon Auth', async () => {
-      await render('/');
-      const client = TestBed.inject(ShopClient);
-      await client.signInWithNeon('ada@example.com', 'my-password');
-      await client.signOut();
+      await signInWithNeon();
+      await TestBed.inject(ShopClient).signOut();
       neon.calls.length = 0;
 
       await render('/account');
@@ -256,10 +290,10 @@ describe('account pages', () => {
       expect(neon.calls).toEqual([]);
     });
 
-    it('lets the account go once Neon Auth no longer holds it, and stops asking', async () => {
-      await render('/');
-      await TestBed.inject(ShopClient).signInWithNeon('ada@example.com', 'my-password');
+    it('lets the account go once neither the saved session nor Neon Auth holds it, and stops asking', async () => {
+      await signInWithNeon();
       neon.signedIn = false;
+      laterBy(PAST_A_NEON_SESSION);
 
       await render('/account');
       expect(TestBed.inject(Router).url).toBe('/sign-in');

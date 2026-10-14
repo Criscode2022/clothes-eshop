@@ -57,16 +57,25 @@ function floorSession(email = 'avery@marlow.shop'): string {
 describe('shop sessions', () => {
   beforeEach(() => resetShopServer());
 
-  it('hands out tokens nobody can guess, marked with the kind of account', () => {
-    const first = openSession(ADA).token;
-    const second = openSession(ADA).token;
-    const floor = floorSession().slice('Bearer '.length);
+  it('tells a reloaded page whose saved session it holds', () => {
+    const floor = floorSession();
+    const neon = neonSession();
 
-    expect(first).not.toBe(second);
-    expect(first).toMatch(/^neon_[0-9a-f-]{36}$/);
-    expect(accountKindOf(first)).toBe('neon');
-    expect(accountKindOf(floor)).toBe('floor');
-    expect(accountKindOf('session-1')).toBeNull();
+    expect(handleShopHttp('GET', '/api/session', null, floor).body).toEqual({
+      token: floor.slice('Bearer '.length),
+      actor: expect.objectContaining({ name: 'Avery Cole', role: 'client' }),
+    });
+    expect(handleShopHttp('GET', '/api/session', null, neon).body).toEqual({
+      token: neon.slice('Bearer '.length),
+      actor: ADA,
+    });
+    expect(accountKindOf(floor.slice('Bearer '.length))).toBe('floor');
+    expect(accountKindOf(neon.slice('Bearer '.length))).toBe('neon');
+  });
+
+  it('says when a saved session has ended or was never the shop own', () => {
+    expect(handleShopHttp('GET', '/api/session', null, 'Bearer neon_made-up.x').status).toBe(401);
+    expect(handleShopHttp('GET', '/api/session', null, null).status).toBe(401);
   });
 });
 
@@ -77,22 +86,24 @@ describe('account requests', () => {
     expect(await handleAccountHttp('GET', '/api/catalog', null, null, deps())).toBeNull();
   });
 
-  it('renames a Neon account in the directory and in every open session', async () => {
+  it('renames a Neon account in the directory and hands back a session under the new name', async () => {
     const directory = new FakeDirectory();
-    const authorization = neonSession();
 
     const result = await handleAccountHttp(
       'PATCH',
       '/api/account',
       { name: '  Ada King  ' },
-      authorization,
+      neonSession(),
       deps({ directory }),
     );
 
+    const renamed = result?.body as { token: string; actor: Actor };
     expect(result?.status).toBe(200);
     expect(directory.renamed).toEqual([{ id: ADA.id, name: 'Ada King' }]);
-    expect(handleShopHttp('GET', '/api/orders', null, authorization).status).toBe(200);
-    expect((result?.body as { actor: Actor }).actor.name).toBe('Ada King');
+    expect(renamed.actor).toEqual({ ...ADA, name: 'Ada King' });
+    expect(handleShopHttp('GET', '/api/session', null, `Bearer ${renamed.token}`).body).toEqual(
+      renamed,
+    );
   });
 
   it('asks for a real name', async () => {
@@ -184,7 +195,7 @@ describe('account requests', () => {
     expect(directory.removed).toEqual([ADA.id]);
     expect(listOrders(ADA)).toEqual([]);
     expect(listOrders({ ...ADA, role: 'owner' }).map((order) => order.clientId)).toEqual([null]);
-    expect(handleShopHttp('GET', '/api/orders', null, authorization).status).toBe(403);
+    expect(handleShopHttp('GET', '/api/orders', null, authorization).body).toEqual([]);
   });
 
   it('asks for the password again when the sign-in is not fresh or not this account', async () => {

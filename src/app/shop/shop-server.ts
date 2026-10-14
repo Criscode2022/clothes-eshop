@@ -16,8 +16,8 @@ import {
   setVariantStock,
 } from './order-book';
 import type { NewPiece, NewVariant } from './order-book';
-import { accountKindOf, newSessionToken } from './session-tokens';
-import type { AccountKind } from './session-tokens';
+import { SessionSeal, sessionKeyFrom } from './session-seal';
+import type { SessionClaims } from './session-seal';
 
 /**
  * Floor accounts for the shop before Neon Auth is configured.
@@ -59,7 +59,13 @@ const FLOOR_ACCOUNTS: readonly (Actor & { readonly password: string })[] = [
 
 export const FLOOR_PASSWORD_HINT = FLOOR_PASSWORD;
 
-const sessions = new Map<string, Actor>();
+/** Signs with a random key until the server hands it the secret every instance shares. */
+let seal = new SessionSeal(sessionKeyFrom(undefined));
+
+/** Sessions signed from the same secret are good on every server instance that has it. */
+export function signSessionsWith(secret: string | undefined): void {
+  seal = new SessionSeal(sessionKeyFrom(secret));
+}
 
 export interface ShopHttpResult {
   readonly status: number;
@@ -68,7 +74,6 @@ export interface ShopHttpResult {
 
 export function resetShopServer(): void {
   resetShop();
-  sessions.clear();
 }
 
 /**
@@ -98,12 +103,8 @@ function dispatch(
   if (method === 'POST' && path === '/api/session') {
     return signIn(body);
   }
-  if (method === 'DELETE' && path === '/api/session') {
-    const token = tokenFrom(authorization);
-    if (token) {
-      sessions.delete(token);
-    }
-    return { status: 200, body: { signedOut: true } };
+  if (method === 'GET' && path === '/api/session') {
+    return savedSession(authorization);
   }
   if (method === 'GET' && path === '/api/catalog') {
     return { status: 200, body: listCatalog() };
@@ -155,42 +156,24 @@ function dispatch(
   return { status: 404, body: { message: 'That shop route does not exist.' } };
 }
 
-/** Opens a server session for an actor the database already accepted. The browser does not choose the role. */
+/** Opens a session for an actor the database already accepted. The browser does not choose the role. */
 export function openSession(actor: Actor): { token: string; actor: Actor } {
-  const token = newSessionToken('neon');
-  sessions.set(token, actor);
-  return { token, actor };
+  return { token: seal.issue('neon', actor), actor };
 }
 
 /** The person behind a request and the kind of account they signed in with, or null without a session. */
-export function sessionOf(
-  authorization: string | null,
-): { readonly actor: Actor; readonly kind: AccountKind } | null {
+export function sessionOf(authorization: string | null): SessionClaims | null {
   const token = tokenFrom(authorization);
-  const actor = token ? sessions.get(token) : undefined;
-  const kind = token ? accountKindOf(token) : null;
-  return actor && kind ? { actor, kind } : null;
+  return token ? seal.read(token) : null;
 }
 
-/** Every open session of one account shows its new name at once. */
-export function renameSessionsOf(actorId: string, name: string): Actor | null {
-  let renamed: Actor | null = null;
-  for (const [token, actor] of sessions) {
-    if (actor.id === actorId) {
-      renamed = { ...actor, name };
-      sessions.set(token, renamed);
-    }
+/** A reloaded page asks whose session it saved; the answer is null once the session has ended. */
+function savedSession(authorization: string | null): ShopHttpResult {
+  const session = sessionOf(authorization);
+  if (!session) {
+    return { status: 401, body: { message: 'That session has ended. Sign in again.' } };
   }
-  return renamed;
-}
-
-/** Signs an account out everywhere, as when it is deleted. */
-export function endSessionsOf(actorId: string): void {
-  for (const [token, actor] of sessions) {
-    if (actor.id === actorId) {
-      sessions.delete(token);
-    }
-  }
+  return { status: 200, body: { token: tokenFrom(authorization), actor: session.actor } };
 }
 
 function signIn(body: unknown): ShopHttpResult {
@@ -210,9 +193,7 @@ function signIn(body: unknown): ShopHttpResult {
     name: account.name,
     email: account.email,
   };
-  const token = newSessionToken('floor');
-  sessions.set(token, actor);
-  return { status: 200, body: { token, actor } };
+  return { status: 200, body: { token: seal.issue('floor', actor), actor } };
 }
 
 function actorFrom(authorization: string | null): Actor | null {
