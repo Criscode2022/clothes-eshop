@@ -34,8 +34,12 @@
   border: 0;
   cursor: pointer;
   transition: background-color var(--duration-fast) ease-out;
+}
 
-  &:hover {
+// Only under a pointer: on a phone a tap would leave the grey behind once the menu or bag closes.
+@media (hover: hover) {
+  .icon-button:hover,
+  .bag-button:hover {
     background: var(--color-hover);
   }
 }
@@ -77,7 +81,7 @@
   gap: 1.75rem;
 }
 
-// The signed-in person's own corner: their name, their orders, and the way out. On a phone it lives in the menu.
+// The signed-in person's own corner: their name and their orders. On a phone it lives in the menu.
 .account {
   display: none;
   align-items: center;
@@ -92,8 +96,9 @@
   white-space: nowrap;
 }
 
+// The way out stands last, after the bag. On a phone it lives in the menu.
 .sign-out {
-  margin-inline-start: -0.5rem;
+  display: none;
   font-size: 1.125rem;
 }
 
@@ -110,6 +115,7 @@
   background: none;
   border: 0;
   cursor: pointer;
+  transition: background-color var(--duration-fast) ease-out;
 }
 
 .bag-button__icon {
@@ -117,7 +123,7 @@
 }
 
 .bag-button__label {
-  // Read on every screen size; shown beside the icon only on desktop.
+  // Read by screen readers; the icon stands for it on every screen size.
   position: absolute;
   width: 1px;
   height: 1px;
@@ -127,7 +133,7 @@
 }
 
 .bag-button__count {
-  // On a phone the count rests on the bag's corner; beside the word Bag on a desktop.
+  // The count rests on the bag's corner.
   position: absolute;
   top: 0.25rem;
   right: -0.125rem;
@@ -172,23 +178,10 @@
     display: inline-flex;
   }
 
-  .bag-button__icon {
-    display: none;
-  }
-
-  .bag-button__label {
-    position: static;
-    width: auto;
-    height: auto;
-    clip-path: none;
-  }
-
-  .bag-button__count {
-    position: static;
-    min-width: 1.25rem;
-    height: 1.25rem;
-    padding-inline: 0.3rem;
-    font-size: var(--text-xs);
+  // Drawn close to the bag, and its icon lines up with the page's right edge.
+  .sign-out {
+    display: inline-grid;
+    margin-inline: -0.5rem -0.75rem;
   }
 }
 

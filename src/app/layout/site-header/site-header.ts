@@ -61,7 +61,7 @@ export class SiteHeader {
 
   /**
    * Leaving another page moves focus to the new content. Signing out on the floor itself goes
-   * nowhere, so focus moves to Sign in, which now stands where the sign-out button was.
+   * nowhere, and the sign-out button is gone, so focus moves to Sign in.
    */
   private keepFocusAfterSignOut(): void {
     afterNextRender(

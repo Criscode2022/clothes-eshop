@@ -318,6 +318,13 @@ describe('account pages', () => {
     expect(document.getElementById('reset-new')).toBeNull();
   });
 
+  it('lists the orders without repeating who is signed in', async () => {
+    await render('/account/orders', 'neon');
+
+    expect(document.querySelector('h1')?.textContent).toContain('Your orders');
+    expect(document.querySelector('main')?.textContent).not.toContain('Signed in as');
+  });
+
   it('offers the account under their name in the header once someone is signed in', async () => {
     await render('/', 'neon');
 

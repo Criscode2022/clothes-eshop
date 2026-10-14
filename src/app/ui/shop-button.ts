@@ -6,13 +6,17 @@ import { classes } from '@spartan-ng/helm/utils';
 type Variant = NonNullable<ButtonVariants['variant']>;
 type Size = NonNullable<ButtonVariants['size']>;
 
-/** Marlow's hover and disabled looks on top of Spartan's variants: the black is the action, the rest stays quiet. */
+/**
+ * Marlow's hover and disabled looks on top of Spartan's variants: the black is the action, the rest stays
+ * quiet until the pointer is on it. Spartan's `dark:` hovers follow the system theme, so ours name it too.
+ */
 const VARIANT_CLASSES: Record<Variant, string> = {
-  default: 'hover:bg-primary/85',
-  outline: 'border-foreground bg-transparent hover:bg-accent',
+  default: 'hover:bg-primary/75 [a]:hover:bg-primary/75',
+  outline:
+    'border-foreground bg-transparent hover:bg-primary hover:text-primary-foreground dark:hover:bg-primary',
   secondary: 'hover:bg-surface-strong',
   ghost: 'hover:bg-accent',
-  destructive: '',
+  destructive: 'hover:bg-destructive hover:text-canvas dark:hover:bg-destructive',
   link: 'h-auto min-h-11 px-0 font-normal text-foreground underline decoration-1 underline-offset-[0.22em] hover:decoration-2',
 };
 

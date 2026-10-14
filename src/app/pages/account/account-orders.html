@@ -8,9 +8,6 @@
       </ol>
     </nav>
     <h1 class="title">Your orders</h1>
-    @if (session.current(); as person) {
-      <p class="lede">Signed in as {{ person.name }}, {{ person.email }}.</p>
-    }
   </header>
 
   @if (orders.error()) {

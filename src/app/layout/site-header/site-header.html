@@ -86,15 +86,6 @@
               >Orders</a
             >
           }
-          <button
-            type="button"
-            class="icon-button sign-out"
-            aria-label="Sign out"
-            title="Sign out"
-            (click)="signOut()"
-          >
-            <ng-icon name="lucideLogOut" />
-          </button>
         </div>
       } @else {
         <a
@@ -125,6 +116,18 @@
           <span class="sr-only">, empty</span>
         }
       </button>
+
+      @if (session.isSignedIn()) {
+        <button
+          type="button"
+          class="icon-button sign-out"
+          aria-label="Sign out"
+          title="Sign out"
+          (click)="signOut()"
+        >
+          <ng-icon name="lucideLogOut" />
+        </button>
+      }
     </div>
   </div>
 

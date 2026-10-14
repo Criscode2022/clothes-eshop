@@ -82,7 +82,8 @@ components:
     padding: "0 1.5rem"
     height: "3rem"
   button-secondary-hover:
-    backgroundColor: "{colors.surface}"
+    backgroundColor: "{colors.ink}"
+    textColor: "{colors.canvas}"
   input:
     backgroundColor: "{colors.canvas}"
     textColor: "{colors.ink}"
@@ -148,7 +149,7 @@ A monochrome working palette that lets the mauve, camel, and ink of the photogra
 ### Neutral
 
 - **Gallery White** (#ffffff): the page ground and the text on black buttons.
-- **Fitting-Room Grey** (#f5f5f4): quiet panels: the checkout and bag summaries, the order facts, the desk's open-order details, photo placeholders, and hover on secondary controls.
+- **Fitting-Room Grey** (#f5f5f4): quiet panels: the checkout and bag summaries, the order facts, the desk's open-order details, photo placeholders, and hover on icon buttons.
 - **Chalk Grey** (#ebebea): heavier fills: disabled buttons, the selected piece in the backoffice list, the one-time flash on a line just added to the bag.
 - **Graphite** (#61615e): secondary text: ledes, metadata, captions, empty states (6.2:1 on white).
 - **Hairline** (#e3e3e1): 1px dividers between rows of data and around unselected chips and size boxes. Decorative only; never the sole marker of a control.
@@ -228,10 +229,10 @@ Every control is a Spartan part: Brain for behavior and accessibility, Helm (`ly
 ### Buttons
 
 - **Shape:** square (0), 3rem tall, 1.5rem side padding; a 2.25rem small size serves table rows; icon buttons are 2.75rem touch targets.
-- **Primary** (`hlmBtn`): Ink Black fill, white label at 500 weight. Hover mixes 15% of the ground into the black; a press nudges it down 1px.
-- **Secondary** (`variant="outline"`): 1px Ink Black outline on the ground; hover fills Fitting-Room Grey.
+- **Primary** (`hlmBtn`): Ink Black fill, white label at 500 weight. Hover mixes 25% of the ground into the black; a press nudges it down 1px.
+- **Secondary** (`variant="outline"`): 1px Ink Black outline on the ground; hover fills it Ink Black with a white label.
 - **Text button** (`variant="link"`): an underlined caption-size action (Remove, Cancel, Keep, Copy reference) for secondary actions that sit inline; the underline thickens on hover.
-- **Destructive** (`variant="destructive"`): Oxblood Error text on a 10% Oxblood wash; used only for deleting an account, and only after a confirm dialog.
+- **Destructive** (`variant="destructive"`): Oxblood Error text on a 10% Oxblood wash; hover fills it Oxblood with a white label. Used only for deleting an account, and only after a confirm dialog.
 - **Disabled:** Chalk Grey fill with Graphite text, out of the tab order. Busy buttons carry aria-busy, show Spartan's spinner, and change their label ("Placing order").
 
 ### Chips
@@ -259,7 +260,7 @@ Every control is a Spartan part: Brain for behavior and accessibility, Helm (`ly
 
 ### Navigation
 
-- **Header:** sticky, white, with a Hairline bottom border; it tucks away while the shopper scrolls down past the first screen and returns on any scroll up or when something inside it takes focus. On desktop: the wordmark, departments at label size, then Atelier, Desk or Backoffice for staff, Account once signed in (Sign in before), and Bag with a black count pill. Links draw a 1px underline in from the left on hover; the current page keeps it. On a phone: a menu button, the centered wordmark, and the bag icon with the count on its corner.
+- **Header:** sticky, white, with a Hairline bottom border; it tucks away while the shopper scrolls down past the first screen and returns on any scroll up or when something inside it takes focus. On desktop: the wordmark, departments at label size, then Atelier, Desk or Backoffice for staff, the person's name and Orders once signed in (Sign in before), the bag icon with the count on its corner, and, signed in, the sign-out icon last. Icon buttons fill Fitting-Room Grey under the pointer. Links draw a 1px underline in from the left on hover; the current page keeps it. On a phone: a menu button, the centered wordmark, and the bag icon with the count on its corner.
 - **Menu and bag:** Spartan sheets (CDK dialogs) that slide in from the left and right edges over the scrim (420ms in, 260ms out), close on Escape, scrim click, or navigation, and return focus to their buttons. Both load with `@defer` on idle, or the moment they are asked to open, so the overlay code stays out of the first page. The menu's rooms arrive one after another.
 - **Breadcrumb:** Spartan's breadcrumb with chevrons, caption size, on the product page.
 - **Staff sections:** link tabs whose 2px Ink Black underline grows under the current section.

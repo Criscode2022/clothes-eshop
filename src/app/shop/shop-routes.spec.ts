@@ -155,6 +155,17 @@ describe('shop routes', () => {
     expect(header.querySelector('button[aria-label="Sign out"]')).not.toBeNull();
   });
 
+  it('keeps the bag before sign out, which stands last in the header', async () => {
+    const { fixture } = await render('/');
+    adopt(fixture, 'avery@marlow.shop');
+    await settle(fixture);
+
+    const tools = [...document.querySelectorAll('header .bar__tools > *')];
+
+    expect(tools.at(-2)?.classList).toContain('bag-button');
+    expect(tools.at(-1)?.getAttribute('aria-label')).toBe('Sign out');
+  });
+
   it('shows the piece in the color the shopper picks', async () => {
     const { fixture } = await render('/product/wool-overcoat');
     const photo = (): HTMLImageElement | null => document.querySelector('.pdp__media img');

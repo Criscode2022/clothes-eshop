@@ -50,11 +50,6 @@ import { ShopButtonImports } from '../../ui/shop-button';
       font-size: var(--text-xl);
     }
 
-    .lede {
-      font-size: var(--text-ui);
-      color: var(--color-text-muted);
-    }
-
     .orders {
       display: grid;
       gap: 0.5rem;
@@ -118,7 +113,7 @@ import { ShopButtonImports } from '../../ui/shop-button';
 })
 export class AccountOrders {
   private readonly shop = inject(ShopClient);
-  protected readonly session = inject(ShopSession);
+  private readonly session = inject(ShopSession);
   protected readonly orders = resource({
     params: () => this.session.current()?.id,
     loader: () => this.shop.listOrders(),
