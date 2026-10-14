@@ -24,6 +24,11 @@ export class SlideTrack {
     this.track.scrollTo({ left: index * this.track.clientWidth });
   }
 
+  /** The slide after the one in view, or the first again after the last. */
+  showNext(): void {
+    this.show((this.current() + 1) % this.track.children.length);
+  }
+
   /** A plain listener, so swiping only re-renders when the slide in view changes. */
   private followSwipes(): void {
     const destroyRef = inject(DestroyRef);

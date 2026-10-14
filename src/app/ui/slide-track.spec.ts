@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { SlideTrack, slideAt } from './slide-track';
 
 const SLIDE_WIDTH = 390;
@@ -38,7 +39,8 @@ describe('SlideTrack', () => {
     const host = fixture.nativeElement as HTMLElement;
     const track = host.querySelector('ul')!;
     Object.defineProperty(track, 'clientWidth', { value: SLIDE_WIDTH });
-    return { fixture, host, track };
+    const slides = fixture.debugElement.query(By.directive(SlideTrack)).injector.get(SlideTrack);
+    return { fixture, host, track, slides };
   }
 
   it('starts on the first slide and follows the swipe', async () => {
@@ -61,5 +63,19 @@ describe('SlideTrack', () => {
     await fixture.whenStable();
 
     expect(scrollTo).toHaveBeenCalledWith({ left: 2 * SLIDE_WIDTH });
+  });
+
+  it('shows the next slide, and the first again after the last', async () => {
+    const { track, slides } = await render();
+    const scrollTo = vi.fn();
+    track.scrollTo = scrollTo;
+
+    slides.showNext();
+    expect(scrollTo).toHaveBeenLastCalledWith({ left: SLIDE_WIDTH });
+
+    Object.defineProperty(track, 'scrollLeft', { value: 2 * SLIDE_WIDTH, configurable: true });
+    track.dispatchEvent(new Event('scroll'));
+    slides.showNext();
+    expect(scrollTo).toHaveBeenLastCalledWith({ left: 0 });
   });
 });

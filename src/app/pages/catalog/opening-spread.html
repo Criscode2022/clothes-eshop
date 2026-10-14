@@ -1,5 +1,5 @@
 @if (tiles().length > 0) {
-  <ul class="spread" role="list" appSlideTrack #photos="slideTrack">
+  <ul class="spread" role="list" appSlideTrack appSlideShow #photos="slideTrack" #turns="slideShow">
     @for (tile of tiles(); track tile.piece.id; let first = $first) {
       <li class="spread__tile">
         <a class="spread__link" [routerLink]="['/product', tile.piece.id]">
@@ -25,16 +25,35 @@
     }
   </ul>
 
-  <div class="spread__markers" role="group" aria-label="Photographs">
-    @for (tile of tiles(); track tile.piece.id; let index = $index) {
-      <button
-        type="button"
-        class="spread__marker"
-        [attr.aria-current]="photos.current() === index ? 'true' : null"
-        (click)="photos.show(index)"
-      >
-        <span class="sr-only">Show {{ tile.piece.name }}</span>
-      </button>
-    }
+  <!-- On a phone the photographs take turns; each marker fills while its photograph is in view. -->
+  <div class="spread__controls">
+    <div
+      class="spread__markers"
+      role="group"
+      aria-label="Photographs"
+      [attr.data-turns]="turns.state()"
+      [style.--turn-length]="turns.intervalMs + 'ms'"
+    >
+      @for (tile of tiles(); track tile.piece.id; let index = $index) {
+        <button
+          type="button"
+          class="spread__marker"
+          [attr.aria-current]="photos.current() === index ? 'true' : null"
+          (click)="photos.show(index)"
+        >
+          <span class="sr-only">Show {{ tile.piece.name }}</span>
+        </button>
+      }
+    </div>
+
+    <button type="button" class="spread__play" (click)="turns.toggle()">
+      @if (turns.playing()) {
+        <ng-icon name="lucidePause" aria-hidden="true" />
+        <span class="sr-only">Pause the photographs</span>
+      } @else {
+        <ng-icon name="lucidePlay" aria-hidden="true" />
+        <span class="sr-only">Play the photographs</span>
+      }
+    </button>
   </div>
 }

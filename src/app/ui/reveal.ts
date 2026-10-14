@@ -8,6 +8,7 @@ import {
   input,
   signal,
 } from '@angular/core';
+import { prefersReducedMotion } from './motion';
 
 type RevealState = 'pending' | 'shown';
 
@@ -61,8 +62,5 @@ export class Reveal {
 }
 
 function canReveal(): boolean {
-  return (
-    typeof IntersectionObserver !== 'undefined' &&
-    !globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-  );
+  return typeof IntersectionObserver !== 'undefined' && !prefersReducedMotion();
 }

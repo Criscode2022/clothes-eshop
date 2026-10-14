@@ -1,3 +1,4 @@
+import { ApplicationRef } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { OpeningSpread } from './opening-spread';
@@ -56,5 +57,20 @@ describe('OpeningSpread', () => {
       null,
       null,
     ]);
+  });
+
+  it('lets the shopper pause the photographs as they take turns, and play them again', async () => {
+    const host = await render();
+    const toggle = (): HTMLButtonElement | undefined =>
+      [...host.querySelectorAll('button')].find((button) =>
+        button.textContent?.includes('the photographs'),
+      );
+
+    expect(toggle()?.textContent?.trim()).toBe('Pause the photographs');
+
+    toggle()!.click();
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    expect(toggle()?.textContent?.trim()).toBe('Play the photographs');
   });
 });

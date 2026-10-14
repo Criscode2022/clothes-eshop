@@ -87,14 +87,22 @@
   font-variant-numeric: tabular-nums;
 }
 
-// One marker per photograph, under the track on a phone: black for the one in view. Each is a
-// button tall enough to tap, so the photographs can be reached without swiping.
-.spread__markers {
+// Under the track on a phone: one marker per photograph, then the pause button at the right edge.
+.spread__controls {
   display: flex;
-  gap: 0.375rem;
+  align-items: center;
+  justify-content: space-between;
   padding: 0.5rem var(--gutter) 0;
 }
 
+.spread__markers {
+  display: flex;
+  gap: 0.375rem;
+}
+
+// Each marker is a button tall enough to tap, so the photographs can be reached without swiping.
+// A 2px line, filled in black for the photograph in view; while the photographs take turns, the fill
+// grows toward the next one and stops where it is while the countdown waits.
 .spread__marker {
   display: grid;
   align-items: center;
@@ -102,22 +110,67 @@
   height: 1.5rem;
   cursor: pointer;
 
-  &::before {
+  &::before,
+  &::after {
     content: '';
+    grid-area: 1 / 1;
     height: 2px;
-    background: var(--color-field-border);
-    transition: background-color var(--duration-base) var(--ease-out);
   }
 
-  &[aria-current='true']::before {
-    background: var(--color-text);
+  &::before {
+    background: var(--color-field-border);
   }
+
+  &::after {
+    background: var(--color-text);
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+
+  &[aria-current='true']::after {
+    transform: none;
+  }
+}
+
+.spread__markers:not([data-turns='stopped']) .spread__marker[aria-current='true']::after {
+  animation: turn-fill var(--turn-length) linear both;
+}
+
+.spread__markers[data-turns='held'] .spread__marker[aria-current='true']::after {
+  animation-play-state: paused;
+}
+
+@keyframes turn-fill {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: none;
+  }
+}
+
+// A full touch target drawn inside the markers' row, its icon on the page's right edge.
+.spread__play {
+  display: inline-grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin-block: -0.625rem;
+  margin-inline-end: -0.875rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) ease-out;
 }
 
 @media (hover: hover) {
   .spread__caption {
     opacity: 0;
     translate: 0 0.5rem;
+  }
+
+  .spread__play:hover {
+    background: var(--color-hover);
   }
 
   .spread__link:hover,
@@ -150,7 +203,7 @@
     left: 1.25rem;
   }
 
-  .spread__markers {
+  .spread__controls {
     display: none;
   }
 }
