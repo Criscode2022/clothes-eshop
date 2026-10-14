@@ -129,6 +129,11 @@
     }
   }
 
+  // A photograph's <picture> only picks the encoding; its <img> lays out as if the picture were not there.
+  picture {
+    display: contents;
+  }
+
   input,
   select,
   textarea {

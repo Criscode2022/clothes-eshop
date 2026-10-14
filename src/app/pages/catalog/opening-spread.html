@@ -4,14 +4,18 @@
       <li class="spread__tile">
         <a class="spread__link" [routerLink]="['/product', tile.piece.id]">
           <!-- The first fills a phone's screen; the others are one swipe away, so they load now too. -->
-          <img
-            [ngSrc]="tile.src"
-            width="800"
-            height="1200"
-            [priority]="first"
-            [loading]="first ? undefined : 'eager'"
-            alt=""
-          />
+          <picture>
+            <source type="image/avif" [srcset]="tile.photo.avif" />
+            <source type="image/jpeg" [srcset]="tile.photo.jpeg" />
+            <img
+              [ngSrc]="tile.photo.avif"
+              width="800"
+              height="1200"
+              [priority]="first"
+              [loading]="first ? undefined : 'eager'"
+              alt=""
+            />
+          </picture>
           <span class="spread__caption">
             <span class="spread__name">{{ tile.piece.name }}</span>
             <span class="spread__price">{{ tile.piece.priceCents | money }}</span>

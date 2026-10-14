@@ -158,13 +158,25 @@ describe('shop routes', () => {
   it('shows the piece in the color the shopper picks', async () => {
     const { fixture } = await render('/product/wool-overcoat');
     const photo = (): HTMLImageElement | null => document.querySelector('.pdp__media img');
+    const sources = (): string[] =>
+      [...document.querySelectorAll('.pdp__media source')].map(
+        (source) => `${source.getAttribute('type')} ${source.getAttribute('srcset')}`,
+      );
 
-    expect(photo()?.getAttribute('src')).toBe('/garments/wool-overcoat.jpg');
+    expect(photo()?.getAttribute('src')).toBe('/garments/wool-overcoat.avif');
+    expect(sources()).toEqual([
+      'image/avif /garments/wool-overcoat.avif',
+      'image/jpeg /garments/wool-overcoat.jpg',
+    ]);
     expect(photo()?.alt).toBe('Charcoal Wool Overcoat in Charcoal');
 
     await choose(fixture, 'input[name="color"][value="Camel"]');
 
-    expect(photo()?.getAttribute('src')).toBe('/garments/wool-overcoat-camel.jpg');
+    expect(photo()?.getAttribute('src')).toBe('/garments/wool-overcoat-camel.avif');
+    expect(sources()).toEqual([
+      'image/avif /garments/wool-overcoat-camel.avif',
+      'image/jpeg /garments/wool-overcoat-camel.jpg',
+    ]);
     expect(photo()?.alt).toBe('Charcoal Wool Overcoat in Camel');
   });
 

@@ -4,7 +4,8 @@ import { RouterLink } from '@angular/router';
 import { CATEGORIES, productsIn } from '../../shop/catalog';
 import type { CategorySlug, Product } from '../../shop/catalog';
 import { CatalogStore } from '../../shop/catalog-store';
-import { portraitSrc } from '../../shop/cloth';
+import { portraitOf } from '../../shop/cloth';
+import type { Portrait } from '../../shop/cloth';
 import { Reveal } from '../../ui/reveal';
 
 /** The photograph that stands for each category in the index under the floor. */
@@ -19,7 +20,7 @@ interface Cover {
   readonly slug: CategorySlug;
   readonly name: string;
   readonly count: number;
-  readonly src: string;
+  readonly photo: Portrait;
 }
 
 /** The four rooms of the floor, one photograph each, leading to the category pages and their fit notes. */
@@ -35,7 +36,11 @@ interface Cover {
             <li appReveal [revealOrder]="index">
               <a class="room" [routerLink]="['/category', cover.slug]">
                 <span class="room__photo">
-                  <img [ngSrc]="cover.src" width="800" height="1200" alt="" />
+                  <picture>
+                    <source type="image/avif" [srcset]="cover.photo.avif" />
+                    <source type="image/jpeg" [srcset]="cover.photo.jpeg" />
+                    <img [ngSrc]="cover.photo.avif" width="800" height="1200" alt="" />
+                  </picture>
                 </span>
                 <span class="room__name">{{ cover.name }}</span>
                 <span class="room__count">
@@ -123,8 +128,8 @@ export class CategoryIndex {
 /** One photograph per category, skipping any category whose cover piece has no photograph or no pieces left. */
 function coversOf(products: readonly Product[]): Cover[] {
   return CATEGORIES.flatMap(({ slug, name }) => {
-    const src = portraitSrc(CATEGORY_COVERS[slug]);
+    const photo = portraitOf(CATEGORY_COVERS[slug]);
     const count = productsIn(products, slug).length;
-    return src && count > 0 ? [{ slug, name, count, src }] : [];
+    return photo && count > 0 ? [{ slug, name, count, photo }] : [];
   });
 }

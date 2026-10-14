@@ -9,13 +9,19 @@
       </p>
     </div>
     <div class="lead__photo">
-      <img
-        ngSrc="/garments/wool-overcoat.jpg"
-        width="800"
-        height="1200"
-        priority
-        alt="Charcoal Wool Overcoat"
-      />
+      @if (leadPortrait; as photo) {
+        <picture>
+          <source type="image/avif" [srcset]="photo.avif" />
+          <source type="image/jpeg" [srcset]="photo.jpeg" />
+          <img
+            [ngSrc]="photo.avif"
+            width="800"
+            height="1200"
+            priority
+            alt="Charcoal Wool Overcoat"
+          />
+        </picture>
+      }
     </div>
   </header>
 

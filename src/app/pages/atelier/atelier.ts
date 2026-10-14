@@ -3,6 +3,7 @@ import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CATEGORIES } from '../../shop/catalog';
 import { PAYMENT_METHODS } from '../../shop/checkout';
+import { portraitOf } from '../../shop/cloth';
 import { Reveal } from '../../ui/reveal';
 
 /** How Marlow works: the floor, the cloth, and how an order leaves. */
@@ -14,6 +15,7 @@ import { Reveal } from '../../ui/reveal';
 })
 export class Atelier {
   protected readonly categories = CATEGORIES;
+  protected readonly leadPortrait = portraitOf('wool-overcoat');
   protected readonly paymentMethods = PAYMENT_METHODS;
   protected readonly orderSteps = [
     { name: 'Placed', detail: 'The order is in the book, and its pieces are held off the floor.' },

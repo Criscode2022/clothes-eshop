@@ -3,7 +3,8 @@ import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import type { Product } from '../../shop/catalog';
 import { CatalogStore } from '../../shop/catalog-store';
-import { portraitSrc } from '../../shop/cloth';
+import { portraitOf } from '../../shop/cloth';
+import type { Portrait } from '../../shop/cloth';
 import { MoneyPipe } from '../../shop/money.pipe';
 import { SlideTrack } from '../../ui/slide-track';
 
@@ -12,7 +13,7 @@ const SPREAD = ['oxford-shirt', 'wool-overcoat', 'field-jacket'];
 
 interface SpreadTile {
   readonly piece: Product;
-  readonly src: string;
+  readonly photo: Portrait;
 }
 
 /**
@@ -34,7 +35,7 @@ export class OpeningSpread {
 function spreadOf(products: readonly Product[]): SpreadTile[] {
   return SPREAD.flatMap((id) => {
     const piece = products.find((product) => product.id === id);
-    const src = portraitSrc(id);
-    return piece && src ? [{ piece, src }] : [];
+    const photo = portraitOf(id);
+    return piece && photo ? [{ piece, photo }] : [];
   });
 }

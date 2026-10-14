@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs';
 import { SEED_PRODUCTS } from './catalog';
-import { compositionOf, fitNote, morePieces, portraitSrc, relatedPieces } from './cloth';
+import { compositionOf, fitNote, morePieces, portraitOf, relatedPieces } from './cloth';
 import { centsUntilFreeShipping } from './money';
 import { ordersFromRows, productsFromRows, referenceAfter } from './neon-book';
 import type { LineRecord, OrderRecord, ProductRecord, VariantRecord } from './neon-book';
@@ -37,27 +37,36 @@ describe('cloth and shipping remainder', () => {
 });
 
 describe('photographs by color', () => {
-  it('shows a piece in the color asked for', () => {
-    expect(portraitSrc('wool-overcoat', 'Charcoal')).toBe('/garments/wool-overcoat.jpg');
-    expect(portraitSrc('wool-overcoat', 'Camel')).toBe('/garments/wool-overcoat-camel.jpg');
+  it('shows a piece in the color asked for, as AVIF with the JPEG it was made from', () => {
+    expect(portraitOf('wool-overcoat', 'Charcoal')).toEqual({
+      avif: '/garments/wool-overcoat.avif',
+      jpeg: '/garments/wool-overcoat.jpg',
+    });
+    expect(portraitOf('wool-overcoat', 'Camel')).toEqual({
+      avif: '/garments/wool-overcoat-camel.avif',
+      jpeg: '/garments/wool-overcoat-camel.jpg',
+    });
   });
 
   it('uses the first photograph when no color is asked for', () => {
-    expect(portraitSrc('wool-overcoat')).toBe('/garments/wool-overcoat.jpg');
-    expect(portraitSrc('field-jacket', '')).toBe('/garments/field-jacket.jpg');
+    expect(portraitOf('wool-overcoat')?.avif).toBe('/garments/wool-overcoat.avif');
+    expect(portraitOf('field-jacket', '')?.avif).toBe('/garments/field-jacket.avif');
   });
 
   it('has no photograph for a color nobody photographed, rather than another color', () => {
-    expect(portraitSrc('oxford-shirt', 'Navy')).toBeNull();
-    expect(portraitSrc('owner-added-piece', 'Ink')).toBeNull();
+    expect(portraitOf('oxford-shirt', 'Navy')).toBeNull();
+    expect(portraitOf('owner-added-piece', 'Ink')).toBeNull();
   });
 
-  it('has a photograph on disk for every color on the seeded floor', () => {
+  it('has both encodings on disk for every color on the seeded floor', () => {
     const missing = SEED_PRODUCTS.flatMap((product) =>
-      product.variants
-        .map((variant) => portraitSrc(product.id, variant.color))
-        .filter((src) => !src || !existsSync(`public${src}`))
-        .map((src) => `${product.id}: ${src ?? 'none'}`),
+      product.variants.flatMap((variant) => {
+        const portrait = portraitOf(product.id, variant.color);
+        if (!portrait) {
+          return [`${product.id} in ${variant.color}: none`];
+        }
+        return [portrait.avif, portrait.jpeg].filter((src) => !existsSync(`public${src}`));
+      }),
     );
 
     expect(missing).toEqual([]);

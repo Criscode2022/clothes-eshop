@@ -1,22 +1,26 @@
 import { NgOptimizedImage } from '@angular/common';
 import { Component, computed, input } from '@angular/core';
 import { clothColor } from '../shop/catalog';
-import { portraitSrc } from '../shop/cloth';
+import { portraitOf } from '../shop/cloth';
 
 /** A piece's photograph in its cloth color, or a quiet stand-in in that color when there is no photograph of it yet. */
 @Component({
   selector: 'app-piece-photo',
   imports: [NgOptimizedImage],
   template: `
-    @if (src(); as source) {
-      <img
-        [ngSrc]="source"
-        width="800"
-        height="1200"
-        [priority]="priority()"
-        [alt]="alt()"
-        [style.view-transition-name]="transitionName() || null"
-      />
+    @if (portrait(); as photo) {
+      <picture>
+        <source type="image/avif" [srcset]="photo.avif" />
+        <source type="image/jpeg" [srcset]="photo.jpeg" />
+        <img
+          [ngSrc]="photo.avif"
+          width="800"
+          height="1200"
+          [priority]="priority()"
+          [alt]="alt()"
+          [style.view-transition-name]="transitionName() || null"
+        />
+      </picture>
     } @else {
       <div class="stand-in" [style.view-transition-name]="transitionName() || null">
         <span class="swatch" [style.background]="swatch()"></span>
@@ -78,7 +82,7 @@ export class PiecePhoto {
   /** Names the photograph for the view transition between the floor and the piece's page. */
   readonly transitionName = input('');
 
-  protected readonly src = computed(() => portraitSrc(this.pieceId(), this.color()));
+  protected readonly portrait = computed(() => portraitOf(this.pieceId(), this.color()));
   protected readonly swatch = computed(() => {
     const color = clothColor(this.color());
     return color === 'transparent' ? 'var(--color-surface-strong)' : color;

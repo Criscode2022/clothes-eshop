@@ -1,8 +1,8 @@
 import type { CategorySlug, Product } from './catalog';
 
 /**
- * The colors each seeded piece is photographed in. The first is its cover, `/garments/<id>.jpg`;
- * each other color is `/garments/<id>-<color>.jpg`.
+ * The colors each seeded piece is photographed in. The first is its cover, `/garments/<id>.avif`;
+ * each other color is `/garments/<id>-<color>.avif`. Each AVIF sits beside the JPEG it was encoded from.
  */
 const PORTRAITS = new Map<string, readonly string[]>([
   ['wool-overcoat', ['Charcoal', 'Camel']],
@@ -62,19 +62,34 @@ const FIT: Record<CategorySlug, string> = {
 };
 
 /**
- * Portrait path for a seeded piece in a cloth color, or its cover when no color is given.
+ * A photograph in two encodings. AVIF weighs about a third of the JPEG, and every current browser reads
+ * it; the JPEG is for the few that cannot, such as Safari before iOS 16. Templates show it as a `<picture>`:
+ * an AVIF source, a JPEG source, then `<img [ngSrc]>` on the AVIF, so the preload Angular writes for a
+ * priority photograph fetches the file most browsers show.
+ */
+export interface Portrait {
+  readonly avif: string;
+  readonly jpeg: string;
+}
+
+/**
+ * The photograph of a seeded piece in a cloth color, or its cover when no color is given.
  * A color nobody photographed has none, so a piece is never shown in a color it is not.
  * Owner-added pieces have no photograph yet.
  */
-export function portraitSrc(id: string, color = ''): string | null {
+export function portraitOf(id: string, color = ''): Portrait | null {
   const colors = PORTRAITS.get(id);
   if (!colors) {
     return null;
   }
   if (!color || color === colors[0]) {
-    return `/garments/${id}.jpg`;
+    return encodingsOf(`/garments/${id}`);
   }
-  return colors.includes(color) ? `/garments/${id}-${color.toLowerCase()}.jpg` : null;
+  return colors.includes(color) ? encodingsOf(`/garments/${id}-${color.toLowerCase()}`) : null;
+}
+
+function encodingsOf(path: string): Portrait {
+  return { avif: `${path}.avif`, jpeg: `${path}.jpg` };
 }
 
 export function compositionOf(product: Product): string {

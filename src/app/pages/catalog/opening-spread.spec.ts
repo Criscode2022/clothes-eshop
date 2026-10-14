@@ -24,6 +24,23 @@ describe('OpeningSpread', () => {
     expect(links[1]?.textContent).toContain('$');
   });
 
+  it('offers each photograph as AVIF, with the JPEG for browsers that cannot read AVIF', async () => {
+    const host = await render();
+
+    const pictures = [...host.querySelectorAll('picture')].map((picture) => ({
+      avif: picture.querySelector('source[type="image/avif"]')?.getAttribute('srcset'),
+      jpeg: picture.querySelector('source[type="image/jpeg"]')?.getAttribute('srcset'),
+      img: picture.querySelector('img')?.getAttribute('src'),
+    }));
+
+    expect(pictures[0]).toEqual({
+      avif: '/garments/oxford-shirt.avif',
+      jpeg: '/garments/oxford-shirt.jpg',
+      img: '/garments/oxford-shirt.avif',
+    });
+    expect(pictures).toHaveLength(3);
+  });
+
   it('gives each photograph a marker on a phone and marks the first as the one in view', async () => {
     const host = await render();
 

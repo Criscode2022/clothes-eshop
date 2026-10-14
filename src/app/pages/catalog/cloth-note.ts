@@ -1,7 +1,7 @@
 import { NgOptimizedImage } from '@angular/common';
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { portraitSrc } from '../../shop/cloth';
+import { portraitOf } from '../../shop/cloth';
 import { Reveal } from '../../ui/reveal';
 import { ShopButtonImports } from '../../ui/shop-button';
 
@@ -13,10 +13,19 @@ const CLOTH_PHOTO = 'merino-crew';
   selector: 'app-cloth-note',
   imports: [NgOptimizedImage, Reveal, RouterLink, ShopButtonImports],
   template: `
-    @if (photo; as src) {
+    @if (portrait; as photo) {
       <section class="note page" aria-labelledby="cloth-title" appReveal>
         <div class="note__photo">
-          <img [ngSrc]="src" width="800" height="1200" alt="Merino Crew Neck folded on linen" />
+          <picture>
+            <source type="image/avif" [srcset]="photo.avif" />
+            <source type="image/jpeg" [srcset]="photo.jpeg" />
+            <img
+              [ngSrc]="photo.avif"
+              width="800"
+              height="1200"
+              alt="Merino Crew Neck folded on linen"
+            />
+          </picture>
         </div>
         <div class="note__text">
           <h2 id="cloth-title" class="note__title">Cloth and care</h2>
@@ -77,5 +86,5 @@ const CLOTH_PHOTO = 'merino-crew';
   `,
 })
 export class ClothNote {
-  protected readonly photo = portraitSrc(CLOTH_PHOTO);
+  protected readonly portrait = portraitOf(CLOTH_PHOTO);
 }
