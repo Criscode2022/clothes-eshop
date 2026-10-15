@@ -498,6 +498,21 @@ describe('shop routes', () => {
     expect(backLink()?.getAttribute('href')).toBe('/account/orders');
   });
 
+  it('shows the same trail on a category page as on a piece', async () => {
+    const { fixture } = await render('/category/shirts');
+    expect(breadcrumbTrail()).toEqual([
+      ['Shop', '/'],
+      ['Shirts', null],
+    ]);
+
+    await go(fixture, '/product/oxford-shirt');
+    expect(breadcrumbTrail()).toEqual([
+      ['Shop', '/'],
+      ['Shirts', '/category/shirts'],
+      ['Oxford Cloth Shirt', null],
+    ]);
+  });
+
   it('refuses clients at both staff areas and workers at the backoffice', async () => {
     const { fixture } = await render('/owner');
     expect(document.body.textContent).toContain('closed to you');
@@ -635,6 +650,14 @@ async function checkoutWithAShirt(): Promise<{ fixture: ComponentFixture<App> }>
   await clickButton(rendered.fixture, 'Add to bag');
   await go(rendered.fixture, '/checkout');
   return rendered;
+}
+
+/** Each step of the breadcrumb as [label, link]; the page itself has no link and is marked current. */
+function breadcrumbTrail(): [string, string | null][] {
+  const steps = document.querySelectorAll<HTMLElement>(
+    'nav[aria-label="Breadcrumb"] a, nav[aria-label="Breadcrumb"] [aria-current="page"]',
+  );
+  return [...steps].map((step) => [step.textContent?.trim() ?? '', step.getAttribute('href')]);
 }
 
 function backLink(): HTMLAnchorElement | null {

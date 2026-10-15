@@ -12,11 +12,13 @@ import { Reveal } from '../../ui/reveal';
 import { CategoryIndex } from './category-index';
 import { ClothNote } from './cloth-note';
 import { OpeningSpread } from './opening-spread';
+import { Breadcrumb } from '../../ui/breadcrumb';
 
 /** The floor: every piece, or one category of them. */
 @Component({
   selector: 'app-catalog',
   imports: [
+    Breadcrumb,
     CategoryIndex,
     ClothNote,
     HlmEmptyImports,

@@ -14,19 +14,13 @@
       </div>
 
       <div class="pdp__panel">
-        <nav hlmBreadcrumb aria-label="Breadcrumb">
-          <ol hlmBreadcrumbList>
-            <li hlmBreadcrumbItem><a hlmBreadcrumbLink link="/">Shop</a></li>
-            <li hlmBreadcrumbSeparator></li>
-            <li hlmBreadcrumbItem>
-              <a hlmBreadcrumbLink [link]="['/category', piece.category]">{{ categoryName() }}</a>
-            </li>
-            <li hlmBreadcrumbSeparator></li>
-            <li hlmBreadcrumbItem>
-              <span hlmBreadcrumbPage>{{ piece.name }}</span>
-            </li>
-          </ol>
-        </nav>
+        <app-breadcrumb
+          [trail]="[
+            { label: 'Shop', link: '/' },
+            { label: categoryName(), link: '/category/' + piece.category },
+            { label: piece.name },
+          ]"
+        />
 
         <div class="pdp__heading">
           <h1 class="pdp__name">{{ piece.name }}</h1>

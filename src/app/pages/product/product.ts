@@ -14,11 +14,11 @@ import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideBanknote, lucideTruck } from '@ng-icons/lucide';
 import { HlmAccordionImports } from '@spartan-ng/helm/accordion';
-import { HlmBreadcrumbImports } from '@spartan-ng/helm/breadcrumb';
 import { HlmEmptyImports } from '@spartan-ng/helm/empty';
 import { BagDrawer } from '../../shop/bag-drawer';
 import { categoryName, clothColor, variantsByColor } from '../../shop/catalog';
 import { BackLink } from '../../ui/back-link';
+import { Breadcrumb } from '../../ui/breadcrumb';
 import { CatalogStore } from '../../shop/catalog-store';
 import { careOf, compositionOf, fitNote, morePieces } from '../../shop/cloth';
 import { FREE_SHIPPING_FROM_CENTS } from '../../shop/money';
@@ -34,8 +34,8 @@ import { ShopButtonImports } from '../../ui/shop-button';
   selector: 'app-product',
   imports: [
     BackLink,
+    Breadcrumb,
     HlmAccordionImports,
-    HlmBreadcrumbImports,
     HlmEmptyImports,
     MoneyPipe,
     NgIcon,

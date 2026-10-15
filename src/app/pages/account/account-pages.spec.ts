@@ -316,6 +316,15 @@ describe('account pages', () => {
     await render('/account/orders', 'neon');
 
     expect(document.querySelector('h1')?.textContent).toContain('Your orders');
+    const trail = [
+      ...document.querySelectorAll(
+        'nav[aria-label="Breadcrumb"] a, nav[aria-label="Breadcrumb"] [aria-current="page"]',
+      ),
+    ].map((step) => [step.textContent?.trim(), step.getAttribute('href')]);
+    expect(trail).toEqual([
+      ['Your account', '/account'],
+      ['Orders', null],
+    ]);
     expect(document.querySelector('main')?.textContent).not.toContain('Signed in as');
   });
 

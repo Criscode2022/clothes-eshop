@@ -20,7 +20,6 @@ import {
   lucideSearch,
 } from '@ng-icons/lucide';
 import { HlmAlertImports } from '@spartan-ng/helm/alert';
-import { HlmBreadcrumbImports } from '@spartan-ng/helm/breadcrumb';
 import { HlmEmptyImports } from '@spartan-ng/helm/empty';
 import { HlmInputGroupImports } from '@spartan-ng/helm/input-group';
 import { HlmItemImports } from '@spartan-ng/helm/item';
@@ -33,6 +32,7 @@ import { ORDER_SORTS, listedOrders, orderListParams, orderListView } from '../..
 import type { OrderListView } from '../../shop/order-list';
 import { ShopClient } from '../../shop/shop-client';
 import { ShopSession } from '../../shop/shop-session';
+import { Breadcrumb } from '../../ui/breadcrumb';
 import { FulfillmentBadge } from '../../ui/fulfillment-badge';
 import { PaymentBadge } from '../../ui/payment-badge';
 import { Reveal } from '../../ui/reveal';
@@ -48,9 +48,9 @@ const PLACED_ON = new Intl.DateTimeFormat('en-US', {
 @Component({
   selector: 'app-account-orders',
   imports: [
+    Breadcrumb,
     FulfillmentBadge,
     HlmAlertImports,
-    HlmBreadcrumbImports,
     HlmEmptyImports,
     HlmInputGroupImports,
     HlmItemImports,

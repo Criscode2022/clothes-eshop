@@ -31,6 +31,7 @@
 } @else if (category(); as current) {
   <div class="split page">
     <header class="category">
+      <app-breadcrumb [trail]="[{ label: 'Shop', link: '/' }, { label: current.name }]" />
       <h1 class="category__title">{{ current.name }}</h1>
       <p class="category__fit">{{ fit() }}</p>
       <ng-container *ngTemplateOutlet="filters" />

@@ -1,12 +1,6 @@
 <div class="account page">
   <header class="head">
-    <nav hlmBreadcrumb aria-label="Breadcrumb">
-      <ol hlmBreadcrumbList>
-        <li hlmBreadcrumbItem><a hlmBreadcrumbLink link="/account">Your account</a></li>
-        <li hlmBreadcrumbSeparator></li>
-        <li hlmBreadcrumbItem><span hlmBreadcrumbPage>Orders</span></li>
-      </ol>
-    </nav>
+    <app-breadcrumb [trail]="[{ label: 'Your account', link: '/account' }, { label: 'Orders' }]" />
     <h1 class="title">Your orders</h1>
   </header>
 
