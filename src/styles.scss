@@ -479,6 +479,30 @@
   }
 }
 
+// A confirmation over the page (deleting an account, cancelling an order): a white panel, square, at
+// Marlow's sizes. Helm caps its width per data-size, so the selector names data-size to outrank that.
+[data-slot='alert-dialog-content'][data-size] {
+  width: min(28rem, calc(100vw - 2rem));
+  max-width: none;
+  gap: 1.25rem;
+  padding: 1.75rem;
+  font-size: var(--text-ui);
+  box-shadow: none;
+}
+
+[data-slot='alert-dialog-title'] {
+  font-size: var(--text-lg);
+  font-weight: 500;
+}
+
+[data-slot='alert-dialog-description'] {
+  font-size: var(--text-ui);
+}
+
+[data-slot='alert-dialog-footer'] {
+  gap: 0.75rem;
+}
+
 [data-slot='accordion-trigger'] {
   min-height: 3.25rem;
   align-items: center;

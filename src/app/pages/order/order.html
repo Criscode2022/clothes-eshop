@@ -24,7 +24,50 @@
           <p class="thanks__line">Thank you, {{ placed.contact.name }}. Your order is placed.</p>
         </div>
       }
-      <h1 class="title">Order {{ placed.reference }}</h1>
+      <div class="head__top">
+        <h1 class="title">Order {{ placed.reference }}</h1>
+        @if (canCancel(placed)) {
+          <hlm-alert-dialog (stateChanged)="$event === 'closed' && forgetCancelError()">
+            <button hlmAlertDialogTrigger hlmBtn variant="destructive" type="button">
+              Cancel this order
+            </button>
+            <hlm-alert-dialog-content *hlmAlertDialogPortal="let ctx">
+              <hlm-alert-dialog-header>
+                <h2 hlmAlertDialogTitle>Cancel order {{ placed.reference }}?</h2>
+                <p hlmAlertDialogDescription>
+                  Its pieces go back on the floor, and the order cannot be placed again.
+                </p>
+              </hlm-alert-dialog-header>
+              @if (cancelError()) {
+                <div hlmAlert variant="destructive">
+                  <ng-icon name="lucideCircleAlert" />
+                  <p hlmAlertDescription>{{ cancelError() }}</p>
+                </div>
+              }
+              <hlm-alert-dialog-footer>
+                <button hlmBtn variant="outline" type="button" (click)="ctx.close()">
+                  Keep the order
+                </button>
+                <button
+                  hlmBtn
+                  variant="destructive"
+                  type="button"
+                  [disabled]="cancelling()"
+                  [attr.aria-busy]="cancelling()"
+                  (click)="cancel(placed)"
+                >
+                  @if (cancelling()) {
+                    <hlm-spinner aria-hidden="true" />
+                    Cancelling
+                  } @else {
+                    Yes, cancel the order
+                  }
+                </button>
+              </hlm-alert-dialog-footer>
+            </hlm-alert-dialog-content>
+          </hlm-alert-dialog>
+        }
+      </div>
       <div class="head__meta">
         <app-fulfillment-badge [state]="placed.fulfillment" />
         <button
@@ -40,6 +83,11 @@
         </button>
       </div>
       <p class="head__keep">Keep the reference: it is how the shop finds your order.</p>
+      @if (cancelledNow()) {
+        <p #cancelledNote class="head__cancelled" role="status" tabindex="-1">
+          Order {{ placed.reference }} is cancelled. Its pieces are back on the floor.
+        </p>
+      }
     </header>
 
     <section class="track" aria-label="Progress">
@@ -102,51 +150,10 @@
       </dl>
     </div>
 
-    @if (canCancel(placed)) {
-      <section class="cancel" aria-labelledby="cancel-title">
-        <h2 id="cancel-title" class="section-title">Cancel the order</h2>
-        @if (confirmingCancel()) {
-          <p class="cancel__text">
-            Cancel order {{ placed.reference }}? Its pieces go back on the floor, and the order
-            cannot be placed again.
-          </p>
-          <div class="cancel__actions">
-            <button
-              #confirmCancel
-              hlmBtn
-              variant="destructive"
-              type="button"
-              [disabled]="cancelling()"
-              [attr.aria-busy]="cancelling()"
-              (click)="cancel(placed)"
-            >
-              Yes, cancel the order
-            </button>
-            <button hlmBtn variant="outline" type="button" (click)="keepOrder()">
-              Keep the order
-            </button>
-          </div>
-        } @else {
-          <p class="cancel__text">You can cancel it until it is completed.</p>
-          <div class="cancel__actions">
-            <button #askCancel hlmBtn variant="outline" type="button" (click)="askToCancel()">
-              Cancel this order
-            </button>
-          </div>
-        }
-        @if (cancelError()) {
-          <p class="cancel__error" role="alert">{{ cancelError() }}</p>
-        }
-      </section>
-    } @else if (guestMayAskToCancel(placed)) {
-      <p class="cancel__text">
+    @if (guestMayAskToCancel(placed)) {
+      <p class="guest-cancel">
         Placed without an account: to cancel it before it is completed, give the shop the reference
         {{ placed.reference }}.
-      </p>
-    }
-    @if (cancelledNow()) {
-      <p #cancelledNote class="cancel__done" role="status" tabindex="-1">
-        Order {{ placed.reference }} is cancelled. Its pieces are back on the floor.
       </p>
     }
 

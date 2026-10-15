@@ -221,7 +221,7 @@ describe('shop routes', () => {
     expect(TestBed.inject(Bag).count()).toBe(0);
   });
 
-  it('lets a client cancel their own order from its page, after saying yes', async () => {
+  it('lets a client cancel their own order from the top of its page, after saying yes', async () => {
     const { fixture } = await render('/');
     adopt(fixture, AVERY);
     handleShopHttp(
@@ -237,10 +237,17 @@ describe('shop routes', () => {
     const before = shirtsLeft()!;
     await go(fixture, '/order/MR-1001');
 
+    const ask = findButton('Cancel this order')!;
+    expect(ask.closest('.head__top')?.querySelector('h1')?.textContent).toContain('Order MR-1001');
+    expect(ask.className).toContain('text-destructive');
+
     await clickButton(fixture, 'Cancel this order');
-    expect(document.body.textContent).toContain('Cancel order MR-1001?');
-    expect(document.activeElement?.textContent).toContain('Yes, cancel the order');
+    expect(document.querySelector('[role="alertdialog"]')?.textContent).toContain(
+      'Cancel order MR-1001?',
+    );
+    expect(document.activeElement?.textContent).toContain('Keep the order');
     await clickButton(fixture, 'Keep the order');
+    expect(document.querySelector('[role="alertdialog"]')).toBeNull();
     expect(document.activeElement?.textContent).toContain('Cancel this order');
 
     await clickButton(fixture, 'Cancel this order');

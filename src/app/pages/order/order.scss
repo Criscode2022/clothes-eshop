@@ -48,6 +48,28 @@
   animation: rise-in var(--duration-slow) var(--ease-out) 640ms both;
 }
 
+// The order's number on the left; cancelling it, when the person may, on the right, even when a narrow
+// phone wraps it under the number.
+.head__top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+
+  > hlm-alert-dialog {
+    margin-inline-start: auto;
+  }
+}
+
+// Focus lands here so a screen reader hears the outcome; it is not a control, so it draws no ring.
+.head__cancelled {
+  font-weight: 500;
+
+  &:focus {
+    outline: none;
+  }
+}
+
 .head__meta {
   display: flex;
   flex-wrap: wrap;
@@ -142,41 +164,10 @@
   }
 }
 
-.cancel {
-  display: grid;
-  gap: 1rem;
-  justify-items: start;
+// The guest's way to cancel: there is no button, so it reads as a quiet note.
+.guest-cancel {
   max-width: 44rem;
-  padding-top: 2rem;
-  border-top: 1px solid var(--color-border);
-
-  .section-title {
-    margin-bottom: 0;
-  }
-}
-
-.cancel__text {
   color: var(--color-text-muted);
-}
-
-.cancel__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-}
-
-.cancel__error {
-  color: var(--color-danger);
-}
-
-// Focus lands here so a screen reader hears the outcome; it is not a control, so it draws no ring.
-.cancel__done {
-  max-width: 44rem;
-  font-weight: 500;
-
-  &:focus {
-    outline: none;
-  }
 }
 
 .state {

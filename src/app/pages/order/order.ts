@@ -11,10 +11,13 @@ import {
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideCheck, lucideCopy } from '@ng-icons/lucide';
+import { lucideCheck, lucideCircleAlert, lucideCopy } from '@ng-icons/lucide';
+import { HlmAlertImports } from '@spartan-ng/helm/alert';
+import { HlmAlertDialog, HlmAlertDialogImports } from '@spartan-ng/helm/alert-dialog';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmEmptyImports } from '@spartan-ng/helm/empty';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
+import { HlmSpinner } from '@spartan-ng/helm/spinner';
 import { canCancelOrder } from '../../shop/access';
 import { canBeCancelled, paymentLabel } from '../../shop/checkout';
 import type { ShopOrder } from '../../shop/checkout';
@@ -31,9 +34,12 @@ import { ShopButtonImports } from '../../ui/shop-button';
   selector: 'app-order',
   imports: [
     FulfillmentBadge,
+    HlmAlertDialogImports,
+    HlmAlertImports,
     HlmCardImports,
     HlmEmptyImports,
     HlmSkeleton,
+    HlmSpinner,
     MoneyPipe,
     NgIcon,
     OrderTotals,
@@ -42,7 +48,7 @@ import { ShopButtonImports } from '../../ui/shop-button';
     RouterLink,
     ShopButtonImports,
   ],
-  providers: [provideIcons({ lucideCheck, lucideCopy })],
+  providers: [provideIcons({ lucideCheck, lucideCircleAlert, lucideCopy })],
   templateUrl: './order.html',
   styleUrl: './order.scss',
 })
@@ -51,8 +57,7 @@ export class OrderPage {
   private readonly shop = inject(ShopClient);
   private readonly session = inject(ShopSession);
   private readonly injector = inject(Injector);
-  private readonly askCancel = viewChild<ElementRef<HTMLButtonElement>>('askCancel');
-  private readonly confirmCancel = viewChild<ElementRef<HTMLButtonElement>>('confirmCancel');
+  private readonly cancelDialog = viewChild(HlmAlertDialog);
   private readonly cancelledNote = viewChild<ElementRef<HTMLElement>>('cancelledNote');
 
   /** True on the page checkout lands on, so it can thank the shopper; a revisit reads as a plain record. */
@@ -60,7 +65,6 @@ export class OrderPage {
     inject(Router).currentNavigation()?.extras.state?.['placed'] === true;
   protected readonly paymentLabel = paymentLabel;
   protected readonly copied = signal(false);
-  protected readonly confirmingCancel = signal(false);
   protected readonly cancelling = signal(false);
   protected readonly cancelError = signal('');
   protected readonly cancelledNow = signal(false);
@@ -74,28 +78,20 @@ export class OrderPage {
     return canBeCancelled(order.fulfillment) && canCancelOrder(this.session.current(), order);
   }
 
-  /** A guest order has no account to cancel it from, so the shop does it by reference. */
+  /** A guest order has no account to cancel it from, so the guest asks the shop by reference. */
   protected guestMayAskToCancel(order: ShopOrder): boolean {
-    return canBeCancelled(order.fulfillment) && order.clientId === null;
+    return canBeCancelled(order.fulfillment) && order.clientId === null && !this.canCancel(order);
   }
 
-  protected askToCancel(): void {
-    this.confirmingCancel.set(true);
-    this.focusAfterRender(this.confirmCancel);
-  }
-
-  protected keepOrder(): void {
-    this.confirmingCancel.set(false);
+  protected forgetCancelError(): void {
     this.cancelError.set('');
-    this.focusAfterRender(this.askCancel);
   }
 
   protected async cancel(order: ShopOrder): Promise<void> {
     this.cancelling.set(true);
     try {
       this.order.set(await this.shop.cancelOrder(order.reference));
-      this.confirmingCancel.set(false);
-      this.cancelError.set('');
+      this.cancelDialog()?.close();
       this.cancelledNow.set(true);
       this.focusAfterRender(this.cancelledNote);
     } catch (error) {
@@ -117,7 +113,7 @@ export class OrderPage {
     }
   }
 
-  /** The control that was pressed is gone after the change, so focus moves to what replaced it. */
+  /** The button that opened the dialog is gone once the order is cancelled, so focus moves to the outcome. */
   private focusAfterRender(target: () => ElementRef<HTMLElement> | undefined): void {
     afterNextRender({ write: () => target()?.nativeElement.focus() }, { injector: this.injector });
   }

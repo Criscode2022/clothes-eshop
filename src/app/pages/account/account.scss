@@ -108,30 +108,7 @@
   transition: translate var(--duration-base) var(--ease-out);
 }
 
-// The confirmation that sits over the page: a white panel, square, at Marlow's sizes.
-.confirm {
-  width: min(28rem, calc(100vw - 2rem));
-  max-width: none;
-  gap: 1.25rem;
-  padding: 1.75rem;
-  font-size: var(--text-ui);
-  box-shadow: none;
-}
-
-.confirm__title {
-  font-size: var(--text-lg);
-  font-weight: 500;
-}
-
-.confirm__text {
-  font-size: var(--text-ui);
-}
-
 .confirm__form {
   display: grid;
   gap: 1.25rem;
-}
-
-.confirm__actions {
-  gap: 0.75rem;
 }

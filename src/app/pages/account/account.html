@@ -146,10 +146,10 @@
             <button hlmAlertDialogTrigger hlmBtn variant="destructive" type="button">
               Delete account
             </button>
-            <hlm-alert-dialog-content *hlmAlertDialogPortal="let ctx" class="confirm">
+            <hlm-alert-dialog-content *hlmAlertDialogPortal="let ctx">
               <hlm-alert-dialog-header>
-                <h2 hlmAlertDialogTitle class="confirm__title">Delete your account?</h2>
-                <p hlmAlertDialogDescription class="confirm__text">
+                <h2 hlmAlertDialogTitle>Delete your account?</h2>
+                <p hlmAlertDialogDescription>
                   Your sign-in and your name are removed from Marlow. Orders you placed stay with
                   the shop without a link to you.
                 </p>
@@ -172,7 +172,7 @@
                   autocomplete="current-password"
                   [field]="deleteForm.password"
                 />
-                <hlm-alert-dialog-footer class="confirm__actions">
+                <hlm-alert-dialog-footer>
                   <button hlmBtn variant="outline" type="button" (click)="ctx.close()">
                     Keep the account
                   </button>

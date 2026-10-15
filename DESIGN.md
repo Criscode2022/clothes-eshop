@@ -232,7 +232,7 @@ Every control is a Spartan part: Brain for behavior and accessibility, Helm (`ly
 - **Primary** (`hlmBtn`): Ink Black fill, white label at 500 weight. Hover mixes 25% of the ground into the black; a press nudges it down 1px.
 - **Secondary** (`variant="outline"`): 1px Ink Black outline on the ground; hover fills it Ink Black with a white label.
 - **Text button** (`variant="link"`): an underlined caption-size action (Remove, Cancel, Keep, Copy reference) for secondary actions that sit inline; the underline thickens on hover.
-- **Destructive** (`variant="destructive"`): Oxblood Error text on a 10% Oxblood wash; hover fills it Oxblood with a white label. Used only after a confirmation: deleting an account (in a confirm dialog) and cancelling an order ("Yes, cancel the order", inline on its page, beside "Keep the order").
+- **Destructive** (`variant="destructive"`): Oxblood Error text on a 10% Oxblood wash; hover fills it Oxblood with a white label. Used only for what cannot be undone, on the button that asks and on the one that confirms: "Delete account", and "Cancel this order" at the top right of an order's page, beside its number, each opening a confirm dialog.
 - **Disabled:** Chalk Grey fill with Graphite text, out of the tab order. Busy buttons carry aria-busy, show Spartan's spinner, and change their label ("Placing order").
 
 ### Chips
@@ -248,7 +248,7 @@ Every control is a Spartan part: Brain for behavior and accessibility, Helm (`ly
 - **Loading:** Spartan skeletons in Chalk Grey shaped like the rows they stand in for, with the loading sentence kept for screen readers.
 - **Alerts:** Spartan's destructive alert on a Fitting-Room Grey fill with a circled-alert icon and the problem in words.
 - **Settings sections:** the account page is a column of sections divided by Hairline rules, each with its title and one line of purpose on the left and its form or action on the right (stacked on a phone). Read-only facts are a label over the value. Saving reports in a status line beside the button rather than a toast.
-- **Confirm dialog:** Spartan's alert dialog, square and shadowless on the scrim, 28rem wide; it says what is lost and what is kept, asks for the password, and offers "Keep the account" before the destructive action. Focus starts in the password field.
+- **Confirm dialog:** Spartan's alert dialog, square and shadowless on the scrim, 28rem wide (one rule for every dialog, on `[data-slot='alert-dialog-content']` in `src/styles.scss`); it says what is lost and what is kept, and offers the safe choice ("Keep the account", "Keep the order") before the destructive one. Deleting an account asks for the password, and focus starts in that field; cancelling an order starts focus on "Keep the order".
 
 ### Inputs / Fields
 
