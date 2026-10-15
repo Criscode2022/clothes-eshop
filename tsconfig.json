@@ -32,7 +32,8 @@
       "@spartan-ng/helm/progress": ["./src/app/ui/helm/progress/src/index.ts"],
       "@spartan-ng/helm/input-group": ["./src/app/ui/helm/input-group/src/index.ts"],
       "@spartan-ng/helm/textarea": ["./src/app/ui/helm/textarea/src/index.ts"],
-      "@spartan-ng/helm/alert-dialog": ["./src/app/ui/helm/alert-dialog/src/index.ts"]
+      "@spartan-ng/helm/alert-dialog": ["./src/app/ui/helm/alert-dialog/src/index.ts"],
+      "@spartan-ng/helm/combobox": ["./src/app/ui/helm/combobox/src/index.ts"]
     }
   },
   "angularCompilerOptions": {

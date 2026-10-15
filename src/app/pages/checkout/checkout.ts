@@ -1,6 +1,14 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { Component, ElementRef, Injector, afterNextRender, inject, signal } from '@angular/core';
-import { FormField, email, form, minLength, required, submit } from '@angular/forms/signals';
+import {
+  Component,
+  ElementRef,
+  Injector,
+  afterNextRender,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
+import { FormField, form, required, submit, validate } from '@angular/forms/signals';
 import { Router, RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
@@ -14,16 +22,30 @@ import { HlmAlertImports } from '@spartan-ng/helm/alert';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmEmptyImports } from '@spartan-ng/helm/empty';
 import { HlmSpinner } from '@spartan-ng/helm/spinner';
+import {
+  cityProblem,
+  countryProblem,
+  emailProblem,
+  nameProblem,
+  normalizedPostalCode,
+  phoneProblem,
+  postalCodeProblem,
+  regionProblem,
+  streetProblem,
+} from '../../shop/address-rules';
 import { Bag } from '../../shop/bag';
 import { BagDrawer } from '../../shop/bag-drawer';
 import { PAYMENT_METHODS } from '../../shop/checkout';
-import type { PaymentMethodId } from '../../shop/checkout';
+import { countryNamed } from '../../shop/countries';
+import type { PaymentMethodId, ShippingDetails } from '../../shop/checkout';
 import { MoneyPipe } from '../../shop/money.pipe';
 import { ShopClient } from '../../shop/shop-client';
 import { ShopSession } from '../../shop/shop-session';
+import { CountryField } from '../../ui/country-field';
 import { FreeShipping } from '../../ui/free-shipping';
 import { OrderTotals } from '../../ui/order-totals';
 import { PiecePhoto } from '../../ui/piece-photo';
+import { SelectField } from '../../ui/select-field';
 import { ShopButtonImports } from '../../ui/shop-button';
 import { TextField } from '../../ui/text-field';
 
@@ -34,10 +56,16 @@ const METHOD_ICONS: Record<PaymentMethodId, string> = {
   'cash-on-delivery': 'lucideBanknote',
 };
 
+/** A rule's message as a form error; no message, no error. */
+function problem(message: string | null): { kind: 'rule'; message: string } | null {
+  return message ? { kind: 'rule', message } : null;
+}
+
 /** One page: contact, delivery, and how to pay, with the order's cost in view the whole time. */
 @Component({
   selector: 'app-checkout',
   imports: [
+    CountryField,
     FormField,
     FreeShipping,
     HlmAlertImports,
@@ -50,6 +78,7 @@ const METHOD_ICONS: Record<PaymentMethodId, string> = {
     OrderTotals,
     PiecePhoto,
     RouterLink,
+    SelectField,
     ShopButtonImports,
     TextField,
   ],
@@ -84,26 +113,44 @@ export class Checkout {
       email: this.session.current()?.email ?? '',
       phone: '',
     },
-    shipping: { line1: '', city: '', postalCode: '', country: 'United States' },
+    shipping: { country: 'United States', line1: '', city: '', region: '', postalCode: '' },
     paymentMethod: '',
   });
+  /** The rules the server applies too (address-rules), shown as each field is left. */
   protected readonly checkoutForm = form(this.model, (path) => {
-    required(path.contact.name, { message: 'Enter the name for the parcel.' });
-    minLength(path.contact.name, 2, { message: 'Enter the name for the parcel.' });
-    required(path.contact.email, { message: 'Enter an email for the receipt.' });
-    email(path.contact.email, { message: 'Enter an email address, like name@example.com.' });
-    required(path.contact.phone, { message: 'Enter a phone number.' });
-    minLength(path.contact.phone, 7, { message: 'Enter a phone number with at least 7 digits.' });
-    required(path.shipping.line1, { message: 'Enter the street address.' });
-    minLength(path.shipping.line1, 3, { message: 'Enter the street address.' });
-    required(path.shipping.city, { message: 'Enter the city.' });
-    minLength(path.shipping.city, 2, { message: 'Enter the city.' });
-    required(path.shipping.postalCode, { message: 'Enter the postal code.' });
-    minLength(path.shipping.postalCode, 3, { message: 'Enter the postal code.' });
-    required(path.shipping.country, { message: 'Enter the country.' });
-    minLength(path.shipping.country, 2, { message: 'Enter the country.' });
+    validate(path.contact.name, ({ value }) => problem(nameProblem(value())));
+    validate(path.contact.email, ({ value }) => problem(emailProblem(value())));
+    validate(path.contact.phone, ({ value }) => problem(phoneProblem(value())));
+    validate(path.shipping.country, ({ value }) => problem(countryProblem(value())));
+    validate(path.shipping.line1, ({ value }) => problem(streetProblem(value())));
+    validate(path.shipping.city, ({ value }) => problem(cityProblem(value())));
+    validate(path.shipping.region, ({ value, valueOf }) =>
+      problem(regionProblem(valueOf(path.shipping.country), value())),
+    );
+    validate(path.shipping.postalCode, ({ value, valueOf }) =>
+      problem(postalCodeProblem(valueOf(path.shipping.country), value())),
+    );
     required(path.paymentMethod, { message: 'Choose how you will pay.' });
   });
+  /** The country picked so far, which decides the region field and the postal format. */
+  protected readonly country = computed(() => countryNamed(this.model().shipping.country));
+  protected readonly phoneHint = computed(() => {
+    const country = this.country();
+    return `For the carrier. Include the country code${country ? `, like ${country.dial}` : ''}.`;
+  });
+
+  /** A state or province from the country before means nothing in the new one. */
+  protected countryChosen(): void {
+    this.updateShipping((shipping) => ({ ...shipping, region: '' }));
+  }
+
+  /** As the person leaves the field, a code that fits is written the country's way: k1a0b1 becomes K1A 0B1. */
+  protected tidyPostalCode(): void {
+    this.updateShipping((shipping) => ({
+      ...shipping,
+      postalCode: normalizedPostalCode(shipping.country, shipping.postalCode),
+    }));
+  }
 
   protected placeOrder(): void {
     this.errorMessage.set('');
@@ -113,6 +160,10 @@ export class Checkout {
       },
       onInvalid: () => this.focusFirstProblem(),
     });
+  }
+
+  private updateShipping(change: (shipping: ShippingDetails) => ShippingDetails): void {
+    this.model.update((model) => ({ ...model, shipping: change(model.shipping) }));
   }
 
   private async sendOrder(): Promise<void> {

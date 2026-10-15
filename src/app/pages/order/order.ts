@@ -20,7 +20,7 @@ import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import { HlmSpinner } from '@spartan-ng/helm/spinner';
 import { canCancelOrder } from '../../shop/access';
 import { paymentStateOf } from '../../shop/bank-transfer';
-import { canBeCancelled, paymentLabel } from '../../shop/checkout';
+import { addressLines, canBeCancelled, paymentLabel } from '../../shop/checkout';
 import type { ShopOrder } from '../../shop/checkout';
 import { MoneyPipe } from '../../shop/money.pipe';
 import { ShopClient } from '../../shop/shop-client';
@@ -66,6 +66,7 @@ export class OrderPage {
   /** True on the page checkout lands on, so it can thank the shopper; a revisit reads as a plain record. */
   protected readonly justPlaced =
     inject(Router).currentNavigation()?.extras.state?.['placed'] === true;
+  protected readonly addressLines = addressLines;
   protected readonly paymentLabel = paymentLabel;
   protected readonly paymentStateOf = paymentStateOf;
   protected readonly copied = signal(false);

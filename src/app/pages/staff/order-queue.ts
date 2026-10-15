@@ -9,6 +9,7 @@ import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import { HlmSpinner } from '@spartan-ng/helm/spinner';
 import { HlmTableImports } from '@spartan-ng/helm/table';
 import {
+  addressLines,
   canBeCancelled,
   fulfillmentActions,
   fulfillmentName,
@@ -50,6 +51,7 @@ export class OrderQueue {
   private readonly shop = inject(ShopClient);
   private readonly orders = signal<readonly ShopOrder[]>([]);
 
+  protected readonly addressLines = addressLines;
   protected readonly paymentLabel = paymentLabel;
   protected readonly paymentStateOf = paymentStateOf;
   protected readonly views = QUEUE_VIEWS;

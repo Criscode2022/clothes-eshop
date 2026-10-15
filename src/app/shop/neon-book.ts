@@ -35,6 +35,8 @@ export interface OrderRecord {
   readonly contact_phone: string;
   readonly ship_line1: string;
   readonly ship_city: string;
+  /** Null for orders placed before regions were asked, and where the country has none. */
+  readonly ship_region: string | null;
   readonly ship_postal_code: string;
   readonly ship_country: string;
   readonly subtotal_cents: number | string;
@@ -150,6 +152,7 @@ export function ordersFromRows(
       shipping: {
         line1: row.ship_line1,
         city: row.ship_city,
+        region: row.ship_region ?? '',
         postalCode: row.ship_postal_code,
         country: row.ship_country,
       },
@@ -205,7 +208,7 @@ export function pullNeon(): Promise<void> {
     `;
     const orderRows = await sql<OrderRecord>`
       select id, reference, client_id, contact_name, contact_email, contact_phone,
-             ship_line1, ship_city, ship_postal_code, ship_country,
+             ship_line1, ship_city, ship_region, ship_postal_code, ship_country,
              subtotal_cents, shipping_cents, total_cents, payment_method, fulfillment, paid_at
       from public.orders
     `;
@@ -307,7 +310,7 @@ async function writeOrder(sql: Query, order: ShopOrder): Promise<void> {
   const inserted = await sql<{ id: string }>`
     insert into public.orders (
       reference, client_id, contact_name, contact_email, contact_phone,
-      ship_line1, ship_city, ship_postal_code, ship_country,
+      ship_line1, ship_city, ship_region, ship_postal_code, ship_country,
       subtotal_cents, shipping_cents, total_cents, payment_method, fulfillment, paid_at
     )
     values (
@@ -318,6 +321,7 @@ async function writeOrder(sql: Query, order: ShopOrder): Promise<void> {
       ${order.contact.phone},
       ${order.shipping.line1},
       ${order.shipping.city},
+      ${order.shipping.region || null},
       ${order.shipping.postalCode},
       ${order.shipping.country},
       ${order.subtotalCents},

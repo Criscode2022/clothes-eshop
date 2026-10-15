@@ -33,7 +33,7 @@ const sloan: Actor = {
 };
 
 const contact = { name: 'Ada Lovelace', email: 'ada@example.com', phone: '5550148' };
-const shipping = { line1: '12 Loom Street', city: 'Providence', postalCode: '02903', country: 'United States' };
+const shipping = { line1: '12 Loom Street', city: 'Providence', region: 'Rhode Island', postalCode: '02903', country: 'United States' };
 
 function shirtDraft(quantity = 1) {
   return {

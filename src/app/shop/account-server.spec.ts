@@ -148,6 +148,7 @@ describe('account requests', () => {
         shipping: {
           line1: '12 Loom Street',
           city: 'Providence',
+          region: 'Rhode Island',
           postalCode: '02903',
           country: 'US',
         },

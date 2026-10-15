@@ -503,6 +503,22 @@
   gap: 0.75rem;
 }
 
+// The country search's list: items at the size of the field they fill, and rows a finger can hit.
+[data-slot='combobox-item'] {
+  min-height: 2.75rem;
+  font-size: var(--text-md);
+}
+
+[data-slot='combobox-label'] {
+  padding-block: 0.75rem 0.25rem;
+  font-size: var(--text-sm);
+}
+
+[data-slot='combobox-empty'] {
+  padding-block: 1rem;
+  font-size: var(--text-sm);
+}
+
 [data-slot='accordion-trigger'] {
   min-height: 3.25rem;
   align-items: center;

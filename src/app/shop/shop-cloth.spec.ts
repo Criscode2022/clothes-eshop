@@ -110,6 +110,22 @@ describe('neon row mapping', () => {
     expect(referenceAfter([{ reference: 'MR-1004' }])).toBe(1005);
   });
 
+  it('reads the state an address names, and none for orders from before states were asked', () => {
+    const products = productsFromRows(
+      [product('oxford-shirt', 'Oxford Cloth Shirt', 'shirts', 8900)],
+      [variant('oxford-shirt', 'oxford-shirt-s-white', 'S', 'White', 2)],
+    );
+    const rows = [
+      { ...order('order-a', 'MR-1001', null), ship_region: 'Rhode Island' },
+      order('order-b', 'MR-1002', null),
+    ];
+
+    expect(ordersFromRows(rows, [], products).map((item) => item.shipping.region)).toEqual([
+      'Rhode Island',
+      '',
+    ]);
+  });
+
   it('reads when a bank transfer was paid, as the database returns it, or that it is not yet', () => {
     const products = productsFromRows(
       [product('oxford-shirt', 'Oxford Cloth Shirt', 'shirts', 8900)],
@@ -153,6 +169,7 @@ function order(id: string, reference: string, clientId: string | null): OrderRec
     contact_phone: '5550101',
     ship_line1: '1 Loom',
     ship_city: 'Providence',
+    ship_region: null,
     ship_postal_code: '02903',
     ship_country: 'United States',
     subtotal_cents: 8900,

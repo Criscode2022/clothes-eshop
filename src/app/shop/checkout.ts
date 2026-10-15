@@ -48,8 +48,18 @@ export interface ContactDetails {
 export interface ShippingDetails {
   readonly line1: string;
   readonly city: string;
+  /** The state, province, or prefecture, where the country's addresses name one; '' elsewhere. */
+  readonly region: string;
+  /** '' where the country has no postal codes. */
   readonly postalCode: string;
+  /** The country's English name, from the list Marlow ships to. */
   readonly country: string;
+}
+
+/** The address under the name, as the order page, the desk, and the email print it. */
+export function addressLines(shipping: ShippingDetails): string[] {
+  const place = shipping.region ? `${shipping.city}, ${shipping.region}` : shipping.city;
+  return [shipping.line1, [place, shipping.postalCode].filter(Boolean).join(' '), shipping.country];
 }
 
 export interface QuotedLine {
@@ -92,7 +102,6 @@ export interface CheckoutDraft {
   readonly lines: readonly CartLine[];
 }
 
-const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const CARD_KEYS = ['cardnumber', 'card_number', 'pan', 'cvv', 'cvc', 'securitycode'];
 
 export function paymentLabel(method: string): string {
@@ -119,8 +128,6 @@ export function assertCheckoutDraft(
   products: readonly Product[],
 ): OrderQuote {
   assertNoCardData(draft);
-  assertContact(draft.contact);
-  assertShipping(draft.shipping);
   assertPaymentMethod(draft.paymentMethod);
   return quoteOrder(draft.lines, products);
 }
@@ -224,33 +231,6 @@ function quoteLine(line: CartLine, products: readonly Product[]): QuotedLine {
     unitPriceCents: product.priceCents,
     lineCents: product.priceCents * line.quantity,
   };
-}
-
-function assertContact(contact: ContactDetails): void {
-  if (contact.name.trim().length < 2) {
-    throw new ShopRuleError('Enter the name for the parcel.');
-  }
-  if (!EMAIL.test(contact.email.trim())) {
-    throw new ShopRuleError('Enter an email for the receipt.');
-  }
-  if (contact.phone.trim().length < 7) {
-    throw new ShopRuleError('Enter a phone number.');
-  }
-}
-
-function assertShipping(shipping: ShippingDetails): void {
-  if (shipping.line1.trim().length < 3) {
-    throw new ShopRuleError('Enter the street.');
-  }
-  if (shipping.city.trim().length < 2) {
-    throw new ShopRuleError('Enter the city.');
-  }
-  if (shipping.postalCode.trim().length < 3) {
-    throw new ShopRuleError('Enter the postal code.');
-  }
-  if (shipping.country.trim().length < 2) {
-    throw new ShopRuleError('Enter the country.');
-  }
 }
 
 function containsCardData(value: unknown): boolean {

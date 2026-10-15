@@ -8,6 +8,7 @@ import {
   ordersVisibleTo,
 } from './access';
 import type { Actor } from './access';
+import { assertDeliverable, normalizedShipping } from './address-rules';
 import { ShopRuleError } from './cart';
 import { cloneProducts, isCategorySlug, SEED_PRODUCTS } from './catalog';
 import type { CategorySlug, Product, Variant } from './catalog';
@@ -99,6 +100,7 @@ export function placeOrder(
 ): ShopOrder {
   assertNoCardData(rawBody);
   const current = readState();
+  assertDeliverable(draft.contact, draft.shipping);
   const quote = assertCheckoutDraft(draft, current.products);
   const order: ShopOrder = {
     reference: `MR-${current.nextReference}`,
@@ -108,12 +110,7 @@ export function placeOrder(
       email: draft.contact.email.trim(),
       phone: draft.contact.phone.trim(),
     },
-    shipping: {
-      line1: draft.shipping.line1.trim(),
-      city: draft.shipping.city.trim(),
-      postalCode: draft.shipping.postalCode.trim(),
-      country: draft.shipping.country.trim(),
-    },
+    shipping: normalizedShipping(draft.shipping),
     lines: quote.lines,
     subtotalCents: quote.subtotalCents,
     shippingCents: quote.shippingCents,

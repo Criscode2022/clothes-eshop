@@ -65,6 +65,16 @@ const shopApiInterceptor: HttpInterceptorFn = (req, next) => {
 };
 
 describe('shop routes', () => {
+  // jsdom lays nothing out; the country list measures itself and scrolls its highlighted option.
+  beforeAll(() => {
+    Element.prototype.scrollIntoView ??= () => undefined;
+    globalThis.ResizeObserver ??= class {
+      observe(): void {}
+      unobserve(): void {}
+      disconnect(): void {}
+    };
+  });
+
   beforeEach(() => {
     resetShopServer();
     localStorage.clear();
@@ -84,6 +94,7 @@ describe('shop routes', () => {
     await typeInto(fixture, 'contact-phone', '5550148');
     await typeInto(fixture, 'ship-line1', '12 Loom Street');
     await typeInto(fixture, 'ship-city', 'Providence');
+    await pick(fixture, 'ship-region', 'Rhode Island');
     await typeInto(fixture, 'ship-postal', '02903');
     await choose(fixture, 'input[value="bank-transfer"]');
     await clickButton(fixture, 'Place order');
@@ -99,6 +110,53 @@ describe('shop routes', () => {
     expect(document.body.textContent).toContain('Oxford Cloth Shirt');
     expect(document.body.textContent).toContain('Bank transfer');
     expect(document.body.textContent).toContain(formatMoney(quote.totalCents));
+    expect(document.body.textContent).toContain('Providence, Rhode Island 02903');
+  });
+
+  it('shows what to fix as soon as a field is left, before the order is sent', async () => {
+    const { fixture } = await checkoutWithAShirt();
+
+    await typeInto(fixture, 'contact-email', 'ada@example');
+    await typeInto(fixture, 'contact-phone', '555 014');
+    await typeInto(fixture, 'ship-postal', '2903');
+
+    expect(document.getElementById('contact-email')?.getAttribute('aria-invalid')).toBe('true');
+    expect(fieldError('contact-email')).toBe('Enter an email address, like name@example.com.');
+    expect(fieldError('contact-phone')).toBe('Enter a phone number with 7 to 15 digits.');
+    expect(fieldError('ship-postal')).toBe('Enter a ZIP code like 02903: 5 digits, or ZIP+4.');
+    expect(fieldError('ship-line1')).toBeUndefined();
+
+    await typeInto(fixture, 'contact-email', 'ada@example.com');
+    expect(fieldError('contact-email')).toBeUndefined();
+  });
+
+  it('adapts the address to the country: a state in the United States, the Spanish format in Spain', async () => {
+    const { fixture } = await checkoutWithAShirt();
+    expect(labelOf('ship-region')).toBe('State');
+    expect(labelOf('ship-postal')).toBe('ZIP code');
+    expect(document.getElementById('contact-phone-hint')?.textContent).toContain('+1');
+
+    await chooseCountry(fixture, 'españa', 'Spain');
+    expect(document.getElementById('ship-region')).toBeNull();
+    expect(labelOf('ship-postal')).toBe('Postal code');
+    expect(document.getElementById('ship-postal-hint')?.textContent).toBe('Like 28013');
+    expect(document.getElementById('contact-phone-hint')?.textContent).toContain('+34');
+    await typeInto(fixture, 'ship-postal', '53001');
+    expect(fieldError('ship-postal')).toBe(
+      'Enter a postal code like 28013: 5 digits, starting 01 to 52.',
+    );
+    await typeInto(fixture, 'ship-postal', '28013');
+    expect(fieldError('ship-postal')).toBeUndefined();
+
+    await chooseCountry(fixture, 'canada', 'Canada');
+    expect(labelOf('ship-region')).toBe('Province or territory');
+    await typeInto(fixture, 'ship-postal', 'k1a0b1');
+    document
+      .getElementById('ship-postal')
+      ?.dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
+    await settle(fixture);
+    expect((document.getElementById('ship-postal') as HTMLInputElement).value).toBe('K1A 0B1');
+    expect(fieldError('ship-postal')).toBeUndefined();
   });
 
   it('keeps everything typed and points at what is missing when checkout is incomplete', async () => {
@@ -419,6 +477,7 @@ function shirtDraft() {
     shipping: {
       line1: '12 Loom Street',
       city: 'Providence',
+      region: 'Rhode Island',
       postalCode: '02903',
       country: 'United States',
     },
@@ -470,6 +529,53 @@ async function choose(fixture: ComponentFixture<App>, selector: string): Promise
   }
   radio.click();
   radio.dispatchEvent(new Event('input', { bubbles: true }));
+  await settle(fixture);
+}
+
+async function checkoutWithAShirt(): Promise<{ fixture: ComponentFixture<App> }> {
+  const rendered = await render('/product/oxford-shirt');
+  await choose(rendered.fixture, 'input[name="size"][value="M"]');
+  await clickButton(rendered.fixture, 'Add to bag');
+  await go(rendered.fixture, '/checkout');
+  return rendered;
+}
+
+/** The error a field shows, or undefined while it shows none. */
+function fieldError(id: string): string | undefined {
+  return document.getElementById(`${id}-error`)?.textContent?.trim();
+}
+
+function labelOf(id: string): string | undefined {
+  return document.querySelector(`label[for="${id}"]`)?.textContent?.trim();
+}
+
+async function pick(fixture: ComponentFixture<App>, id: string, option: string): Promise<void> {
+  const select = document.getElementById(id);
+  if (!(select instanceof HTMLSelectElement)) {
+    throw new Error(`No select ${id}. Page: ${document.body.textContent?.slice(0, 500)}`);
+  }
+  select.value = option;
+  select.dispatchEvent(new Event('input', { bubbles: true }));
+  select.dispatchEvent(new Event('change', { bubbles: true }));
+  select.dispatchEvent(new Event('blur'));
+  await settle(fixture);
+}
+
+/** Types into the country search, as a shopper would, and picks the country from what it lists. */
+async function chooseCountry(
+  fixture: ComponentFixture<App>,
+  typed: string,
+  country: string,
+): Promise<void> {
+  await typeInto(fixture, 'ship-country', typed);
+  await settle(fixture);
+  const option = [...document.querySelectorAll<HTMLElement>('[data-slot="combobox-item"]')].find(
+    (item) => item.textContent?.trim() === country && !item.hasAttribute('data-hidden'),
+  );
+  if (!option) {
+    throw new Error(`${country} is not listed for "${typed}".`);
+  }
+  option.click();
   await settle(fixture);
 }
 

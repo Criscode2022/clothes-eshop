@@ -143,10 +143,10 @@
         <div hlmCardContent>
           <dt>Delivery to</dt>
           <dd>
-            {{ placed.contact.name }}<br />
-            {{ placed.shipping.line1 }}<br />
-            {{ placed.shipping.city }} {{ placed.shipping.postalCode }}<br />
-            {{ placed.shipping.country }}
+            {{ placed.contact.name }}
+            @for (line of addressLines(placed.shipping); track $index) {
+              <br />{{ line }}
+            }
           </dd>
         </div>
         <div hlmCardContent>

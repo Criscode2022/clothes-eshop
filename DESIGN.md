@@ -257,6 +257,8 @@ Every control is a Spartan part: Brain for behavior and accessibility, Helm (`ly
 - **Error:** the border turns Oxblood Error, the message sits under the field and is linked with aria-describedby; the first invalid field takes focus on submit, and nothing typed is lost.
 - **Choices:** payment methods are bordered rows around native radios with a Lucide mark (shop, bank, cash); the checked row gets an Ink Black border. Sizes are boxes around visually hidden radios; sold-out sizes are struck through on grey and disabled. Asked to add without a size, the row nudges once and the line under it says what to do.
 - **Signal Forms fields** stay on the shop's `TextField` (a native input with the `.input` look) rather than Spartan's input, because Spartan's input marks a required field invalid before it is touched.
+- **Errors** show under a field once focus leaves it, in Oxblood Error at the small size, and the field's border turns Oxblood with them; a hint (the postal format, the calling code) sits above the error in muted text.
+- **Country search:** the country field reads like any `.input`, with a muted chevron that darkens under the pointer. Typing opens Spartan's combobox list below it: continent headings in small muted type, countries at the field's own size in 44px rows, the chosen one ticked, and "No country by that name" when nothing matches.
 
 ### Navigation
 

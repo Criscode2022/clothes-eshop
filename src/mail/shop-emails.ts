@@ -1,5 +1,5 @@
 import { MARLOW_ACCOUNT, SANDBOX_BANK } from '../app/shop/bank-transfer';
-import { paymentLabel } from '../app/shop/checkout';
+import { addressLines, paymentLabel } from '../app/shop/checkout';
 import type { ShopOrder } from '../app/shop/checkout';
 import { formatMoney } from '../app/shop/money';
 
@@ -43,12 +43,7 @@ export function orderPlacedEmail(
   const payment = transfer
     ? `${paymentLabel(order.paymentMethod)}, pending until the transfer arrives. No card was taken.`
     : `${paymentLabel(order.paymentMethod)}. No card was taken.`;
-  const address = [
-    order.contact.name,
-    order.shipping.line1,
-    `${order.shipping.city} ${order.shipping.postalCode}`,
-    order.shipping.country,
-  ];
+  const address = [order.contact.name, ...addressLines(order.shipping)];
   const lines = order.lines.map((line) => ({
     name: line.name,
     detail: `${line.color}, size ${line.size}, ${line.quantity} × ${formatMoney(line.unitPriceCents)}`,

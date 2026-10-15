@@ -215,7 +215,8 @@ function parseDraft(body: unknown): {
     shipping: {
       line1: readString(shipping, 'line1'),
       city: readString(shipping, 'city'),
-      postalCode: readString(shipping, 'postalCode'),
+      region: readOptionalString(shipping, 'region'),
+      postalCode: readOptionalString(shipping, 'postalCode'),
       country: readString(shipping, 'country'),
     },
     paymentMethod: readString(record, 'paymentMethod'),
@@ -289,6 +290,12 @@ function readString(record: Record<string, unknown>, key: string): string {
     throw new ShopRuleError(`Enter ${key}.`);
   }
   return value;
+}
+
+/** A field a country may not have, such as the region or, in Hong Kong, the postal code. */
+function readOptionalString(record: Record<string, unknown>, key: string): string {
+  const value = record[key];
+  return typeof value === 'string' ? value : '';
 }
 
 function readInteger(record: Record<string, unknown>, key: string): number {

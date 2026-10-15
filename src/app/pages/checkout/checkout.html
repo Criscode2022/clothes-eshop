@@ -51,6 +51,7 @@
               label="Phone"
               type="tel"
               autocomplete="tel"
+              [hint]="phoneHint()"
               [field]="checkoutForm.contact.phone"
             />
           </div>
@@ -59,6 +60,13 @@
         <section class="section" aria-labelledby="delivery-title">
           <h2 id="delivery-title" class="section__title">Delivery</h2>
           <div class="section__fields">
+            <app-country-field
+              class="span-2"
+              inputId="ship-country"
+              label="Country"
+              [field]="checkoutForm.shipping.country"
+              (chosen)="countryChosen()"
+            />
             <app-text-field
               class="span-2"
               inputId="ship-line1"
@@ -72,19 +80,27 @@
               autocomplete="address-level2"
               [field]="checkoutForm.shipping.city"
             />
-            <app-text-field
-              inputId="ship-postal"
-              label="Postal code"
-              autocomplete="postal-code"
-              [field]="checkoutForm.shipping.postalCode"
-            />
-            <app-text-field
-              class="span-2"
-              inputId="ship-country"
-              label="Country"
-              autocomplete="country-name"
-              [field]="checkoutForm.shipping.country"
-            />
+            @if (country()?.division; as division) {
+              <app-select-field
+                inputId="ship-region"
+                autocomplete="address-level1"
+                [label]="division.label"
+                [prompt]="'Choose the ' + division.noun"
+                [options]="division.options"
+                [field]="checkoutForm.shipping.region"
+              />
+            }
+            @if (country()?.postal; as postal) {
+              <app-text-field
+                inputId="ship-postal"
+                autocomplete="postal-code"
+                [label]="postal.label"
+                [hint]="'Like ' + postal.example"
+                [inputMode]="postal.digits ? 'numeric' : ''"
+                [field]="checkoutForm.shipping.postalCode"
+                (focusout)="tidyPostalCode()"
+              />
+            }
           </div>
         </section>
 

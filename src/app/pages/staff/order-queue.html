@@ -197,10 +197,10 @@
                     <div>
                       <h3 class="details__title">Ship to</h3>
                       <p>
-                        {{ order.contact.name }}<br />
-                        {{ order.shipping.line1 }}<br />
-                        {{ order.shipping.city }} {{ order.shipping.postalCode }},
-                        {{ order.shipping.country }}
+                        {{ order.contact.name }}
+                        @for (line of addressLines(order.shipping); track $index) {
+                          <br />{{ line }}
+                        }
                       </p>
                     </div>
                     <div>
