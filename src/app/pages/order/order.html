@@ -102,6 +102,54 @@
       </dl>
     </div>
 
+    @if (canCancel(placed)) {
+      <section class="cancel" aria-labelledby="cancel-title">
+        <h2 id="cancel-title" class="section-title">Cancel the order</h2>
+        @if (confirmingCancel()) {
+          <p class="cancel__text">
+            Cancel order {{ placed.reference }}? Its pieces go back on the floor, and the order
+            cannot be placed again.
+          </p>
+          <div class="cancel__actions">
+            <button
+              #confirmCancel
+              hlmBtn
+              variant="destructive"
+              type="button"
+              [disabled]="cancelling()"
+              [attr.aria-busy]="cancelling()"
+              (click)="cancel(placed)"
+            >
+              Yes, cancel the order
+            </button>
+            <button hlmBtn variant="outline" type="button" (click)="keepOrder()">
+              Keep the order
+            </button>
+          </div>
+        } @else {
+          <p class="cancel__text">You can cancel it until it is completed.</p>
+          <div class="cancel__actions">
+            <button #askCancel hlmBtn variant="outline" type="button" (click)="askToCancel()">
+              Cancel this order
+            </button>
+          </div>
+        }
+        @if (cancelError()) {
+          <p class="cancel__error" role="alert">{{ cancelError() }}</p>
+        }
+      </section>
+    } @else if (guestMayAskToCancel(placed)) {
+      <p class="cancel__text">
+        Placed without an account: to cancel it before it is completed, give the shop the reference
+        {{ placed.reference }}.
+      </p>
+    }
+    @if (cancelledNow()) {
+      <p #cancelledNote class="cancel__done" role="status" tabindex="-1">
+        Order {{ placed.reference }} is cancelled. Its pieces are back on the floor.
+      </p>
+    }
+
     <p class="continue"><a hlmBtn variant="outline" routerLink="/">Continue shopping</a></p>
   } @else {
     <div class="loading" aria-hidden="true">

@@ -232,7 +232,7 @@ Every control is a Spartan part: Brain for behavior and accessibility, Helm (`ly
 - **Primary** (`hlmBtn`): Ink Black fill, white label at 500 weight. Hover mixes 25% of the ground into the black; a press nudges it down 1px.
 - **Secondary** (`variant="outline"`): 1px Ink Black outline on the ground; hover fills it Ink Black with a white label.
 - **Text button** (`variant="link"`): an underlined caption-size action (Remove, Cancel, Keep, Copy reference) for secondary actions that sit inline; the underline thickens on hover.
-- **Destructive** (`variant="destructive"`): Oxblood Error text on a 10% Oxblood wash; hover fills it Oxblood with a white label. Used only for deleting an account, and only after a confirm dialog.
+- **Destructive** (`variant="destructive"`): Oxblood Error text on a 10% Oxblood wash; hover fills it Oxblood with a white label. Used only after a confirmation: deleting an account (in a confirm dialog) and cancelling an order ("Yes, cancel the order", inline on its page, beside "Keep the order").
 - **Disabled:** Chalk Grey fill with Graphite text, out of the tab order. Busy buttons carry aria-busy, show Spartan's spinner, and change their label ("Placing order").
 
 ### Chips
@@ -264,6 +264,7 @@ Every control is a Spartan part: Brain for behavior and accessibility, Helm (`ly
 - **Menu and bag:** Spartan sheets (CDK dialogs) that slide in from the left and right edges over the scrim (420ms in, 260ms out), close on Escape, scrim click, or navigation, and return focus to their buttons. Both load with `@defer` on idle, or the moment they are asked to open, so the overlay code stays out of the first page. The menu's rooms arrive one after another.
 - **Breadcrumb:** Spartan's breadcrumb with chevrons, caption size, on the product page.
 - **Staff sections:** link tabs whose 2px Ink Black underline grows under the current section.
+- **Hover:** every link and button changes under the pointer and shows the hand. The wordmark fades to 60%; a current link's underline thickens to 2px; a current chip lightens its black; a disabled control does not react.
 
 ### Status badge
 

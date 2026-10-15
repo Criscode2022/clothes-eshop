@@ -14,6 +14,7 @@ import { Bag } from './bag';
 import { formatMoney } from './money';
 import { quoteOrder } from './checkout';
 import { SEED_PRODUCTS } from './catalog';
+import type { Product } from './catalog';
 import { FLOOR_PASSWORD_HINT, handleShopHttp, resetShopServer } from './shop-server';
 import { ShopSession } from './shop-session';
 import type { Actor } from './access';
@@ -200,6 +201,62 @@ describe('shop routes', () => {
     expect(TestBed.inject(Bag).count()).toBe(0);
   });
 
+  it('lets a client cancel their own order from its page, after saying yes', async () => {
+    const { fixture } = await render('/');
+    adopt(fixture, 'avery@marlow.shop');
+    handleShopHttp(
+      'POST',
+      '/api/orders',
+      shirtDraft(),
+      `Bearer ${TestBed.inject(ShopSession).token()}`,
+    );
+    const shirtsLeft = (): number | undefined =>
+      (handleShopHttp('GET', '/api/catalog', null, null).body as Product[])
+        .flatMap((product) => product.variants)
+        .find((variant) => variant.id === 'oxford-shirt-s-white')?.stock;
+    const before = shirtsLeft()!;
+    await go(fixture, '/order/MR-1001');
+
+    await clickButton(fixture, 'Cancel this order');
+    expect(document.body.textContent).toContain('Cancel order MR-1001?');
+    expect(document.activeElement?.textContent).toContain('Yes, cancel the order');
+    await clickButton(fixture, 'Keep the order');
+    expect(document.activeElement?.textContent).toContain('Cancel this order');
+
+    await clickButton(fixture, 'Cancel this order');
+    await clickButton(fixture, 'Yes, cancel the order');
+
+    expect(document.body.textContent).toContain('This order was cancelled.');
+    expect(document.activeElement?.textContent).toContain('Order MR-1001 is cancelled');
+    expect(findButton('Cancel this order')).toBeUndefined();
+    expect(shirtsLeft()).toBe(before + 1);
+  });
+
+  it("opens a signed-in client's order straight after a reload", async () => {
+    const signedIn = handleShopHttp(
+      'POST',
+      '/api/session',
+      { email: 'avery@marlow.shop', password: FLOOR_PASSWORD_HINT },
+      null,
+    ).body as { token: string };
+    handleShopHttp('POST', '/api/orders', shirtDraft(), `Bearer ${signedIn.token}`);
+    localStorage.setItem('marlow.session', signedIn.token);
+
+    await render('/order/MR-1001');
+
+    expect(document.body.textContent).toContain('Order MR-1001');
+    expect(document.body.textContent).not.toContain('That order is not available');
+  });
+
+  it('tells a guest to ask the shop, since a guest order has no account to cancel it from', async () => {
+    handleShopHttp('POST', '/api/orders', shirtDraft(), null);
+    await render('/order/MR-1001');
+
+    expect(document.body.textContent).toContain('Order MR-1001');
+    expect(findButton('Cancel this order')).toBeUndefined();
+    expect(document.body.textContent).toContain('give the shop the reference');
+  });
+
   it('refuses clients at both staff areas and workers at the backoffice', async () => {
     const { fixture } = await render('/owner');
     expect(document.body.textContent).toContain('closed to you');
@@ -266,10 +323,26 @@ function adopt(fixture: ComponentFixture<App>, email: string): void {
   fixture.componentRef.injector.get(ShopSession).adopt(body.actor, body.token);
 }
 
+function shirtDraft() {
+  return {
+    contact: { name: 'Ada Lovelace', email: 'ada@example.com', phone: '5550148' },
+    shipping: {
+      line1: '12 Loom Street',
+      city: 'Providence',
+      postalCode: '02903',
+      country: 'United States',
+    },
+    paymentMethod: 'bank-transfer',
+    lines: [{ productId: 'oxford-shirt', variantId: 'oxford-shirt-s-white', quantity: 1 }],
+  };
+}
+
+function findButton(name: string): HTMLButtonElement | undefined {
+  return [...document.querySelectorAll('button')].find((item) => item.textContent?.includes(name));
+}
+
 async function clickButton(fixture: ComponentFixture<App>, name: string): Promise<void> {
-  const button = [...document.querySelectorAll('button')].find((item) =>
-    item.textContent?.includes(name),
-  );
+  const button = findButton(name);
   if (!button) {
     throw new Error(`No button named ${name}. Page: ${document.body.textContent?.slice(0, 500)}`);
   }

@@ -129,6 +129,11 @@ export function assertPaymentMethod(method: string): asserts method is PaymentMe
   }
 }
 
+/** An order can be cancelled until it is completed. */
+export function canBeCancelled(state: Fulfillment): boolean {
+  return NEXT_FULFILLMENT[state].includes('cancelled');
+}
+
 export function transitionFulfillment(current: Fulfillment, target: Fulfillment): Fulfillment {
   if (!NEXT_FULFILLMENT[current].includes(target)) {
     throw new ShopRuleError(`An order that is ${current} cannot move to ${target}.`);

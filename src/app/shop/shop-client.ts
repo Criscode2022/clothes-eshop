@@ -103,9 +103,7 @@ export class ShopClient {
     return this.neonCall(() => this.neon.resetPassword(token, newPassword));
   }
 
-  /** Waits for a reload's session first, so a signed-in client's order is never stored as a guest's. */
-  async placeOrder(body: PlaceOrderBody): Promise<ShopOrder> {
-    await this.resumeSession();
+  placeOrder(body: PlaceOrderBody): Promise<ShopOrder> {
     return this.request<ShopOrder>('POST', '/api/orders', body, true);
   }
 
@@ -129,13 +127,26 @@ export class ShopClient {
     );
   }
 
-  moveFulfillment(reference: string, fulfillment: Fulfillment): Promise<ShopOrder> {
-    return this.request<ShopOrder>(
+  async moveFulfillment(reference: string, fulfillment: Fulfillment): Promise<ShopOrder> {
+    const order = await this.request<ShopOrder>(
       'POST',
       `/api/orders/${encodeURIComponent(reference)}/fulfillment`,
       { fulfillment },
       true,
     );
+    this.refreshFloorAfter(order);
+    return order;
+  }
+
+  async cancelOrder(reference: string): Promise<ShopOrder> {
+    const order = await this.request<ShopOrder>(
+      'POST',
+      `/api/orders/${encodeURIComponent(reference)}/cancel`,
+      {},
+      true,
+    );
+    this.refreshFloorAfter(order);
+    return order;
   }
 
   async setStock(variantId: string, stock: number): Promise<Product> {
@@ -188,6 +199,15 @@ export class ShopClient {
     );
     this.catalog.replace(product);
     return product;
+  }
+
+  /** A cancelled order's pieces are back on the floor, so the floor's stock is read again. */
+  private refreshFloorAfter(order: ShopOrder): void {
+    if (order.fulfillment === 'cancelled') {
+      this.loadCatalog().catch(() => {
+        // The floor shows the old stock until its next load; the cancel itself went through.
+      });
+    }
   }
 
   private adopt(response: SessionResponse): Actor {
@@ -286,12 +306,20 @@ export class ShopClient {
     return email;
   }
 
+  /**
+   * A call made as the signed-in person waits for a reload's session first. Otherwise a page that
+   * loads at once, such as an order, asks before the session is back: a client's order reads as not
+   * theirs, and a new one would be stored as a guest's.
+   */
   private async request<T>(
     method: string,
     path: string,
     body: unknown,
     withSession: boolean,
   ): Promise<T> {
+    if (withSession) {
+      await this.resumeSession();
+    }
     try {
       return await firstValueFrom(
         this.http.request<T>(method, path, {

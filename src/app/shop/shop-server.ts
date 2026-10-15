@@ -5,6 +5,7 @@ import type { ContactDetails, Fulfillment, ShippingDetails } from './checkout';
 import { FULFILLMENT_STATES } from './checkout';
 import {
   addVariant,
+  cancelOrder,
   createProduct,
   listCatalog,
   listOrders,
@@ -127,6 +128,11 @@ function dispatch(
       status: 200,
       body: moveFulfillment(actor, decode(fulfillment[1]), parseFulfillment(body)),
     };
+  }
+
+  const cancelPath = path.match(/^\/api\/orders\/([^/]+)\/cancel$/);
+  if (method === 'POST' && cancelPath) {
+    return { status: 200, body: cancelOrder(actor, decode(cancelPath[1])) };
   }
 
   const orderPath = path.match(/^\/api\/orders\/([^/]+)$/);

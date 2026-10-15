@@ -31,6 +31,14 @@ export function canChangeFulfillment(actor: Actor | null): boolean {
   return actor?.role === 'worker' || actor?.role === 'owner';
 }
 
+/** Staff can cancel any order; a client only an order stored with that client's id. */
+export function canCancelOrder(actor: Actor | null, order: ShopOrder): boolean {
+  if (canChangeFulfillment(actor)) {
+    return true;
+  }
+  return actor?.role === 'client' && order.clientId === actor.id;
+}
+
 export function canAdministerCatalog(actor: Actor | null): boolean {
   return actor?.role === 'owner';
 }

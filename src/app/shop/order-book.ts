@@ -1,5 +1,6 @@
 import {
   canAdministerCatalog,
+  canCancelOrder,
   canChangeFulfillment,
   canChangePrice,
   canChangeStock,
@@ -123,7 +124,7 @@ export function placeOrder(
   writeState({
     ...current,
     nextReference: current.nextReference + 1,
-    products: decrementStock(current.products, quote.lines),
+    products: adjustStock(current.products, quote.lines, -1),
     orders: [...current.orders, order],
   });
   return order;
@@ -162,18 +163,40 @@ export function moveFulfillment(
   if (!canChangeFulfillment(actor)) {
     throw new ShopRuleError('Only shop staff can move an order.');
   }
+  return changeFulfillment(requireOrder(reference), target);
+}
+
+/** The client who placed an order, or staff, can cancel it until it is completed. */
+export function cancelOrder(actor: Actor | null, reference: string): ShopOrder {
+  if (!actor) {
+    throw new ShopRuleError('Sign in to cancel an order.');
+  }
+  const order = requireOrder(reference);
+  if (!canCancelOrder(actor, order)) {
+    throw new ShopRuleError('That order is not available.');
+  }
+  return changeFulfillment(order, 'cancelled');
+}
+
+/** A cancelled order's pieces go back on the floor, since nobody will take them. */
+function changeFulfillment(order: ShopOrder, target: Fulfillment): ShopOrder {
+  const updated = { ...order, fulfillment: transitionFulfillment(order.fulfillment, target) };
   const current = readState();
-  const order = current.orders.find((item) => item.reference === reference);
+  writeState({
+    ...current,
+    products:
+      target === 'cancelled' ? adjustStock(current.products, order.lines, 1) : current.products,
+    orders: current.orders.map((item) => (item.reference === order.reference ? updated : item)),
+  });
+  return updated;
+}
+
+function requireOrder(reference: string): ShopOrder {
+  const order = readState().orders.find((item) => item.reference === reference);
   if (!order) {
     throw new ShopRuleError('That order is not available.');
   }
-  const fulfillment = transitionFulfillment(order.fulfillment, target);
-  const updated = { ...order, fulfillment };
-  writeState({
-    ...current,
-    orders: current.orders.map((item) => (item.reference === reference ? updated : item)),
-  });
-  return updated;
+  return order;
 }
 
 export function setVariantStock(actor: Actor | null, variantId: string, stock: number): Product {
@@ -251,13 +274,21 @@ function freshState(): ShopState {
   };
 }
 
-function decrementStock(products: readonly Product[], lines: ShopOrder['lines']): Product[] {
-  const taken = new Map(lines.map((line) => [line.variantId, line.quantity]));
+/** Takes an order's pieces off the floor (-1), or puts them back (1). */
+function adjustStock(
+  products: readonly Product[],
+  lines: ShopOrder['lines'],
+  direction: -1 | 1,
+): Product[] {
+  const change = new Map<string, number>();
+  for (const line of lines) {
+    change.set(line.variantId, (change.get(line.variantId) ?? 0) + direction * line.quantity);
+  }
   return products.map((product) => ({
     ...product,
     variants: product.variants.map((variant) => {
-      const quantity = taken.get(variant.id);
-      return quantity === undefined ? variant : { ...variant, stock: variant.stock - quantity };
+      const quantity = change.get(variant.id);
+      return quantity === undefined ? variant : { ...variant, stock: variant.stock + quantity };
     }),
   }));
 }

@@ -8,7 +8,12 @@ import { HlmInputGroupImports } from '@spartan-ng/helm/input-group';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import { HlmSpinner } from '@spartan-ng/helm/spinner';
 import { HlmTableImports } from '@spartan-ng/helm/table';
-import { fulfillmentActions, fulfillmentName, paymentLabel } from '../../shop/checkout';
+import {
+  canBeCancelled,
+  fulfillmentActions,
+  fulfillmentName,
+  paymentLabel,
+} from '../../shop/checkout';
 import type { Fulfillment, ShopOrder } from '../../shop/checkout';
 import { MoneyPipe } from '../../shop/money.pipe';
 import { QUEUE_VIEWS, ordersInView, queueCounts } from '../../shop/order-queue';
@@ -85,7 +90,7 @@ export class OrderQueue {
   }
 
   protected canCancel(order: ShopOrder): boolean {
-    return fulfillmentActions(order.fulfillment).some((action) => action.target === 'cancelled');
+    return canBeCancelled(order.fulfillment);
   }
 
   protected pieceCount(order: ShopOrder): number {
