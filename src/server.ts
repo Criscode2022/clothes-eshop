@@ -27,6 +27,7 @@ import {
   WebhookRejected,
 } from './mail/neon-auth-webhook';
 import { ShopMail } from './mail/shop-mail';
+import { isFilePath } from './static-files';
 
 loadLocalEnv();
 // A restart or a new deploy starts a fresh process. Each derives the same session key from the
@@ -100,6 +101,18 @@ app.use(
     redirect: false,
   }),
 );
+
+/**
+ * A file the build does not have is missing, not a page. A tab opened before a deploy asks for the old
+ * build's scripts; the floor's HTML in their place would only hide the failure, so it gets a 404.
+ */
+app.use((req, res, next) => {
+  if (isFilePath(req.path)) {
+    res.status(404).type('text/plain').send('Not found.');
+    return;
+  }
+  next();
+});
 
 /**
  * Handle all other requests by rendering the Angular application.

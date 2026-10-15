@@ -6,9 +6,11 @@ import {
   provideRouter,
   withComponentInputBinding,
   withInMemoryScrolling,
+  withNavigationErrorHandler,
   withViewTransitions,
 } from '@angular/router';
 import { routes } from './app.routes';
+import { reloadStaleBuild } from './stale-build';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -20,6 +22,8 @@ export const appConfig: ApplicationConfig = {
       withInMemoryScrolling({ scrollPositionRestoration: 'enabled', anchorScrolling: 'enabled' }),
       // A piece's photograph carries over from the floor to its page. The first render keeps the server's HTML still.
       withViewTransitions({ skipInitialTransition: true }),
+      // A tab opened before a deploy asks for the old build's page scripts; a full load brings the new build.
+      withNavigationErrorHandler(reloadStaleBuild),
     ),
     provideHttpClient(withFetch()),
     provideClientHydration(),
