@@ -289,7 +289,7 @@ describe('shop routes', () => {
     expect(document.body.textContent).toContain(
       'We emailed the bank details (account name and IBAN) to ada@example.com.',
     );
-    expect(document.body.textContent).toContain('Bank transfer, awaiting the transfer.');
+    expect(paymentFact()).toBe('Bank transfer');
 
     await go(fixture, '/order/MR-1002');
     expect(document.body.textContent).not.toContain('Payment pending');
@@ -315,7 +315,7 @@ describe('shop routes', () => {
     await go(fixture, '/order/MR-1001');
     expect(document.querySelector('.head')?.textContent).toContain('Paid');
     expect(document.body.textContent).not.toContain('Payment pending');
-    expect(document.body.textContent).toContain('Bank transfer, paid.');
+    expect(paymentFact()).toBe('Bank transfer');
   });
 
   it('turns away a payment link the shop did not sign', async () => {
@@ -425,6 +425,14 @@ function shirtDraft() {
     paymentMethod: 'bank-transfer',
     lines: [{ productId: 'oxford-shirt', variantId: 'oxford-shirt-s-white', quantity: 1 }],
   };
+}
+
+/** The order page's Payment fact: the method alone, since the badges carry its state. */
+function paymentFact(): string | undefined {
+  const label = [...document.querySelectorAll('dt')].find(
+    (term) => term.textContent?.trim() === 'Payment',
+  );
+  return label?.nextElementSibling?.textContent?.trim();
 }
 
 function findButton(name: string): HTMLButtonElement | undefined {

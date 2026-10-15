@@ -27,7 +27,9 @@
           </p>
         </div>
         <div hlmEmptyContent>
-          <a hlmBtn routerLink="/" class="w-full">Shop the floor</a>
+          <button hlmSheetClose hlmBtn variant="link" size="sm" class="self-center">
+            Keep shopping
+          </button>
           <ul class="bag__rooms" role="list">
             @for (category of categories; track category.slug) {
               <li>

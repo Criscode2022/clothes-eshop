@@ -132,6 +132,25 @@ describe('Shell', () => {
     expect(bagSheet()?.textContent).toContain('Your bag is empty');
   });
 
+  it('offers Keep shopping from an empty bag, and closes it on the same page', async () => {
+    const footerBag = [...document.querySelectorAll('footer button')].find(
+      (button) => button.textContent?.trim() === 'Bag',
+    ) as HTMLButtonElement;
+    footerBag.click();
+    await harness.fixture.whenStable();
+    expect(bagSheet()?.textContent).not.toContain('Shop the floor');
+
+    const keepShopping = [...bagSheet()!.querySelectorAll('button')].find(
+      (button) => button.textContent?.trim() === 'Keep shopping',
+    ) as HTMLButtonElement;
+    keepShopping.click();
+    await harness.fixture.whenStable();
+
+    expect(TestBed.inject(BagDrawer).isOpen()).toBe(false);
+    expect(TestBed.inject(Router).url).toBe('/');
+    expect(main().textContent).toContain('First page');
+  });
+
   it('closes the bag on the same page when the shopper keeps shopping', async () => {
     TestBed.inject(BagDrawer).add('oxford-shirt', 'oxford-shirt-m-white');
     await harness.fixture.whenStable();

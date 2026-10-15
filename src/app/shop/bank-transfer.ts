@@ -1,4 +1,3 @@
-import { paymentLabel } from './checkout';
 import type { ShopOrder } from './checkout';
 
 /**
@@ -30,20 +29,6 @@ export function paymentStateOf(
     return 'paid';
   }
   return order.fulfillment === 'cancelled' ? null : 'pending';
-}
-
-/** How an order was paid, in one sentence for its page. */
-export function paymentSummary(
-  order: Pick<ShopOrder, 'paymentMethod' | 'paidAt' | 'fulfillment'>,
-): string {
-  const state = paymentStateOf(order);
-  const method =
-    state === 'pending'
-      ? `${paymentLabel(order.paymentMethod)}, awaiting the transfer`
-      : state === 'paid'
-        ? `${paymentLabel(order.paymentMethod)}, paid`
-        : paymentLabel(order.paymentMethod);
-  return `${method}. No card was taken.`;
 }
 
 /** What the bank shows before the transfer: whom to pay, how much, and the reference to quote. */
