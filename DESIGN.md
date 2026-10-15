@@ -159,7 +159,7 @@ A monochrome working palette that lets the mauve, camel, and ink of the photogra
 
 - **Oxblood Error** (#b42318): field errors and failed actions, always with words.
 - **Rust Notice** (#8a4b12): "Only 2 left", and the dot for orders being picked or ready.
-- **Bottle Green** (#276738): the dot for completed orders.
+- **Bottle Green** (#276738): the dot for delivered and picked-up orders.
 
 The dark scheme keeps the same roles: ground #121212, panels #1c1c1b and #262625, type #f4f4f2, secondary text #a8a8a3, hairline #303030, field stroke #7c7c78, black actions become #f4f4f2 with dark text, and the announcement band becomes #262625 so it never glares. Every text pair meets WCAG AA in both schemes.
 
@@ -272,7 +272,7 @@ Every control is a Spartan part: Brain for behavior and accessibility, Helm (`ly
 
 ### Status badge
 
-An outlined Spartan badge holding a small dot and the state's name (`StatusBadge`): Placed in Ink Black, Picking and Ready in Rust Notice, Completed in Bottle Green, Cancelled in Oxblood Error. A bank transfer's payment uses the same badge beside it: "Payment pending" in Rust Notice, "Paid" in Bottle Green. The name always carries the meaning.
+An outlined Spartan badge holding a small dot and the state's name (`StatusBadge`): Order placed in Ink Black, Being prepared, On its way, and Ready to pick up in Rust Notice, Delivered and Picked up in Bottle Green, Cancelled in Oxblood Error. A bank transfer's payment uses the same badge beside it: "Payment pending" in Rust Notice, "Paid" in Bottle Green. The name always carries the meaning.
 
 ### Simulated bank
 
@@ -282,7 +282,7 @@ An outlined Spartan badge holding a small dot and the state's name (`StatusBadge
 
 - **Accordion:** the product's Cloth and care (open) and Fit, as Spartan accordion items at label size, the chevron turning with the panel.
 - **Items:** the client's orders are outlined Spartan items that darken their border on hover and nudge their chevron.
-- **Tables:** the desk and backoffice use Spartan's table parts at the condensed data width, with an Ink Black rule under the header and a Fitting-Room Grey picking list under an opened order.
+- **Tables:** the desk and backoffice use Spartan's table parts at the condensed data width, with an Ink Black rule under the header and a Fitting-Room Grey list of the pieces to prepare under an opened order.
 
 ## Do's and Don'ts
 

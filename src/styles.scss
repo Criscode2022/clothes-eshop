@@ -271,7 +271,8 @@
     background-repeat: no-repeat;
   }
 
-  // A bordered option card around a native radio: payment methods.
+  // A bordered option card around a native radio: delivery and payment methods. The chosen one is
+  // already outlined in full, so under the pointer it takes the hover fill instead.
   .choice {
     display: flex;
     gap: 0.875rem;
@@ -291,6 +292,10 @@
     &:has(input:checked) {
       border-color: var(--color-text);
       box-shadow: inset 0 0 0 1px var(--color-text);
+
+      &:hover {
+        background-color: var(--color-hover);
+      }
     }
 
     input {

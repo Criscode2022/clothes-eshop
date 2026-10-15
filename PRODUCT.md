@@ -24,8 +24,8 @@ The floor is the whole collection: no drops, no waiting list, no endless catalog
 
 - Categories: outerwear, knitwear, trousers, shirts. Each piece has size and color variants, and each variant has its own stock. A bag line cannot exceed that stock.
 - Prices are US dollars, stored as integer cents and shown as `$420.00`. Shipping is $8.00, and free when the pieces total at least $200.00.
-- Checkout collects contact details, a delivery address, and a payment method, and shows what the order will cost before it is placed.
-- Fulfillment: placed, then picking, then ready, then completed. An order can be cancelled until it is completed.
+- Checkout collects contact details, how the order reaches the client (shipped to an address, or picked up at the shop for free), and a payment method that fits it, and shows what the order will cost before it is placed. Paying at the shop is only for an order picked up there; cash when it arrives only for a parcel.
+- Fulfillment: a parcel goes Order placed, Being prepared, On its way, Delivered; an order to pick up goes Order placed, Being prepared, Ready to pick up, Picked up. The client gets an email when the parcel leaves and when the order is ready to pick up. An order can be cancelled until it leaves the shop, or until it is picked up.
 - The shop has a physical floor where shoppers can pay.
 
 ## Capabilities and Constraints
