@@ -116,6 +116,10 @@
     &::-webkit-details-marker {
       display: none;
     }
+
+    &:hover > span:first-child {
+      text-decoration: underline;
+    }
   }
 
   &[open] .summary-toggle__icon {

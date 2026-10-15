@@ -130,6 +130,12 @@
   &[aria-current='true']::after {
     transform: none;
   }
+
+  @media (hover: hover) {
+    &:hover::before {
+      background: var(--color-text-muted);
+    }
+  }
 }
 
 .spread__markers:not([data-turns='stopped']) .spread__marker[aria-current='true']::after {

@@ -119,6 +119,22 @@
     text-underline-offset: 0.22em;
   }
 
+  // Everything a pointer can press shows the hand. Tailwind's preflight leaves buttons on the arrow.
+  a[href],
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']),
+  summary,
+  select,
+  input:is([type='checkbox'], [type='radio'], [type='submit'], [type='file']):not(:disabled),
+  label:has(> input:is([type='checkbox'], [type='radio']):not(:disabled)) {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  [aria-disabled='true'] {
+    cursor: not-allowed;
+  }
+
   // Links inside running text keep their underline, so color is never the only cue.
   :where(p, li, dd) > a:not([class]) {
     text-decoration-line: underline;
@@ -163,6 +179,11 @@
     text-transform: uppercase;
     text-decoration: none;
     white-space: nowrap;
+    transition: opacity var(--duration-fast) ease-out;
+
+    &:hover {
+      opacity: 0.6;
+    }
   }
 
   // An underline that draws in from the left on hover and leaves to the right. Current links keep it.
@@ -178,6 +199,11 @@
     &[aria-current='page'] {
       background-position-x: 0;
       background-size: 100% 1px;
+    }
+
+    // The page you are on already carries the line; under the pointer it thickens.
+    &:is(.is-current, [aria-current='page']):hover {
+      background-size: 100% 2px;
     }
   }
 
@@ -372,6 +398,10 @@
 
       .chip__count {
         color: inherit;
+      }
+
+      &:hover {
+        background: color-mix(in srgb, var(--color-accent) 78%, var(--color-canvas));
       }
     }
 

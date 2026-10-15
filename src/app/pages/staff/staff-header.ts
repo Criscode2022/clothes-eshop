@@ -105,6 +105,10 @@ export interface StaffSection {
           &::after {
             transform: none;
           }
+
+          &:hover::after {
+            height: 3px;
+          }
         }
       }
     }

@@ -99,6 +99,10 @@
   border: 0;
   cursor: pointer;
 
+  &:hover {
+    text-decoration: underline;
+  }
+
   &[aria-expanded='true'] .disclose__icon {
     transform: rotate(90deg);
   }

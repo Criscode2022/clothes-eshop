@@ -47,6 +47,10 @@
 
   &:hover {
     background: var(--color-hover);
+
+    .list__name {
+      text-decoration: underline;
+    }
   }
 
   &[aria-current='true'] {
