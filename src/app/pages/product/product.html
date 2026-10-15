@@ -1,6 +1,7 @@
 @if (product(); as piece) {
   <article class="pdp page" [class.pdp--bar]="buyBarShown()">
     <div class="pdp__grid">
+      <app-back-link class="pdp__back" [fallback]="'/category/' + piece.category" />
       <div class="pdp__media" appPhotoLoupe>
         <app-piece-photo
           class="pdp__photo"
@@ -112,7 +113,8 @@
           </li>
           <li>
             <ng-icon name="lucideBanknote" class="assurances__icon" />
-            No card needed: pay at the shop, by bank transfer, or in cash on delivery.
+            No card needed: pay at the shop, in cash on delivery, or by bank transfer through a
+            secure platform.
           </li>
         </ul>
 

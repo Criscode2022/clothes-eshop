@@ -3,6 +3,7 @@ import {
   ElementRef,
   Injector,
   afterNextRender,
+  computed,
   inject,
   input,
   resource,
@@ -19,12 +20,14 @@ import { HlmEmptyImports } from '@spartan-ng/helm/empty';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import { HlmSpinner } from '@spartan-ng/helm/spinner';
 import { canCancelOrder } from '../../shop/access';
+import type { ShopRole } from '../../shop/access';
 import { paymentStateOf } from '../../shop/bank-transfer';
 import { addressLines, canBeCancelled, paymentLabel } from '../../shop/checkout';
 import type { ShopOrder } from '../../shop/checkout';
 import { MoneyPipe } from '../../shop/money.pipe';
 import { ShopClient } from '../../shop/shop-client';
 import { ShopSession } from '../../shop/shop-session';
+import { BackLink } from '../../ui/back-link';
 import { FulfillmentBadge } from '../../ui/fulfillment-badge';
 import { OrderTotals } from '../../ui/order-totals';
 import { OrderTrack } from '../../ui/order-track';
@@ -32,9 +35,17 @@ import { PaymentBadge } from '../../ui/payment-badge';
 import { PiecePhoto } from '../../ui/piece-photo';
 import { ShopButtonImports } from '../../ui/shop-button';
 
+const BACK_TO: Record<ShopRole | 'guest', string> = {
+  client: '/account/orders',
+  worker: '/desk',
+  owner: '/owner',
+  guest: '/',
+};
+
 @Component({
   selector: 'app-order',
   imports: [
+    BackLink,
     FulfillmentBadge,
     HlmAlertDialogImports,
     HlmAlertImports,
@@ -77,6 +88,9 @@ export class OrderPage {
     params: () => this.reference(),
     loader: ({ params }) => this.shop.order(params),
   });
+
+  /** Where Back goes for a page opened from outside the shop: the list this person keeps orders in. */
+  protected readonly backTo = computed(() => BACK_TO[this.session.current()?.role ?? 'guest']);
 
   /** The client who placed it, or staff, until it is completed. */
   protected canCancel(order: ShopOrder): boolean {

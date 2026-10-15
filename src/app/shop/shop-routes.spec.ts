@@ -458,6 +458,46 @@ describe('shop routes', () => {
     expect((document.getElementById('orders-reference') as HTMLInputElement).value).toBe('');
   });
 
+  it('goes Back through the history when the shopper came from another page of the shop', async () => {
+    const { fixture } = await render('/category/shirts');
+    await go(fixture, '/product/oxford-shirt');
+    // The test bed keeps its own history; the walk back itself is the browser's, checked end to end.
+    const back = vi.spyOn(TestBed.inject(Location), 'back').mockImplementation(() => undefined);
+
+    backLink()!.click();
+    await settle(fixture);
+
+    expect(back).toHaveBeenCalledOnce();
+    expect(TestBed.inject(Router).url).toBe('/product/oxford-shirt');
+  });
+
+  it('goes Back to somewhere sensible when the page was opened from outside the shop', async () => {
+    const { fixture } = await render('/product/oxford-shirt');
+    expect(backLink()?.getAttribute('href')).toBe('/category/shirts');
+    expect(document.body.textContent).toContain(
+      'pay at the shop, in cash on delivery, or by bank transfer through a secure platform',
+    );
+
+    backLink()!.click();
+    await settle(fixture);
+    expect(TestBed.inject(Router).url).toBe('/category/shirts');
+
+    handleShopHttp('POST', '/api/orders', shirtDraft(), null);
+    await render('/order/MR-1001');
+    expect(backLink()?.getAttribute('href')).toBe('/');
+
+    const { fixture: signedIn } = await render('/');
+    adopt(signedIn, AVERY);
+    handleShopHttp(
+      'POST',
+      '/api/orders',
+      shirtDraft(),
+      `Bearer ${TestBed.inject(ShopSession).token()}`,
+    );
+    await go(signedIn, '/order/MR-1002');
+    expect(backLink()?.getAttribute('href')).toBe('/account/orders');
+  });
+
   it('refuses clients at both staff areas and workers at the backoffice', async () => {
     const { fixture } = await render('/owner');
     expect(document.body.textContent).toContain('closed to you');
@@ -595,6 +635,10 @@ async function checkoutWithAShirt(): Promise<{ fixture: ComponentFixture<App> }>
   await clickButton(rendered.fixture, 'Add to bag');
   await go(rendered.fixture, '/checkout');
   return rendered;
+}
+
+function backLink(): HTMLAnchorElement | null {
+  return document.querySelector('app-back-link a');
 }
 
 /** The order page's Cancel button: its name says which order, after the word it shows. */

@@ -1,4 +1,5 @@
 <div class="order page">
+  <app-back-link class="order__back" [fallback]="backTo()" />
   @if (order.error()) {
     <section hlmEmpty class="state" aria-labelledby="order-error-title">
       <div hlmEmptyHeader>

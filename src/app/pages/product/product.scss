@@ -2,7 +2,17 @@
   padding-block: 0;
 
   @media (min-width: 64rem) {
-    padding-top: 1.25rem;
+    padding-top: 0.5rem;
+  }
+}
+
+// A row of its own across the grid, so it starts where the photograph does, wherever the grid centers.
+.pdp__back {
+  grid-column: 1 / -1;
+  margin-bottom: -1.5rem;
+
+  @media (min-width: 64rem) {
+    margin-bottom: 0;
   }
 }
 
@@ -19,7 +29,7 @@
   @media (min-width: 64rem) {
     grid-template-columns: auto minmax(20rem, 27rem);
     justify-content: center;
-    gap: clamp(3rem, 5vw, 6rem);
+    gap: 0.5rem clamp(3rem, 5vw, 6rem);
     align-items: start;
   }
 }

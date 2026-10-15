@@ -18,6 +18,7 @@ import { HlmBreadcrumbImports } from '@spartan-ng/helm/breadcrumb';
 import { HlmEmptyImports } from '@spartan-ng/helm/empty';
 import { BagDrawer } from '../../shop/bag-drawer';
 import { categoryName, clothColor, variantsByColor } from '../../shop/catalog';
+import { BackLink } from '../../ui/back-link';
 import { CatalogStore } from '../../shop/catalog-store';
 import { careOf, compositionOf, fitNote, morePieces } from '../../shop/cloth';
 import { FREE_SHIPPING_FROM_CENTS } from '../../shop/money';
@@ -32,6 +33,7 @@ import { ShopButtonImports } from '../../ui/shop-button';
 @Component({
   selector: 'app-product',
   imports: [
+    BackLink,
     HlmAccordionImports,
     HlmBreadcrumbImports,
     HlmEmptyImports,

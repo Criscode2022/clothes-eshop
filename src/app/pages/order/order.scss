@@ -1,7 +1,12 @@
 .order {
   display: grid;
   gap: 2.5rem;
-  padding-block: 2.5rem 0;
+  padding-block: 1rem 0;
+}
+
+// Close above the order's number, not a whole section's gap away.
+.order__back {
+  margin-bottom: -1.75rem;
 }
 
 .title {
