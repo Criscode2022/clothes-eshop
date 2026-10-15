@@ -39,10 +39,6 @@ export function ordersInView(
   return orders.filter((order) => inView(order, view) && matches(order, needle)).sort(newestFirst);
 }
 
-export function newestOrdersFirst(orders: readonly ShopOrder[]): ShopOrder[] {
-  return [...orders].sort(newestFirst);
-}
-
 function inView(order: ShopOrder, view: QueueView): boolean {
   return view === 'open' ? isOpen(order) : order.fulfillment === view;
 }

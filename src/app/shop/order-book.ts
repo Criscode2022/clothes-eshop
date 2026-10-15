@@ -118,6 +118,7 @@ export function placeOrder(
     paymentMethod: draft.paymentMethod as ShopOrder['paymentMethod'],
     fulfillment: 'placed',
     paidAt: null,
+    placedAt: new Date().toISOString(),
   };
   writeState({
     ...current,

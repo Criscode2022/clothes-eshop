@@ -46,6 +46,7 @@ export interface OrderRecord {
   readonly fulfillment: string;
   /** The driver returns a timestamp as a Date or as text, depending on how it parses types. */
   readonly paid_at: string | Date | null;
+  readonly created_at: string | Date;
 }
 
 export interface LineRecord {
@@ -175,6 +176,7 @@ export function ordersFromRows(
       paymentMethod,
       fulfillment,
       paidAt: row.paid_at === null ? null : new Date(row.paid_at).toISOString(),
+      placedAt: new Date(row.created_at).toISOString(),
     });
   }
   return orders;
@@ -209,7 +211,7 @@ export function pullNeon(): Promise<void> {
     const orderRows = await sql<OrderRecord>`
       select id, reference, client_id, contact_name, contact_email, contact_phone,
              ship_line1, ship_city, ship_region, ship_postal_code, ship_country,
-             subtotal_cents, shipping_cents, total_cents, payment_method, fulfillment, paid_at
+             subtotal_cents, shipping_cents, total_cents, payment_method, fulfillment, paid_at, created_at
       from public.orders
     `;
     const lineRows = await sql<LineRecord>`
@@ -311,7 +313,7 @@ async function writeOrder(sql: Query, order: ShopOrder): Promise<void> {
     insert into public.orders (
       reference, client_id, contact_name, contact_email, contact_phone,
       ship_line1, ship_city, ship_region, ship_postal_code, ship_country,
-      subtotal_cents, shipping_cents, total_cents, payment_method, fulfillment, paid_at
+      subtotal_cents, shipping_cents, total_cents, payment_method, fulfillment, paid_at, created_at
     )
     values (
       ${order.reference},
@@ -329,7 +331,8 @@ async function writeOrder(sql: Query, order: ShopOrder): Promise<void> {
       ${order.totalCents},
       ${order.paymentMethod},
       ${order.fulfillment},
-      ${order.paidAt}::timestamptz
+      ${order.paidAt}::timestamptz,
+      ${order.placedAt}::timestamptz
     )
     returning id
   `;

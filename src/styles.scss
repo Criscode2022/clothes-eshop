@@ -503,6 +503,30 @@
   gap: 0.75rem;
 }
 
+// A search box: the icon and the field in one frame, and focus outlines the whole frame instead of
+// drawing a ring around the inner field over the icon. Each page sets its own height and type size.
+.search-frame[data-slot='input-group'] {
+  border-color: var(--color-field-border);
+
+  &:hover {
+    border-color: var(--color-text);
+  }
+
+  &:focus-within {
+    border-color: var(--color-text);
+    outline: 2px solid var(--color-text);
+    outline-offset: 2px;
+  }
+
+  input {
+    height: 100%;
+
+    &:focus-visible {
+      outline: none;
+    }
+  }
+}
+
 // The country search's list: items at the size of the field they fill, and rows a finger can hit.
 [data-slot='combobox-item'] {
   min-height: 2.75rem;

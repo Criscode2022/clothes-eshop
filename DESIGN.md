@@ -258,6 +258,7 @@ Every control is a Spartan part: Brain for behavior and accessibility, Helm (`ly
 - **Choices:** payment methods are bordered rows around native radios with a Lucide mark (shop, bank, cash); the checked row gets an Ink Black border. Sizes are boxes around visually hidden radios; sold-out sizes are struck through on grey and disabled. Asked to add without a size, the row nudges once and the line under it says what to do.
 - **Signal Forms fields** stay on the shop's `TextField` (a native input with the `.input` look) rather than Spartan's input, because Spartan's input marks a required field invalid before it is touched.
 - **Errors** show under a field once focus leaves it, in Oxblood Error at the small size, and the field's border turns Oxblood with them; a hint (the postal format, the calling code) sits above the error in muted text.
+- **Find and sort:** a client's order list opens with a bar of field-sized controls: the reference search (a magnifier inside the field's frame; focus outlines the whole frame), the Sort select, and an underlined "Clear filters" link while anything is set. Under it, a muted count ("1 of 4 orders"), and each row names its date before the pieces.
 - **Country search:** the country field reads like any `.input`, with a muted chevron that darkens under the pointer. Typing opens Spartan's combobox list below it: continent headings in small muted type, countries at the field's own size in 44px rows, the chosen one ticked, and "No country by that name" when nothing matches.
 
 ### Navigation

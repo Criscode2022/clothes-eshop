@@ -45,6 +45,7 @@ const ORDER = {
   paymentMethod: 'bank-transfer',
   fulfillment: 'placed',
   paidAt: null,
+  placedAt: '2026-10-15T09:00:00.000Z',
 } satisfies ShopOrder;
 
 describe('shop mail', () => {

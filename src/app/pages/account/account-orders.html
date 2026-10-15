@@ -19,7 +19,7 @@
       <a hlmBtn routerLink="/sign-in">Sign in again</a>
     </div>
   } @else if (orders.hasValue()) {
-    @if (newestFirst().length === 0) {
+    @if (!hasOrders()) {
       <section hlmEmpty class="empty" aria-labelledby="no-orders-title">
         <div hlmEmptyHeader>
           <div hlmEmptyMedia variant="icon"><ng-icon name="lucideReceipt" /></div>
@@ -31,13 +31,60 @@
         </div>
       </section>
     } @else {
+      <div class="filters" role="search" aria-label="Find and sort your orders">
+        <div class="filters__field">
+          <label class="field__label" for="orders-reference">Order reference</label>
+          <div hlmInputGroup class="filters__search search-frame">
+            <div hlmInputGroupAddon><ng-icon name="lucideSearch" /></div>
+            <input
+              #referenceSearch
+              hlmInputGroupInput
+              id="orders-reference"
+              type="search"
+              placeholder="MR-1003"
+              autocomplete="off"
+              [value]="view().reference"
+              (input)="searchFor($event)"
+            />
+          </div>
+        </div>
+        <div class="filters__field">
+          <label class="field__label" for="orders-sort">Sort</label>
+          <select id="orders-sort" class="input filters__sort" (change)="sortBy($event)">
+            @for (option of sorts; track option.id) {
+              <option [value]="option.id" [selected]="option.id === sortId()">
+                {{ option.label }}
+              </option>
+            }
+          </select>
+        </div>
+        @if (filtered()) {
+          <button
+            hlmBtn
+            variant="link"
+            type="button"
+            class="filters__clear"
+            (click)="clearFilters()"
+          >
+            Clear filters
+          </button>
+        }
+      </div>
+      <p class="filters__count" role="status">{{ count() }}</p>
+
+      @if (listed().length === 0) {
+        <p class="filters__none">No order matches “{{ view().reference.trim() }}”.</p>
+      }
       <ul class="orders" role="list">
-        @for (order of newestFirst(); track order.reference; let index = $index) {
+        @for (order of listed(); track order.reference; let index = $index) {
           <li appReveal [revealOrder]="index">
             <a hlmItem variant="outline" class="order" [routerLink]="['/order', order.reference]">
               <span hlmItemContent>
                 <span hlmItemTitle class="order__reference">{{ order.reference }}</span>
-                <span hlmItemDescription>{{ summary(order) }}</span>
+                <span hlmItemDescription
+                  ><time [attr.datetime]="order.placedAt">{{ placedOn(order) }}</time
+                  >, {{ summary(order) }}</span
+                >
               </span>
               <span hlmItemActions class="order__end">
                 <span class="order__total">{{ order.totalCents | money }}</span>

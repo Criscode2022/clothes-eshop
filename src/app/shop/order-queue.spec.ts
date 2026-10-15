@@ -1,6 +1,6 @@
 import type { Fulfillment, ShopOrder } from './checkout';
 import { fulfillmentName, fulfillmentTrack } from './checkout';
-import { newestOrdersFirst, ordersInView, queueCounts } from './order-queue';
+import { ordersInView, queueCounts } from './order-queue';
 
 function order(reference: string, name: string, fulfillment: Fulfillment): ShopOrder {
   return {
@@ -21,6 +21,7 @@ function order(reference: string, name: string, fulfillment: Fulfillment): ShopO
     paymentMethod: 'bank-transfer',
     fulfillment,
     paidAt: null,
+    placedAt: '2026-10-15T09:00:00.000Z',
   };
 }
 
@@ -50,17 +51,6 @@ describe('desk order queue', () => {
       'MR-1003',
       'MR-1002',
     ]);
-  });
-
-  it('lists a client’s orders newest first without reordering the book', () => {
-    expect(newestOrdersFirst(book).map((item) => item.reference)).toEqual([
-      'MR-1005',
-      'MR-1004',
-      'MR-1003',
-      'MR-1002',
-      'MR-1001',
-    ]);
-    expect(book[0]?.reference).toBe('MR-1001');
   });
 
   it('narrows a state by reference or client name, ignoring case', () => {

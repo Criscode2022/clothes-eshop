@@ -93,6 +93,8 @@ export interface ShopOrder {
   readonly fulfillment: Fulfillment;
   /** When a bank transfer arrived (ISO time); null until then, and for the methods paid in person. */
   readonly paidAt: string | null;
+  /** When the order was placed (ISO time). */
+  readonly placedAt: string;
 }
 
 export interface CheckoutDraft {

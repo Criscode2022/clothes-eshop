@@ -126,6 +126,22 @@ describe('neon row mapping', () => {
     ]);
   });
 
+  it('reads when each order was placed', () => {
+    const products = productsFromRows(
+      [product('oxford-shirt', 'Oxford Cloth Shirt', 'shirts', 8900)],
+      [variant('oxford-shirt', 'oxford-shirt-s-white', 'S', 'White', 2)],
+    );
+    const rows = [
+      { ...order('order-a', 'MR-1001', null), created_at: '2026-10-03 18:03:14+00' },
+      { ...order('order-b', 'MR-1002', null), created_at: new Date('2026-10-04T08:00:00Z') },
+    ];
+
+    expect(ordersFromRows(rows, [], products).map((item) => item.placedAt)).toEqual([
+      '2026-10-03T18:03:14.000Z',
+      '2026-10-04T08:00:00.000Z',
+    ]);
+  });
+
   it('reads when a bank transfer was paid, as the database returns it, or that it is not yet', () => {
     const products = productsFromRows(
       [product('oxford-shirt', 'Oxford Cloth Shirt', 'shirts', 8900)],
@@ -178,6 +194,7 @@ function order(id: string, reference: string, clientId: string | null): OrderRec
     payment_method: 'bank-transfer',
     fulfillment: 'placed',
     paid_at: null,
+    created_at: '2026-10-15 09:00:00+00',
   };
 }
 

@@ -1,3 +1,4 @@
+import { Location } from '@angular/common';
 import {
   HttpErrorResponse,
   HttpResponse,
@@ -401,6 +402,57 @@ describe('shop routes', () => {
     expect(document.querySelector('main table')?.textContent).toContain('Payment pending');
   });
 
+  it('sorts and searches the client orders from the address, and clears it all at once', async () => {
+    const { fixture } = await render('/');
+    adopt(fixture, AVERY);
+    const signedIn = `Bearer ${TestBed.inject(ShopSession).token()}`;
+    const withLines = (lines: { productId: string; variantId: string; quantity: number }[]) => ({
+      ...shirtDraft(),
+      lines,
+    });
+    handleShopHttp('POST', '/api/orders', shirtDraft(), signedIn);
+    handleShopHttp(
+      'POST',
+      '/api/orders',
+      withLines([
+        { productId: 'wool-overcoat', variantId: 'wool-overcoat-46-charcoal', quantity: 1 },
+      ]),
+      signedIn,
+    );
+    handleShopHttp(
+      'POST',
+      '/api/orders',
+      withLines([{ productId: 'oxford-shirt', variantId: 'oxford-shirt-m-white', quantity: 2 }]),
+      signedIn,
+    );
+    const location = TestBed.inject(Location);
+
+    await go(fixture, '/account/orders?sort=price&dir=asc');
+    expect(listedReferences()).toEqual(['MR-1001', 'MR-1003', 'MR-1002']);
+    expect((document.getElementById('orders-sort') as HTMLSelectElement).value).toBe('price-asc');
+    expect(document.querySelector('.order time')?.getAttribute('datetime')).toMatch(/^2\d{3}-/);
+
+    await pick(fixture, 'orders-sort', 'price-desc');
+    expect(listedReferences()).toEqual(['MR-1002', 'MR-1003', 'MR-1001']);
+    expect(location.path()).toBe('/account/orders?sort=price&dir=desc');
+
+    await typeInto(fixture, 'orders-reference', 'mr1003');
+    expect(listedReferences()).toEqual(['MR-1003']);
+    expect(location.path()).toBe('/account/orders?reference=mr1003&sort=price&dir=desc');
+    expect(document.body.textContent).toContain('1 of 3 orders');
+
+    await typeInto(fixture, 'orders-reference', '9999');
+    expect(listedReferences()).toEqual([]);
+    expect(document.body.textContent).toContain('No order matches “9999”.');
+
+    await clickButton(fixture, 'Clear filters');
+    expect(location.path()).toBe('/account/orders');
+    expect(listedReferences()).toEqual(['MR-1003', 'MR-1002', 'MR-1001']);
+    expect(findButton('Clear filters')).toBeUndefined();
+    expect(document.activeElement?.id).toBe('orders-reference');
+    expect((document.getElementById('orders-reference') as HTMLInputElement).value).toBe('');
+  });
+
   it('refuses clients at both staff areas and workers at the backoffice', async () => {
     const { fixture } = await render('/owner');
     expect(document.body.textContent).toContain('closed to you');
@@ -538,6 +590,13 @@ async function checkoutWithAShirt(): Promise<{ fixture: ComponentFixture<App> }>
   await clickButton(rendered.fixture, 'Add to bag');
   await go(rendered.fixture, '/checkout');
   return rendered;
+}
+
+/** The references the client's order list shows, top to bottom. */
+function listedReferences(): string[] {
+  return [...document.querySelectorAll('.order__reference')].map(
+    (reference) => reference.textContent?.trim() ?? '',
+  );
 }
 
 /** The error a field shows, or undefined while it shows none. */

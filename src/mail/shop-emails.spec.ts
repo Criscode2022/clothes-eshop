@@ -33,6 +33,7 @@ const ORDER: ShopOrder = {
   paymentMethod: 'bank-transfer',
   fulfillment: 'placed',
   paidAt: null,
+  placedAt: '2026-10-15T09:00:00.000Z',
 };
 
 const BANK_LINK = '/bank/MR-1001/c0de-for-mr-1001';
