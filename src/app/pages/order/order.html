@@ -101,13 +101,13 @@
       }
       @if (cancelledNow()) {
         <p #cancelledNote class="head__cancelled" role="status" tabindex="-1">
-          Order {{ placed.reference }} is cancelled. Its pieces are back on the floor.
+          Order {{ placed.reference }} is cancelled.
         </p>
       }
     </header>
 
     <section class="track" aria-label="Progress">
-      <app-order-track [state]="placed.fulfillment" />
+      <app-order-track [order]="placed" />
     </section>
 
     <div class="layout">
@@ -136,6 +136,7 @@
           }
         </ul>
         <app-order-totals
+          [delivery]="placed.delivery"
           [subtotalCents]="placed.subtotalCents"
           [shippingCents]="placed.shippingCents"
           [totalCents]="placed.totalCents"
@@ -147,15 +148,28 @@
           <dt>Payment</dt>
           <dd>{{ paymentLabel(placed.paymentMethod) }}</dd>
         </div>
-        <div hlmCardContent>
-          <dt>Delivery to</dt>
-          <dd>
-            {{ placed.contact.name }}
-            @for (line of addressLines(placed.shipping); track $index) {
-              <br />{{ line }}
-            }
-          </dd>
-        </div>
+        @if (placed.shipping; as shipping) {
+          <div hlmCardContent>
+            <dt>Ship to</dt>
+            <dd>
+              {{ placed.contact.name }}
+              @for (line of addressLines(shipping); track $index) {
+                <br />{{ line }}
+              }
+            </dd>
+          </div>
+        } @else {
+          <div hlmCardContent>
+            <dt>Pick up at</dt>
+            <dd>
+              {{ pickupPoint.name }}
+              @for (line of pickupPoint.lines; track $index) {
+                <br />{{ line }}
+              }
+              <span class="facts__note">{{ pickupPoint.hours }}</span>
+            </dd>
+          </div>
+        }
         <div hlmCardContent>
           <dt>Contact</dt>
           <dd>
@@ -168,7 +182,7 @@
 
     @if (guestMayAskToCancel(placed)) {
       <p class="guest-cancel">
-        Placed without an account: to cancel it before it is completed, give the shop the reference
+        Placed without an account: to cancel it, give the shop the reference
         {{ placed.reference }}.
       </p>
     }

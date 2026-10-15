@@ -2,9 +2,9 @@ import type { Actor } from './access';
 import { MARLOW_ACCOUNT } from './bank-transfer';
 import type { TransferDetails } from './bank-transfer';
 import { ShopRuleError, StockLimitError } from './cart';
-import type { CartLine } from './cart';
-import type { ContactDetails, Fulfillment, ShippingDetails, ShopOrder } from './checkout';
-import { FULFILLMENT_STATES } from './checkout';
+import type { CheckoutDraft, ShippingDetails, ShopOrder } from './checkout';
+import { FULFILLMENT_STATES } from './fulfillment';
+import type { Fulfillment } from './fulfillment';
 import {
   addVariant,
   cancelOrder,
@@ -193,32 +193,23 @@ function tokenFrom(authorization: string | null): string | null {
   return token.length > 0 ? token : null;
 }
 
-function parseDraft(body: unknown): {
-  contact: ContactDetails;
-  shipping: ShippingDetails;
-  paymentMethod: string;
-  lines: CartLine[];
-} {
+function parseDraft(body: unknown): CheckoutDraft {
   const record = asRecord(body);
   const contact = asRecord(record['contact']);
-  const shipping = asRecord(record['shipping']);
   const lines = record['lines'];
   if (!Array.isArray(lines)) {
     throw new ShopRuleError('Add a piece before checkout.');
   }
+  // A checkout page from before the choice existed always shipped.
+  const delivery = readOptionalString(record, 'delivery') || 'ship';
   return {
     contact: {
       name: readString(contact, 'name'),
       email: readString(contact, 'email'),
       phone: readString(contact, 'phone'),
     },
-    shipping: {
-      line1: readString(shipping, 'line1'),
-      city: readString(shipping, 'city'),
-      region: readOptionalString(shipping, 'region'),
-      postalCode: readOptionalString(shipping, 'postalCode'),
-      country: readString(shipping, 'country'),
-    },
+    delivery,
+    shipping: delivery === 'ship' ? parseShipping(record['shipping']) : null,
     paymentMethod: readString(record, 'paymentMethod'),
     lines: lines.map((line) => {
       const item = asRecord(line);
@@ -228,6 +219,21 @@ function parseDraft(body: unknown): {
         quantity: readInteger(item, 'quantity'),
       };
     }),
+  };
+}
+
+/** The address of an order that ships, or null when none came, which the order book refuses. */
+function parseShipping(value: unknown): ShippingDetails | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+  const shipping = asRecord(value);
+  return {
+    line1: readString(shipping, 'line1'),
+    city: readString(shipping, 'city'),
+    region: readOptionalString(shipping, 'region'),
+    postalCode: readOptionalString(shipping, 'postalCode'),
+    country: readString(shipping, 'country'),
   };
 }
 

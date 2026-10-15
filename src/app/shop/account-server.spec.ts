@@ -145,6 +145,7 @@ describe('account requests', () => {
     placeOrder(
       {
         contact: { name: 'Ada Lovelace', email: 'ada@example.com', phone: '5550148' },
+        delivery: 'ship',
         shipping: {
           line1: '12 Loom Street',
           city: 'Providence',

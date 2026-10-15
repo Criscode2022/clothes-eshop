@@ -1,14 +1,16 @@
 import { Component, computed, input } from '@angular/core';
-import { fulfillmentName } from '../shop/checkout';
-import type { Fulfillment } from '../shop/checkout';
+import { fulfillmentName } from '../shop/fulfillment';
+import type { Fulfillment } from '../shop/fulfillment';
 import { StatusBadge } from './status-badge';
 import type { StatusTone } from './status-badge';
 
 const TONES: Record<Fulfillment, StatusTone> = {
   placed: 'current',
-  picking: 'under-way',
+  preparing: 'under-way',
+  shipped: 'under-way',
   ready: 'under-way',
-  completed: 'done',
+  delivered: 'done',
+  'picked-up': 'done',
   cancelled: 'stopped',
 };
 

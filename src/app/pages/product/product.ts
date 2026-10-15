@@ -12,7 +12,7 @@ import {
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideBanknote, lucideTruck } from '@ng-icons/lucide';
+import { lucideBanknote, lucideStore, lucideTruck } from '@ng-icons/lucide';
 import { HlmAccordionImports } from '@spartan-ng/helm/accordion';
 import { HlmEmptyImports } from '@spartan-ng/helm/empty';
 import { BagDrawer } from '../../shop/bag-drawer';
@@ -46,7 +46,7 @@ import { ShopButtonImports } from '../../ui/shop-button';
     RouterLink,
     ShopButtonImports,
   ],
-  providers: [provideIcons({ lucideBanknote, lucideTruck })],
+  providers: [provideIcons({ lucideBanknote, lucideStore, lucideTruck })],
   templateUrl: './product.html',
   styleUrl: './product.scss',
 })

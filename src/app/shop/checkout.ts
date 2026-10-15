@@ -2,41 +2,35 @@ import { findProduct } from './catalog';
 import type { Product } from './catalog';
 import { ShopRuleError, StockLimitError } from './cart';
 import type { CartLine } from './cart';
+import type { Fulfillment } from './fulfillment';
 import { shippingFor } from './money';
 
-export const PAYMENT_METHODS = [
-  { id: 'shop-floor', label: 'Pay at the shop' },
-  { id: 'bank-transfer', label: 'Bank transfer' },
-  { id: 'cash-on-delivery', label: 'Cash when it arrives' },
+/** How an order reaches the client: sent to an address, or picked up at the shop's counter. */
+export const DELIVERY_METHODS = [
+  { id: 'ship', label: 'Ship to an address', short: 'Ship' },
+  { id: 'pickup', label: 'Pick up at the shop', short: 'Pick up' },
 ] as const;
 
+export type DeliveryMethod = (typeof DELIVERY_METHODS)[number]['id'];
+
+/** Each way to pay, and the deliveries it fits: paying at the shop needs the client there. */
+export const PAYMENT_METHODS = [
+  { id: 'shop-floor', label: 'Pay at the shop', delivery: ['pickup'] },
+  { id: 'bank-transfer', label: 'Bank transfer', delivery: ['ship', 'pickup'] },
+  { id: 'cash-on-delivery', label: 'Cash when it arrives', delivery: ['ship'] },
+] as const satisfies readonly {
+  id: string;
+  label: string;
+  delivery: readonly DeliveryMethod[];
+}[];
+
 export type PaymentMethodId = (typeof PAYMENT_METHODS)[number]['id'];
+type PaymentMethod = (typeof PAYMENT_METHODS)[number];
 
-export const FULFILLMENT_STATES = ['placed', 'picking', 'ready', 'completed', 'cancelled'] as const;
-export type Fulfillment = (typeof FULFILLMENT_STATES)[number];
-
-/** The way an order normally travels. Cancelling takes it off this track. */
-const FULFILLMENT_TRACK = [
-  'placed',
-  'picking',
-  'ready',
-  'completed',
-] as const satisfies readonly Fulfillment[];
-
-export type TrackStatus = 'done' | 'current' | 'upcoming';
-
-export interface TrackStep {
-  readonly state: Fulfillment;
-  readonly label: string;
-  readonly status: TrackStatus;
-}
-
-const NEXT_FULFILLMENT: Record<Fulfillment, readonly Fulfillment[]> = {
-  placed: ['picking', 'cancelled'],
-  picking: ['ready', 'cancelled'],
-  ready: ['completed', 'cancelled'],
-  completed: [],
-  cancelled: [],
+/** The orders a payment method is for, as its refusal names them. */
+const DELIVERY_PHRASES: Record<DeliveryMethod, string> = {
+  ship: 'shipped to an address',
+  pickup: 'picked up at the shop',
 };
 
 export interface ContactDetails {
@@ -84,7 +78,9 @@ export interface ShopOrder {
   readonly reference: string;
   readonly clientId: string | null;
   readonly contact: ContactDetails;
-  readonly shipping: ShippingDetails;
+  readonly delivery: DeliveryMethod;
+  /** Where the order ships; null for an order picked up at the shop. */
+  readonly shipping: ShippingDetails | null;
   readonly lines: readonly QuotedLine[];
   readonly subtotalCents: number;
   readonly shippingCents: number;
@@ -97,9 +93,12 @@ export interface ShopOrder {
   readonly placedAt: string;
 }
 
+/** An order as the browser sends it: the server checks every field before trusting it. */
 export interface CheckoutDraft {
   readonly contact: ContactDetails;
-  readonly shipping: ShippingDetails;
+  readonly delivery: string;
+  /** Read only when the order ships. */
+  readonly shipping: ShippingDetails | null;
   readonly paymentMethod: string;
   readonly lines: readonly CartLine[];
 }
@@ -110,13 +109,35 @@ export function paymentLabel(method: string): string {
   return PAYMENT_METHODS.find((item) => item.id === method)?.label ?? method;
 }
 
-export function quoteOrder(lines: readonly CartLine[], products: readonly Product[]): OrderQuote {
+export function deliveryLabel(delivery: DeliveryMethod): string {
+  return DELIVERY_METHODS.find((item) => item.id === delivery)?.label ?? delivery;
+}
+
+/** The ways to pay an order that reaches the client this way, in the order checkout offers them. */
+export function paymentMethodsFor(delivery: DeliveryMethod): PaymentMethod[] {
+  return PAYMENT_METHODS.filter((method) => fitsDelivery(method, delivery));
+}
+
+export function paymentFitsDelivery(method: string, delivery: DeliveryMethod): boolean {
+  return paymentMethodsFor(delivery).some((item) => item.id === method);
+}
+
+/** Shipping costs only an order that ships; picking up at the shop is free. */
+export function shippingCentsFor(delivery: DeliveryMethod, subtotalCents: number): number {
+  return delivery === 'pickup' ? 0 : shippingFor(subtotalCents);
+}
+
+export function quoteOrder(
+  lines: readonly CartLine[],
+  products: readonly Product[],
+  delivery: DeliveryMethod,
+): OrderQuote {
   if (lines.length === 0) {
     throw new ShopRuleError('The bag is empty.');
   }
   const quoted: QuotedLine[] = lines.map((line) => quoteLine(line, products));
   const subtotalCents = quoted.reduce((sum, line) => sum + line.lineCents, 0);
-  const shippingCents = shippingFor(subtotalCents);
+  const shippingCents = shippingCentsFor(delivery, subtotalCents);
   return {
     lines: quoted,
     subtotalCents,
@@ -125,81 +146,45 @@ export function quoteOrder(lines: readonly CartLine[], products: readonly Produc
   };
 }
 
+/** A draft the shop accepts: how it reaches the client, how it is paid, and what it costs. */
+export interface AcceptedDraft extends OrderQuote {
+  readonly delivery: DeliveryMethod;
+  readonly paymentMethod: PaymentMethodId;
+}
+
 export function assertCheckoutDraft(
   draft: CheckoutDraft,
   products: readonly Product[],
-): OrderQuote {
+): AcceptedDraft {
   assertNoCardData(draft);
-  assertPaymentMethod(draft.paymentMethod);
-  return quoteOrder(draft.lines, products);
+  const { delivery, paymentMethod } = draft;
+  assertDeliveryMethod(delivery);
+  assertPaymentMethod(paymentMethod, delivery);
+  return { ...quoteOrder(draft.lines, products, delivery), delivery, paymentMethod };
 }
 
-export function assertPaymentMethod(method: string): asserts method is PaymentMethodId {
-  if (!PAYMENT_METHODS.some((item) => item.id === method)) {
+export function assertDeliveryMethod(delivery: string): asserts delivery is DeliveryMethod {
+  if (!DELIVERY_METHODS.some((item) => item.id === delivery)) {
+    throw new ShopRuleError('Choose how the order reaches you.');
+  }
+}
+
+export function assertPaymentMethod(
+  method: string,
+  delivery: DeliveryMethod,
+): asserts method is PaymentMethodId {
+  const known = PAYMENT_METHODS.find((item) => item.id === method);
+  if (!known) {
     throw new ShopRuleError('Choose how you will pay.');
   }
-}
-
-/** An order can be cancelled until it is completed. */
-export function canBeCancelled(state: Fulfillment): boolean {
-  return NEXT_FULFILLMENT[state].includes('cancelled');
-}
-
-export function transitionFulfillment(current: Fulfillment, target: Fulfillment): Fulfillment {
-  if (!NEXT_FULFILLMENT[current].includes(target)) {
-    throw new ShopRuleError(`An order that is ${current} cannot move to ${target}.`);
+  if (!fitsDelivery(known, delivery)) {
+    const fits = known.delivery.map((item) => DELIVERY_PHRASES[item]).join(' or ');
+    throw new ShopRuleError(`${known.label} is only for orders ${fits}.`);
   }
-  return target;
 }
 
-const FULFILLMENT_NAMES: Record<Fulfillment, string> = {
-  placed: 'Placed',
-  picking: 'Picking',
-  ready: 'Ready',
-  completed: 'Completed',
-  cancelled: 'Cancelled',
-};
-
-/** The verb on the button that moves an order into each state. */
-const FULFILLMENT_ACTIONS: Record<Fulfillment, string> = {
-  placed: 'Placed',
-  picking: 'Start picking',
-  ready: 'Mark ready',
-  completed: 'Complete',
-  cancelled: 'Cancel',
-};
-
-export function fulfillmentName(state: Fulfillment): string {
-  return FULFILLMENT_NAMES[state];
-}
-
-export function fulfillmentActions(
-  current: Fulfillment,
-): readonly { target: Fulfillment; label: string }[] {
-  return NEXT_FULFILLMENT[current].map((target) => ({
-    target,
-    label: FULFILLMENT_ACTIONS[target],
-  }));
-}
-
-/** Each step of the track, marked behind, at, or ahead of the order. A cancelled order has no track. */
-export function fulfillmentTrack(current: Fulfillment): TrackStep[] {
-  const position = FULFILLMENT_TRACK.findIndex((state) => state === current);
-  if (position < 0) {
-    return [];
-  }
-  return FULFILLMENT_TRACK.map((state, index) => ({
-    state,
-    label: fulfillmentName(state),
-    status: trackStatus(index, position),
-  }));
-}
-
-function trackStatus(index: number, position: number): TrackStatus {
-  if (index < position) {
-    return 'done';
-  }
-  return index === position ? 'current' : 'upcoming';
+function fitsDelivery(method: PaymentMethod, delivery: DeliveryMethod): boolean {
+  return (method.delivery as readonly DeliveryMethod[]).includes(delivery);
 }
 
 export function assertNoCardData(value: unknown): void {

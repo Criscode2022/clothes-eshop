@@ -31,6 +31,7 @@ const ORDER = {
   reference: 'MR-1001',
   clientId: null,
   contact: { name: 'Ada', email: 'ada@example.com', phone: '5550148' },
+  delivery: 'ship',
   shipping: {
     line1: '12 Loom Street',
     city: 'Providence',
@@ -76,6 +77,15 @@ describe('shop mail', () => {
     await mail.orderPlaced(ORDER, '/bank/MR-1001/c0de');
 
     expect(mailer.sent[0]?.text).toContain('https://marlow.shop/bank/MR-1001/c0de');
+  });
+
+  it('tells the client when an order is on its way, and nothing when it is only being prepared', async () => {
+    await mail.orderMoved({ ...ORDER, fulfillment: 'preparing' });
+    await mail.orderMoved({ ...ORDER, fulfillment: 'shipped' });
+
+    expect(mailer.sent.map((email) => [email.to, email.subject])).toEqual([
+      [ORDER.contact.email, `Your Marlow order ${ORDER.reference} is on its way`],
+    ]);
   });
 
   it('never fails the order when the email cannot go out, and says why in the log', async () => {

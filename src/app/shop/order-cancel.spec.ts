@@ -1,5 +1,4 @@
 import type { Actor } from './access';
-import { canBeCancelled } from './checkout';
 import { cancelOrder, listCatalog, moveFulfillment, placeOrder, resetShop } from './order-book';
 import { handleShopHttp, openSession, resetShopServer } from './shop-server';
 
@@ -28,6 +27,7 @@ function shirtOrder(actor: Actor | null, quantity = 2) {
   return placeOrder(
     {
       contact: { name: 'Ada Lovelace', email: 'ada@example.com', phone: '5550148' },
+      delivery: 'ship',
       shipping: {
         line1: '12 Loom Street',
         city: 'Providence',
@@ -61,27 +61,38 @@ describe('cancelling an order', () => {
     expect(shirtsOnTheFloor()).toBe(before);
   });
 
-  it('can cancel until the order is completed, and only once', () => {
-    expect(['placed', 'picking', 'ready'].every((state) => canBeCancelled(state as never))).toBe(
-      true,
-    );
-    expect(canBeCancelled('completed')).toBe(false);
-    expect(canBeCancelled('cancelled')).toBe(false);
-
+  it('can cancel until the order leaves the shop, and only once', () => {
     const order = shirtOrder(avery);
-    moveFulfillment(jordan, order.reference, 'picking');
-    moveFulfillment(jordan, order.reference, 'ready');
+    moveFulfillment(jordan, order.reference, 'preparing');
     const before = shirtsOnTheFloor();
     cancelOrder(avery, order.reference);
 
-    expect(() => cancelOrder(avery, order.reference)).toThrow(/cancelled cannot move/);
+    expect(() => cancelOrder(avery, order.reference)).toThrow('This order is already cancelled.');
     expect(shirtsOnTheFloor()).toBe(before + 2);
 
-    const completed = shirtOrder(avery, 1);
-    moveFulfillment(jordan, completed.reference, 'picking');
-    moveFulfillment(jordan, completed.reference, 'ready');
-    moveFulfillment(jordan, completed.reference, 'completed');
-    expect(() => cancelOrder(avery, completed.reference)).toThrow(/completed cannot move/);
+    const onItsWay = shirtOrder(avery, 1);
+    moveFulfillment(jordan, onItsWay.reference, 'preparing');
+    moveFulfillment(jordan, onItsWay.reference, 'shipped');
+    expect(() => cancelOrder(avery, onItsWay.reference)).toThrow(
+      'An order that is on its way can no longer be cancelled.',
+    );
+  });
+
+  it('can cancel an order waiting at the counter, until it is picked up', () => {
+    const waiting = placeOrder(
+      {
+        contact: { name: 'Ada Lovelace', email: 'ada@example.com', phone: '5550148' },
+        delivery: 'pickup',
+        shipping: null,
+        paymentMethod: 'shop-floor',
+        lines: [{ productId: 'oxford-shirt', variantId: SHIRT, quantity: 1 }],
+      },
+      avery,
+    );
+    moveFulfillment(jordan, waiting.reference, 'preparing');
+    moveFulfillment(jordan, waiting.reference, 'ready');
+
+    expect(cancelOrder(avery, waiting.reference).fulfillment).toBe('cancelled');
   });
 
   it("refuses another client's order, a guest's order, and a visitor with no session", () => {

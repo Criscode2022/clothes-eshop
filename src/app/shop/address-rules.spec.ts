@@ -21,7 +21,7 @@ describe('contact rules', () => {
         nameProblem,
       ),
     ).toEqual([null, null, null, null, null]);
-    expect(nameProblem('A')).toBe('Enter the full name for the parcel.');
+    expect(nameProblem('A')).toBe('Enter your full name.');
     expect(nameProblem('1234')).toBe('Use letters for the name.');
     expect(nameProblem('Ada <Lovelace>')).toBe('Use letters for the name.');
   });
@@ -50,7 +50,7 @@ describe('contact rules', () => {
     expect(
       ['+1 (401) 555-0148', '+34 612 345 678', '612345678', '0044 20 7946 0958'].map(phoneProblem),
     ).toEqual([null, null, null, null]);
-    expect(phoneProblem('')).toBe('Enter a phone number for the delivery.');
+    expect(phoneProblem('')).toBe('Enter a phone number.');
     expect(phoneProblem('call me')).toBe(
       'Use digits for the phone number, with + only at the start.',
     );
@@ -297,8 +297,9 @@ describe('the server', () => {
       '/api/orders',
       {
         contact: { ...ADA, ...contact },
+        delivery: 'ship',
         shipping: { ...PROVIDENCE, ...shipping },
-        paymentMethod: 'shop-floor',
+        paymentMethod: 'bank-transfer',
         lines: [{ productId: 'oxford-shirt', variantId: 'oxford-shirt-m-white', quantity: 1 }],
       },
       null,

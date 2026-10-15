@@ -1,8 +1,11 @@
 import { Component, computed, input } from '@angular/core';
-import { fulfillmentTrack } from '../shop/checkout';
-import type { Fulfillment } from '../shop/checkout';
+import { fulfillmentNote, fulfillmentTrack } from '../shop/fulfillment';
+import type { NotedOrder } from '../shop/fulfillment';
 
-/** Where an order is on its way from placed to completed. */
+/**
+ * Where an order is: the steps of its own track (to the door, or to the shop's counter), and a
+ * sentence saying what the current one means.
+ */
 @Component({
   selector: 'app-order-track',
   template: `
@@ -24,11 +27,15 @@ import type { Fulfillment } from '../shop/checkout';
           </li>
         }
       </ol>
-    } @else {
-      <p class="text-ui">This order was cancelled. Nothing will be shipped.</p>
     }
+    <p class="track-note">{{ note() }}</p>
   `,
   styles: `
+    :host {
+      display: grid;
+      gap: 1.25rem;
+    }
+
     .track {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -71,13 +78,23 @@ import type { Fulfillment } from '../shop/checkout';
       }
     }
 
+    .track__label {
+      padding-inline-end: 0.5rem;
+    }
+
     .track__step--current .track__label {
       font-weight: 600;
+    }
+
+    .track-note {
+      max-width: var(--measure);
+      font-size: var(--text-ui);
     }
   `,
 })
 export class OrderTrack {
-  readonly state = input.required<Fulfillment>();
+  readonly order = input.required<NotedOrder>();
 
-  protected readonly steps = computed(() => fulfillmentTrack(this.state()));
+  protected readonly steps = computed(() => fulfillmentTrack(this.order()));
+  protected readonly note = computed(() => fulfillmentNote(this.order()));
 }

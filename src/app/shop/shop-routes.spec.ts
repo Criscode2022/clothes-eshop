@@ -103,6 +103,7 @@ describe('shop routes', () => {
     const quote = quoteOrder(
       [{ productId: 'oxford-shirt', variantId: 'oxford-shirt-s-white', quantity: 1 }],
       SEED_PRODUCTS,
+      'ship',
     );
     expect(quote.totalCents).toBe(quote.subtotalCents + quote.shippingCents);
     expect(TestBed.inject(Router).url).toBe('/order/MR-1001');
@@ -112,6 +113,68 @@ describe('shop routes', () => {
     expect(document.body.textContent).toContain('Bank transfer');
     expect(document.body.textContent).toContain(formatMoney(quote.totalCents));
     expect(document.body.textContent).toContain('Providence, Rhode Island 02903');
+  });
+
+  it('lets a shopper pick the order up at the shop, free, and pay there', async () => {
+    const { fixture } = await render('/product/oxford-shirt');
+    await choose(fixture, 'input[name="size"][value="S"]');
+    await clickButton(fixture, 'Add to bag');
+    await go(fixture, '/checkout');
+
+    expect(paymentChoices()).toEqual(['Bank transfer', 'Cash when it arrives']);
+    expect(document.body.textContent).toContain('Paying at the shop is for orders you pick up.');
+
+    await choose(fixture, 'input[value="pickup"]');
+
+    expect(document.getElementById('ship-line1')).toBeNull();
+    expect(paymentChoices()).toEqual(['Pay at the shop', 'Bank transfer']);
+    expect(document.querySelector('.pickup')?.textContent).toContain('14 Selvedge Row');
+    expect(totalsRow('Pick up')).toBe('Free');
+
+    await typeInto(fixture, 'contact-name', 'Ada Lovelace');
+    await typeInto(fixture, 'contact-email', 'ada@example.com');
+    await typeInto(fixture, 'contact-phone', '+1 401 555 0148');
+    await choose(fixture, 'input[value="shop-floor"]');
+    await clickButton(fixture, 'Place order');
+
+    expect(TestBed.inject(Router).url).toBe('/order/MR-1001');
+    const order = handleShopHttp('GET', '/api/orders/MR-1001', null, null).body as ShopOrder;
+    expect(order.delivery).toBe('pickup');
+    expect(order.shippingCents).toBe(0);
+    expect(fact('Pick up at')).toContain('14 Selvedge Row');
+    expect(fact('Ship to')).toBeUndefined();
+    expect(
+      [...document.querySelectorAll('.track__label')].map((label) => label.textContent?.trim()),
+    ).toEqual(['Order placed', 'Being prepared', 'Ready to pick up', 'Picked up']);
+    expect(document.querySelector('.track-note')?.textContent).toContain(
+      'We have your order and will start preparing it soon.',
+    );
+  });
+
+  it('keeps the address typed, state and all, when the shopper looks at picking up and comes back', async () => {
+    const { fixture } = await checkoutWithAShirt();
+    await pick(fixture, 'ship-region', 'Rhode Island');
+
+    await choose(fixture, 'input[value="pickup"]');
+    await choose(fixture, 'input[value="ship"]');
+
+    expect(document.querySelector<HTMLSelectElement>('#ship-region')?.value).toBe('Rhode Island');
+  });
+
+  it('drops a way to pay that no longer fits when the shopper changes how the order arrives', async () => {
+    const { fixture } = await render('/product/oxford-shirt');
+    await choose(fixture, 'input[name="size"][value="S"]');
+    await clickButton(fixture, 'Add to bag');
+    await go(fixture, '/checkout');
+
+    await choose(fixture, 'input[value="cash-on-delivery"]');
+    await choose(fixture, 'input[value="pickup"]');
+    await choose(fixture, 'input[value="ship"]');
+
+    expect(document.querySelector<HTMLInputElement>('input[value="cash-on-delivery"]')?.checked).toBe(
+      false,
+    );
+    expect(totalsRow('Shipping')).toBe('$8.00');
   });
 
   it('shows what to fix as soon as a field is left, before the order is sent', async () => {
@@ -318,8 +381,10 @@ describe('shop routes', () => {
     await settle(fixture);
     await clickButton(fixture, 'Yes, cancel the order');
 
-    expect(document.body.textContent).toContain('This order was cancelled.');
-    expect(document.activeElement?.textContent).toContain('Order MR-1001 is cancelled');
+    expect(document.querySelector('.track-note')?.textContent).toBe(
+      'This order was cancelled, and its pieces went back on the floor.',
+    );
+    expect(document.activeElement?.textContent?.trim()).toBe('Order MR-1001 is cancelled.');
     expect(cancelButton('MR-1001')).toBeNull();
     expect(shirtsLeft()).toBe(before + 1);
   });
@@ -346,7 +411,12 @@ describe('shop routes', () => {
 
   it('shows a bank transfer as pending, and says the bank details went by email', async () => {
     handleShopHttp('POST', '/api/orders', shirtDraft(), null);
-    handleShopHttp('POST', '/api/orders', { ...shirtDraft(), paymentMethod: 'shop-floor' }, null);
+    handleShopHttp(
+      'POST',
+      '/api/orders',
+      { ...shirtDraft(), delivery: 'pickup', paymentMethod: 'shop-floor' },
+      null,
+    );
 
     const { fixture } = await render('/order/MR-1001');
     expect(document.querySelector('.head')?.textContent).toContain('Payment pending');
@@ -405,6 +475,29 @@ describe('shop routes', () => {
     adopt(fixture, JORDAN);
     await go(fixture, '/desk');
     expect(document.querySelector('main table')?.textContent).toContain('Payment pending');
+  });
+
+  it('moves an order to pick up through its own steps on the desk', async () => {
+    const { fixture } = await render('/');
+    handleShopHttp('POST', '/api/orders', { ...shirtDraft(), delivery: 'pickup', paymentMethod: 'shop-floor' }, null);
+    adopt(fixture, JORDAN);
+    await go(fixture, '/desk');
+    const row = () => document.querySelector('main tbody tr');
+
+    expect(row()?.textContent).toContain('Pick up');
+    expect(row()?.textContent).toContain('At the counter');
+    await clickButton(fixture, 'Start preparing');
+    expect(row()?.textContent).toContain('Being prepared');
+    await clickButton(fixture, 'Mark ready to pick up');
+    expect(row()?.textContent).toContain('Ready to pick up');
+    expect(document.querySelector('main [role="status"]')?.textContent).toContain(
+      'MR-1001 is now ready to pick up.',
+    );
+    await clickButton(fixture, 'Mark picked up');
+
+    expect(findButton('Cancel')).toBeUndefined();
+    const order = handleShopHttp('GET', '/api/orders/MR-1001', null, null).body as ShopOrder;
+    expect(order.fulfillment).toBe('picked-up');
   });
 
   it('sorts and searches the client orders from the address, and clears it all at once', async () => {
@@ -586,6 +679,7 @@ function adopt(fixture: ComponentFixture<App>, actor: Actor): void {
 function shirtDraft() {
   return {
     contact: { name: 'Ada Lovelace', email: 'ada@example.com', phone: '5550148' },
+    delivery: 'ship',
     shipping: {
       line1: '12 Loom Street',
       city: 'Providence',
@@ -600,10 +694,26 @@ function shirtDraft() {
 
 /** The order page's Payment fact: the method alone, since the badges carry its state. */
 function paymentFact(): string | undefined {
+  return fact('Payment');
+}
+
+/** What a term in a definition list says, such as the order page's facts or a row of the totals. */
+function fact(term: string): string | undefined {
   const label = [...document.querySelectorAll('dt')].find(
-    (term) => term.textContent?.trim() === 'Payment',
+    (item) => item.textContent?.trim() === term,
   );
-  return label?.nextElementSibling?.textContent?.trim();
+  return label?.nextElementSibling?.textContent?.replace(/\s+/g, ' ').trim();
+}
+
+function totalsRow(term: string): string | undefined {
+  return fact(term);
+}
+
+/** The ways to pay checkout offers right now. */
+function paymentChoices(): string[] {
+  return [...document.querySelectorAll('[aria-labelledby="payment-title"] .choice')].map(
+    (choice) => choice.textContent?.trim() ?? '',
+  );
 }
 
 function findButton(name: string): HTMLButtonElement | undefined {

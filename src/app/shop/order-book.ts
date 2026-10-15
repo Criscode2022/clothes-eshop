@@ -12,8 +12,10 @@ import { assertDeliverable, normalizedShipping } from './address-rules';
 import { ShopRuleError } from './cart';
 import { cloneProducts, isCategorySlug, SEED_PRODUCTS } from './catalog';
 import type { CategorySlug, Product, Variant } from './catalog';
-import { assertCheckoutDraft, assertNoCardData, transitionFulfillment } from './checkout';
-import type { CheckoutDraft, Fulfillment, ShopOrder } from './checkout';
+import { assertCheckoutDraft, assertNoCardData } from './checkout';
+import type { CheckoutDraft, ShopOrder } from './checkout';
+import { transitionFulfillment } from './fulfillment';
+import type { Fulfillment } from './fulfillment';
 
 export interface NewPiece {
   readonly name: string;
@@ -84,7 +86,7 @@ function copyOrder(order: ShopOrder): ShopOrder {
   return {
     ...order,
     contact: { ...order.contact },
-    shipping: { ...order.shipping },
+    shipping: order.shipping && { ...order.shipping },
     lines: order.lines.map((line) => ({ ...line })),
   };
 }
@@ -100,8 +102,8 @@ export function placeOrder(
 ): ShopOrder {
   assertNoCardData(rawBody);
   const current = readState();
-  assertDeliverable(draft.contact, draft.shipping);
-  const quote = assertCheckoutDraft(draft, current.products);
+  assertDeliverable(draft);
+  const accepted = assertCheckoutDraft(draft, current.products);
   const order: ShopOrder = {
     reference: `MR-${current.nextReference}`,
     clientId: actor?.role === 'client' ? actor.id : null,
@@ -110,12 +112,14 @@ export function placeOrder(
       email: draft.contact.email.trim(),
       phone: draft.contact.phone.trim(),
     },
-    shipping: normalizedShipping(draft.shipping),
-    lines: quote.lines,
-    subtotalCents: quote.subtotalCents,
-    shippingCents: quote.shippingCents,
-    totalCents: quote.totalCents,
-    paymentMethod: draft.paymentMethod as ShopOrder['paymentMethod'],
+    delivery: accepted.delivery,
+    shipping:
+      accepted.delivery === 'ship' && draft.shipping ? normalizedShipping(draft.shipping) : null,
+    lines: accepted.lines,
+    subtotalCents: accepted.subtotalCents,
+    shippingCents: accepted.shippingCents,
+    totalCents: accepted.totalCents,
+    paymentMethod: accepted.paymentMethod,
     fulfillment: 'placed',
     paidAt: null,
     placedAt: new Date().toISOString(),
@@ -123,7 +127,7 @@ export function placeOrder(
   writeState({
     ...current,
     nextReference: current.nextReference + 1,
-    products: adjustStock(current.products, quote.lines, -1),
+    products: adjustStock(current.products, accepted.lines, -1),
     orders: [...current.orders, order],
   });
   return order;
@@ -165,7 +169,7 @@ export function moveFulfillment(
   return changeFulfillment(requireOrder(reference), target);
 }
 
-/** The client who placed an order, or staff, can cancel it until it is completed. */
+/** The client who placed an order, or staff, can cancel it until it leaves the shop or is picked up. */
 export function cancelOrder(actor: Actor | null, reference: string): ShopOrder {
   if (!actor) {
     throw new ShopRuleError('Sign in to cancel an order.');
@@ -200,7 +204,7 @@ export function payTransfer(reference: string, paidAt = new Date().toISOString()
 
 /** A cancelled order's pieces go back on the floor, since nobody will take them. */
 function changeFulfillment(order: ShopOrder, target: Fulfillment): ShopOrder {
-  const updated = { ...order, fulfillment: transitionFulfillment(order.fulfillment, target) };
+  const updated = { ...order, fulfillment: transitionFulfillment(order, target) };
   if (target === 'cancelled') {
     const current = readState();
     writeState({ ...current, products: adjustStock(current.products, order.lines, 1) });

@@ -44,13 +44,15 @@
       <h2 id="shipping-title" class="block__title">Shipping and payment</h2>
       <div class="block__text">
         <p>
-          Shipping is $8.00, and free when the pieces total at least $200.00. You can check out as a
-          guest; an account only keeps the order under your name.
+          Shipping is $8.00, and free when the pieces total at least $200.00. Picking the order up
+          at the shop is always free: {{ pickupPoint.name }}, {{ pickupPoint.lines[0] }},
+          {{ pickupPoint.lines[1] }}, {{ pickupPoint.hours }}. You can check out as a guest; an
+          account only keeps the order under your name.
         </p>
         <p>You choose how to pay, and Marlow records the method. It never takes a card number.</p>
         <ul class="methods" role="list">
           @for (method of paymentMethods; track method.id) {
-            <li>{{ method.label }}</li>
+            <li>{{ method.text }}</li>
           }
         </ul>
       </div>
@@ -71,9 +73,9 @@
           }
         </ol>
         <p>
-          You can still cancel an order until it is completed: signed in, from the order's page, and
-          for an order placed without an account, by giving the shop its reference. Its pieces go
-          back on the floor.
+          You can cancel an order until it leaves the shop, or, when you pick it up, until you do:
+          signed in, from the order's page, and for an order placed without an account, by giving
+          the shop its reference. Its pieces go back on the floor.
         </p>
       </div>
     </section>

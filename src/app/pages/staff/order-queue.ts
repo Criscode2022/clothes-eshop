@@ -8,15 +8,11 @@ import { HlmInputGroupImports } from '@spartan-ng/helm/input-group';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import { HlmSpinner } from '@spartan-ng/helm/spinner';
 import { HlmTableImports } from '@spartan-ng/helm/table';
-import {
-  addressLines,
-  canBeCancelled,
-  fulfillmentActions,
-  fulfillmentName,
-  paymentLabel,
-} from '../../shop/checkout';
 import { paymentStateOf } from '../../shop/bank-transfer';
-import type { Fulfillment, ShopOrder } from '../../shop/checkout';
+import { DELIVERY_METHODS, addressLines, paymentLabel } from '../../shop/checkout';
+import type { DeliveryMethod, ShopOrder } from '../../shop/checkout';
+import { canBeCancelled, fulfillmentActions, fulfillmentName } from '../../shop/fulfillment';
+import type { Fulfillment } from '../../shop/fulfillment';
 import { MoneyPipe } from '../../shop/money.pipe';
 import { QUEUE_VIEWS, ordersInView, queueCounts } from '../../shop/order-queue';
 import type { QueueView } from '../../shop/order-queue';
@@ -88,13 +84,15 @@ export class OrderQueue {
   }
 
   protected nextStep(order: ShopOrder): { target: Fulfillment; label: string } | null {
-    return (
-      fulfillmentActions(order.fulfillment).find((action) => action.target !== 'cancelled') ?? null
-    );
+    return fulfillmentActions(order).find((action) => action.target !== 'cancelled') ?? null;
   }
 
   protected canCancel(order: ShopOrder): boolean {
-    return canBeCancelled(order.fulfillment);
+    return canBeCancelled(order);
+  }
+
+  protected deliveryName(delivery: DeliveryMethod): string {
+    return DELIVERY_METHODS.find((method) => method.id === delivery)?.short ?? delivery;
   }
 
   protected pieceCount(order: ShopOrder): number {

@@ -1,5 +1,5 @@
 import { ShopRuleError } from './cart';
-import type { ContactDetails, ShippingDetails } from './checkout';
+import type { CheckoutDraft, ContactDetails, ShippingDetails } from './checkout';
 import { countryNamed } from './countries';
 import type { Country } from './countries';
 
@@ -23,7 +23,7 @@ const CITY_MAX = 60;
 export function nameProblem(value: string): string | null {
   const name = value.trim();
   if (name.length < 2) {
-    return 'Enter the full name for the parcel.';
+    return 'Enter your full name.';
   }
   if (name.length > NAME_MAX) {
     return `Keep the name under ${NAME_MAX} characters.`;
@@ -31,7 +31,7 @@ export function nameProblem(value: string): string | null {
   if (!WORDS.test(name)) {
     return 'Use letters for the name.';
   }
-  return (name.match(LETTERS)?.length ?? 0) < 2 ? 'Enter the full name for the parcel.' : null;
+  return (name.match(LETTERS)?.length ?? 0) < 2 ? 'Enter your full name.' : null;
 }
 
 export function emailProblem(value: string): string | null {
@@ -47,7 +47,7 @@ export function emailProblem(value: string): string | null {
 export function phoneProblem(value: string): string | null {
   const phone = value.trim();
   if (!phone) {
-    return 'Enter a phone number for the delivery.';
+    return 'Enter a phone number.';
   }
   if (!PHONE.test(phone)) {
     return 'Use digits for the phone number, with + only at the start.';
@@ -105,12 +105,24 @@ export function postalCodeProblem(country: string, value: string): string | null
     : `Enter ${rule.article} ${rule.noun} like ${rule.example}: ${rule.shape}.`;
 }
 
-/** The server's check: an order the checkout form would have stopped is refused with the same words. */
-export function assertDeliverable(contact: ContactDetails, shipping: ShippingDetails): void {
-  const problem = contactProblem(contact) ?? shippingProblem(shipping);
+/**
+ * The server's check: an order the checkout form would have stopped is refused with the same words. An
+ * order picked up at the shop has no address to check.
+ */
+export function assertDeliverable(
+  draft: Pick<CheckoutDraft, 'contact' | 'delivery' | 'shipping'>,
+): void {
+  const problem = contactProblem(draft.contact) ?? addressProblem(draft);
   if (problem) {
     throw new ShopRuleError(problem);
   }
+}
+
+function addressProblem(draft: Pick<CheckoutDraft, 'delivery' | 'shipping'>): string | null {
+  if (draft.delivery !== 'ship') {
+    return null;
+  }
+  return draft.shipping ? shippingProblem(draft.shipping) : 'Enter the address to ship to.';
 }
 
 export function contactProblem(contact: ContactDetails): string | null {

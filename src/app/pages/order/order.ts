@@ -22,9 +22,11 @@ import { HlmSpinner } from '@spartan-ng/helm/spinner';
 import { canCancelOrder } from '../../shop/access';
 import type { ShopRole } from '../../shop/access';
 import { paymentStateOf } from '../../shop/bank-transfer';
-import { addressLines, canBeCancelled, paymentLabel } from '../../shop/checkout';
+import { addressLines, paymentLabel } from '../../shop/checkout';
 import type { ShopOrder } from '../../shop/checkout';
+import { canBeCancelled } from '../../shop/fulfillment';
 import { MoneyPipe } from '../../shop/money.pipe';
+import { PICKUP_POINT } from '../../shop/pickup-point';
 import { ShopClient } from '../../shop/shop-client';
 import { ShopSession } from '../../shop/shop-session';
 import { BackLink } from '../../ui/back-link';
@@ -79,6 +81,7 @@ export class OrderPage {
     inject(Router).currentNavigation()?.extras.state?.['placed'] === true;
   protected readonly addressLines = addressLines;
   protected readonly paymentLabel = paymentLabel;
+  protected readonly pickupPoint = PICKUP_POINT;
   protected readonly paymentStateOf = paymentStateOf;
   protected readonly copied = signal(false);
   protected readonly cancelling = signal(false);
@@ -92,14 +95,14 @@ export class OrderPage {
   /** Where Back goes for a page opened from outside the shop: the list this person keeps orders in. */
   protected readonly backTo = computed(() => BACK_TO[this.session.current()?.role ?? 'guest']);
 
-  /** The client who placed it, or staff, until it is completed. */
+  /** The client who placed it, or staff, until it leaves the shop or is picked up. */
   protected canCancel(order: ShopOrder): boolean {
-    return canBeCancelled(order.fulfillment) && canCancelOrder(this.session.current(), order);
+    return canBeCancelled(order) && canCancelOrder(this.session.current(), order);
   }
 
   /** A guest order has no account to cancel it from, so the guest asks the shop by reference. */
   protected guestMayAskToCancel(order: ShopOrder): boolean {
-    return canBeCancelled(order.fulfillment) && order.clientId === null && !this.canCancel(order);
+    return canBeCancelled(order) && order.clientId === null && !this.canCancel(order);
   }
 
   protected forgetCancelError(): void {

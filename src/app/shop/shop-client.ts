@@ -6,7 +6,8 @@ import type { Actor } from './access';
 import type { TransferDetails } from './bank-transfer';
 import { ShopRuleError } from './cart';
 import type { CartLine } from './cart';
-import type { ContactDetails, Fulfillment, ShippingDetails, ShopOrder } from './checkout';
+import type { ContactDetails, DeliveryMethod, ShippingDetails, ShopOrder } from './checkout';
+import type { Fulfillment } from './fulfillment';
 import type { Product } from './catalog';
 import { CatalogStore } from './catalog-store';
 import { NeonAuth } from './neon-auth';
@@ -15,7 +16,9 @@ import { ShopSession } from './shop-session';
 
 export interface PlaceOrderBody {
   readonly contact: ContactDetails;
-  readonly shipping: ShippingDetails;
+  readonly delivery: DeliveryMethod;
+  /** Null for an order picked up at the shop. */
+  readonly shipping: ShippingDetails | null;
   readonly paymentMethod: string;
   readonly lines: readonly CartLine[];
 }

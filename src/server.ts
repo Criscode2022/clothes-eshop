@@ -190,6 +190,9 @@ async function serveApi(
     const order = result.body as ShopOrder;
     void shopMail.orderPlaced(order, transferPathOf(order));
   }
+  if (movesOrder(method, path, result.status)) {
+    void shopMail.orderMoved(result.body as ShopOrder);
+  }
   return result;
 }
 
@@ -228,6 +231,15 @@ async function receiveNeonAuthWebhook(req: Request, res: Response): Promise<void
 
 function placesOrder(method: string, path: string, status: number): boolean {
   return method.toUpperCase() === 'POST' && path === '/api/orders' && status === 201;
+}
+
+/** Staff moved an order along its track from the desk. */
+function movesOrder(method: string, path: string, status: number): boolean {
+  return (
+    method.toUpperCase() === 'POST' &&
+    /^\/api\/orders\/[^/]+\/fulfillment$/.test(path) &&
+    status === 200
+  );
 }
 
 /** The address links in emails point to: SHOP_URL in production, this machine otherwise. */

@@ -6,6 +6,7 @@ function order(reference: string, totalCents: number, placedAt: string): ShopOrd
     reference,
     clientId: null,
     contact: { name: 'Ada Lovelace', email: 'ada@example.com', phone: '5550148' },
+    delivery: 'ship',
     shipping: {
       line1: '12 Loom Street',
       city: 'Providence',
@@ -17,7 +18,7 @@ function order(reference: string, totalCents: number, placedAt: string): ShopOrd
     subtotalCents: totalCents,
     shippingCents: 0,
     totalCents,
-    paymentMethod: 'shop-floor',
+    paymentMethod: 'bank-transfer',
     fulfillment: 'placed',
     paidAt: null,
     placedAt,

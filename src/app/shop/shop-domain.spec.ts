@@ -1,6 +1,7 @@
 import { SEED_PRODUCTS, productsIn } from './catalog';
 import { StockLimitError, addLine, changeQuantity } from './cart';
-import { paymentLabel, quoteOrder, transitionFulfillment } from './checkout';
+import { paymentLabel, quoteOrder } from './checkout';
+import { transitionFulfillment } from './fulfillment';
 import { canChangePrice, canOpenArea, ordersVisibleTo } from './access';
 import type { Actor } from './access';
 import { formatMoney, shippingFor } from './money';
@@ -38,6 +39,7 @@ const shipping = { line1: '12 Loom Street', city: 'Providence', region: 'Rhode I
 function shirtDraft(quantity = 1) {
   return {
     contact,
+    delivery: 'ship',
     shipping,
     paymentMethod: 'bank-transfer',
     lines: [{ productId: 'oxford-shirt', variantId: 'oxford-shirt-s-white', quantity }],
@@ -76,7 +78,7 @@ describe('bag and checkout', () => {
   });
 
   it('stores a guest order whose total is the lines plus shipping and records the method, not a card', () => {
-    const quote = quoteOrder(shirtDraft().lines, SEED_PRODUCTS);
+    const quote = quoteOrder(shirtDraft().lines, SEED_PRODUCTS, 'ship');
     const order = placeOrder(shirtDraft(), null);
 
     expect(quote.shippingCents).toBe(shippingFor(quote.subtotalCents));
@@ -133,9 +135,8 @@ describe('staff powers', () => {
     expect(canOpenArea('owner', sloan)).toBe(true);
     expect(canChangePrice(jordan)).toBe(false);
 
-    expect(transitionFulfillment('placed', 'picking')).toBe('picking');
-    expect(transitionFulfillment('ready', 'completed')).toBe('completed');
-    expect(transitionFulfillment('placed', 'cancelled')).toBe('cancelled');
+    expect(transitionFulfillment(order, 'preparing')).toBe('preparing');
+    expect(transitionFulfillment(order, 'cancelled')).toBe('cancelled');
     expect(() => setProductPrice(jordan, 'oxford-shirt', 1000)).toThrow(/price/i);
     expect(setProductPrice(sloan, 'oxford-shirt', 9100).priceCents).toBe(9100);
     expect(setVariantStock(jordan, 'oxford-shirt-m-white', 3).variants.find((variant) => variant.id === 'oxford-shirt-m-white')?.stock).toBe(3);

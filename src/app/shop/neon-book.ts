@@ -1,7 +1,9 @@
 import { isCategorySlug, SEED_PRODUCTS } from './catalog';
 import type { Product } from './catalog';
-import { FULFILLMENT_STATES, PAYMENT_METHODS } from './checkout';
-import type { Fulfillment, PaymentMethodId, ShopOrder } from './checkout';
+import { DELIVERY_METHODS, PAYMENT_METHODS } from './checkout';
+import type { DeliveryMethod, PaymentMethodId, ShippingDetails, ShopOrder } from './checkout';
+import { FULFILLMENT_STATES } from './fulfillment';
+import type { Fulfillment } from './fulfillment';
 import { careOf, compositionOf } from './cloth';
 import { installShop, snapshotShop } from './order-book';
 
@@ -33,12 +35,14 @@ export interface OrderRecord {
   readonly contact_name: string;
   readonly contact_email: string;
   readonly contact_phone: string;
-  readonly ship_line1: string;
-  readonly ship_city: string;
+  readonly delivery: string;
+  /** The address columns are null for an order picked up at the shop. */
+  readonly ship_line1: string | null;
+  readonly ship_city: string | null;
   /** Null for orders placed before regions were asked, and where the country has none. */
   readonly ship_region: string | null;
-  readonly ship_postal_code: string;
-  readonly ship_country: string;
+  readonly ship_postal_code: string | null;
+  readonly ship_country: string | null;
   readonly subtotal_cents: number | string;
   readonly shipping_cents: number | string;
   readonly total_cents: number | string;
@@ -141,22 +145,18 @@ export function ordersFromRows(
   }
   const orders: ShopOrder[] = [];
   for (const row of orderRows) {
+    const delivery = deliveryOf(row.delivery);
     const paymentMethod = paymentOf(row.payment_method);
     const fulfillment = fulfillmentOf(row.fulfillment);
-    if (!paymentMethod || !fulfillment) {
+    if (!delivery || !paymentMethod || !fulfillment) {
       continue;
     }
     orders.push({
       reference: row.reference,
       clientId: row.client_id,
       contact: { name: row.contact_name, email: row.contact_email, phone: row.contact_phone },
-      shipping: {
-        line1: row.ship_line1,
-        city: row.ship_city,
-        region: row.ship_region ?? '',
-        postalCode: row.ship_postal_code,
-        country: row.ship_country,
-      },
+      delivery,
+      shipping: delivery === 'ship' ? shippingOf(row) : null,
       lines: (linesByOrder.get(row.id) ?? []).map((line) => {
         const identity = lineIdentity(products, line.product_name, line.size, line.color);
         return {
@@ -209,7 +209,7 @@ export function pullNeon(): Promise<void> {
       join public.products as products on products.id = variants.product_id
     `;
     const orderRows = await sql<OrderRecord>`
-      select id, reference, client_id, contact_name, contact_email, contact_phone,
+      select id, reference, client_id, contact_name, contact_email, contact_phone, delivery,
              ship_line1, ship_city, ship_region, ship_postal_code, ship_country,
              subtotal_cents, shipping_cents, total_cents, payment_method, fulfillment, paid_at, created_at
       from public.orders
@@ -311,7 +311,7 @@ async function writeOrder(sql: Query, order: ShopOrder): Promise<void> {
   }
   const inserted = await sql<{ id: string }>`
     insert into public.orders (
-      reference, client_id, contact_name, contact_email, contact_phone,
+      reference, client_id, contact_name, contact_email, contact_phone, delivery,
       ship_line1, ship_city, ship_region, ship_postal_code, ship_country,
       subtotal_cents, shipping_cents, total_cents, payment_method, fulfillment, paid_at, created_at
     )
@@ -321,11 +321,12 @@ async function writeOrder(sql: Query, order: ShopOrder): Promise<void> {
       ${order.contact.name},
       ${order.contact.email},
       ${order.contact.phone},
-      ${order.shipping.line1},
-      ${order.shipping.city},
-      ${order.shipping.region || null},
-      ${order.shipping.postalCode},
-      ${order.shipping.country},
+      ${order.delivery},
+      ${order.shipping?.line1 ?? null},
+      ${order.shipping?.city ?? null},
+      ${order.shipping?.region || null},
+      ${order.shipping?.postalCode ?? null},
+      ${order.shipping?.country ?? null},
       ${order.subtotalCents},
       ${order.shippingCents},
       ${order.totalCents},
@@ -389,6 +390,21 @@ function whole(value: number | string): number {
     throw new Error('The shop records returned a value that is not a number.');
   }
   return Math.trunc(number);
+}
+
+function deliveryOf(value: string): DeliveryMethod | null {
+  return DELIVERY_METHODS.some((method) => method.id === value) ? (value as DeliveryMethod) : null;
+}
+
+/** A shipped order's address; the columns are set together, as the table's check requires. */
+function shippingOf(row: OrderRecord): ShippingDetails {
+  return {
+    line1: row.ship_line1 ?? '',
+    city: row.ship_city ?? '',
+    region: row.ship_region ?? '',
+    postalCode: row.ship_postal_code ?? '',
+    country: row.ship_country ?? '',
+  };
 }
 
 function paymentOf(value: string): PaymentMethodId | null {

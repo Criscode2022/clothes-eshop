@@ -1,10 +1,12 @@
-import { FULFILLMENT_STATES, fulfillmentName } from './checkout';
-import type { Fulfillment, ShopOrder } from './checkout';
+import type { ShopOrder } from './checkout';
+import { FULFILLMENT_STATES, fulfillmentName } from './fulfillment';
+import type { Fulfillment } from './fulfillment';
 
 /** One view of the desk's order list: every open order, or one fulfillment state. */
 export type QueueView = 'open' | Fulfillment;
 
-const OPEN_STATES: readonly Fulfillment[] = ['placed', 'picking', 'ready'];
+/** Orders the shop still has work on: a parcel on its way still needs marking delivered. */
+const OPEN_STATES: readonly Fulfillment[] = ['placed', 'preparing', 'shipped', 'ready'];
 
 export const QUEUE_VIEWS: readonly { readonly id: QueueView; readonly label: string }[] = [
   { id: 'open', label: 'Open' },
@@ -12,14 +14,10 @@ export const QUEUE_VIEWS: readonly { readonly id: QueueView; readonly label: str
 ];
 
 export function queueCounts(orders: readonly ShopOrder[]): Record<QueueView, number> {
-  const counts: Record<QueueView, number> = {
-    open: 0,
-    placed: 0,
-    picking: 0,
-    ready: 0,
-    completed: 0,
-    cancelled: 0,
-  };
+  const counts = Object.fromEntries(QUEUE_VIEWS.map((view) => [view.id, 0])) as Record<
+    QueueView,
+    number
+  >;
   for (const order of orders) {
     counts[order.fulfillment] += 1;
     if (isOpen(order)) {

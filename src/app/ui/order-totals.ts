@@ -1,4 +1,5 @@
 import { Component, input } from '@angular/core';
+import type { DeliveryMethod } from '../shop/checkout';
 import { MoneyPipe } from '../shop/money.pipe';
 
 /** Subtotal, shipping, and total, in the same order everywhere an order is summed. */
@@ -12,7 +13,7 @@ import { MoneyPipe } from '../shop/money.pipe';
         <dd>{{ subtotalCents() | money }}</dd>
       </div>
       <div>
-        <dt>Shipping</dt>
+        <dt>{{ delivery() === 'pickup' ? 'Pick up' : 'Shipping' }}</dt>
         <dd>
           @if (shippingCents() === 0) {
             Free
@@ -67,4 +68,6 @@ export class OrderTotals {
   readonly subtotalCents = input.required<number>();
   readonly shippingCents = input.required<number>();
   readonly totalCents = input.required<number>();
+  /** An order picked up at the shop names the row for what it is, and it is always free. */
+  readonly delivery = input<DeliveryMethod>('ship');
 }

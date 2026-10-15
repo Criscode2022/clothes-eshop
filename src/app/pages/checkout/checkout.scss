@@ -77,6 +77,31 @@
   border: 0;
 }
 
+.choice__name {
+  flex: 1;
+}
+
+.choice__cost {
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+// Where an order to pick up waits: the shop's address and hours on the surface panels sit on.
+.pickup {
+  display: grid;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: var(--color-surface);
+}
+
+.pickup__place {
+  font-size: var(--text-ui);
+}
+
+.pickup__name {
+  font-weight: 500;
+}
+
 .section__note {
   font-size: var(--text-sm);
   color: var(--color-text-muted);

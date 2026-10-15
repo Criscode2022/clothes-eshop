@@ -1,5 +1,5 @@
 <div class="checkout page">
-  @if (bag.quote(); as quote) {
+  @if (quote(); as quote) {
     <header class="head">
       <h1 class="head__title">Checkout</h1>
       <p class="head__lede">
@@ -59,49 +59,81 @@
 
         <section class="section" aria-labelledby="delivery-title">
           <h2 id="delivery-title" class="section__title">Delivery</h2>
-          <div class="section__fields">
-            <app-country-field
-              class="span-2"
-              inputId="ship-country"
-              label="Country"
-              [field]="checkoutForm.shipping.country"
-              (chosen)="countryChosen()"
-            />
-            <app-text-field
-              class="span-2"
-              inputId="ship-line1"
-              label="Street address"
-              autocomplete="address-line1"
-              [field]="checkoutForm.shipping.line1"
-            />
-            <app-text-field
-              inputId="ship-city"
-              label="City"
-              autocomplete="address-level2"
-              [field]="checkoutForm.shipping.city"
-            />
-            @if (country()?.division; as division) {
-              <app-select-field
-                inputId="ship-region"
-                autocomplete="address-level1"
-                [label]="division.label"
-                [prompt]="'Choose the ' + division.noun"
-                [options]="division.options"
-                [field]="checkoutForm.shipping.region"
-              />
+          <fieldset class="choices">
+            <legend class="sr-only">How the order reaches you</legend>
+            @for (option of deliveries; track option.id) {
+              <label class="choice">
+                <input
+                  type="radio"
+                  name="delivery"
+                  [value]="option.id"
+                  [checked]="model().delivery === option.id"
+                  (change)="chooseDelivery(option.id)"
+                />
+                <ng-icon [name]="deliveryIcons[option.id]" class="choice__icon" />
+                <span class="choice__name">{{ option.label }}</span>
+                <span class="choice__cost">{{ deliveryCost(option.id) }}</span>
+              </label>
             }
-            @if (country()?.postal; as postal) {
+          </fieldset>
+          @if (shipping()) {
+            <div class="section__fields">
+              <app-country-field
+                class="span-2"
+                inputId="ship-country"
+                label="Country"
+                [field]="checkoutForm.shipping.country"
+                (chosen)="countryChosen()"
+              />
               <app-text-field
-                inputId="ship-postal"
-                autocomplete="postal-code"
-                [label]="postal.label"
-                [hint]="'Like ' + postal.example"
-                [inputMode]="postal.digits ? 'numeric' : ''"
-                [field]="checkoutForm.shipping.postalCode"
-                (focusout)="tidyPostalCode()"
+                class="span-2"
+                inputId="ship-line1"
+                label="Street address"
+                autocomplete="address-line1"
+                [field]="checkoutForm.shipping.line1"
               />
-            }
-          </div>
+              <app-text-field
+                inputId="ship-city"
+                label="City"
+                autocomplete="address-level2"
+                [field]="checkoutForm.shipping.city"
+              />
+              @if (country()?.division; as division) {
+                <app-select-field
+                  inputId="ship-region"
+                  autocomplete="address-level1"
+                  [label]="division.label"
+                  [prompt]="'Choose the ' + division.noun"
+                  [options]="division.options"
+                  [field]="checkoutForm.shipping.region"
+                />
+              }
+              @if (country()?.postal; as postal) {
+                <app-text-field
+                  inputId="ship-postal"
+                  autocomplete="postal-code"
+                  [label]="postal.label"
+                  [hint]="'Like ' + postal.example"
+                  [inputMode]="postal.digits ? 'numeric' : ''"
+                  [field]="checkoutForm.shipping.postalCode"
+                  (focusout)="tidyPostalCode()"
+                />
+              }
+            </div>
+          } @else {
+            <div class="pickup">
+              <p class="pickup__place">
+                <strong class="pickup__name">{{ pickupPoint.name }}</strong>
+                @for (line of pickupPoint.lines; track $index) {
+                  <br />{{ line }}
+                }
+              </p>
+              <p class="section__note">
+                {{ pickupPoint.hours }}. We email you when the order is ready to pick up; give its
+                reference at the counter.
+              </p>
+            </div>
+          }
         </section>
 
         <section class="section" aria-labelledby="payment-title">
@@ -115,7 +147,7 @@
             "
           >
             <legend class="sr-only">How you will pay</legend>
-            @for (method of methods; track method.id) {
+            @for (method of methods(); track method.id) {
               <label class="choice">
                 <input
                   type="radio"
@@ -139,6 +171,9 @@
             No card needed. Marlow records the method you choose and never asks for a card number.
             For a bank transfer, the bank details come by email, and the order is pending until the
             transfer arrives.
+            @if (shipping()) {
+              Paying at the shop is for orders you pick up.
+            }
           </p>
         </section>
 
@@ -197,11 +232,14 @@
           }
         </ul>
         <app-order-totals
+          [delivery]="model().delivery"
           [subtotalCents]="quote.subtotalCents"
           [shippingCents]="quote.shippingCents"
           [totalCents]="quote.totalCents"
         />
-        <app-free-shipping [subtotalCents]="quote.subtotalCents" />
+        @if (shipping()) {
+          <app-free-shipping [subtotalCents]="quote.subtotalCents" />
+        }
         <p>
           <button
             type="button"

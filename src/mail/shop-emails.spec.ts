@@ -1,6 +1,13 @@
 import { MARLOW_ACCOUNT } from '../app/shop/bank-transfer';
 import type { ShopOrder } from '../app/shop/checkout';
-import { accountCreatedEmail, authCodeEmail, authLinkEmail, orderPlacedEmail } from './shop-emails';
+import type { Fulfillment } from '../app/shop/fulfillment';
+import {
+  accountCreatedEmail,
+  authCodeEmail,
+  authLinkEmail,
+  orderPlacedEmail,
+  orderProgressEmail,
+} from './shop-emails';
 
 const SHOP = 'https://marlow.shop';
 
@@ -8,6 +15,7 @@ const ORDER: ShopOrder = {
   reference: 'MR-1001',
   clientId: null,
   contact: { name: 'Ada <Lovelace>', email: 'ada@example.com', phone: '5550148' },
+  delivery: 'ship',
   shipping: {
     line1: '12 Loom Street',
     city: 'Providence',
@@ -36,6 +44,15 @@ const ORDER: ShopOrder = {
   placedAt: '2026-10-15T09:00:00.000Z',
 };
 
+const PICKUP: ShopOrder = {
+  ...ORDER,
+  delivery: 'pickup',
+  shipping: null,
+  shippingCents: 0,
+  totalCents: 17_800,
+  paymentMethod: 'shop-floor',
+};
+
 const BANK_LINK = '/bank/MR-1001/c0de-for-mr-1001';
 
 describe('order confirmation email', () => {
@@ -56,6 +73,7 @@ describe('order confirmation email', () => {
       expect(body).toContain(
         'Bank transfer, pending until the transfer arrives. No card was taken.',
       );
+      expect(body).toContain('Ship to');
       expect(body).toContain('12 Loom Street');
     }
     expect(email.text).toContain('https://marlow.shop/order/MR-1001');
@@ -100,11 +118,78 @@ describe('bank transfer in the order email', () => {
   });
 
   it('leaves bank details out of the methods paid in person', () => {
-    const atShop = orderPlacedEmail({ ...ORDER, paymentMethod: 'shop-floor' }, SHOP, null);
+    const atShop = orderPlacedEmail(PICKUP, SHOP, null);
 
     expect(atShop.text).toContain('Pay at the shop. No card was taken.');
     expect(atShop.text).not.toContain(MARLOW_ACCOUNT.iban);
     expect(atShop.html).not.toContain('Sandbox Bank');
+  });
+});
+
+describe('an order to pick up, in its confirmation', () => {
+  const email = orderPlacedEmail(PICKUP, SHOP, null);
+
+  it('says where and when to pick it up, free, and that an email follows when it is ready', () => {
+    for (const body of [email.text, email.html]) {
+      expect(body).toContain('Pick up at');
+      expect(body).toContain('14 Selvedge Row');
+      expect(body).toContain('Monday to Saturday, 10 am to 7 pm');
+      expect(body).toContain('We email you when it is ready to pick up.');
+      expect(body).not.toContain('Ship to');
+      expect(body).not.toContain('12 Loom Street');
+    }
+    expect(email.text).toContain('Pick up: Free');
+  });
+});
+
+describe('order progress emails', () => {
+  it('tells the client a parcel is on its way, where to, and what to have ready', () => {
+    const email = orderProgressEmail(
+      { ...ORDER, fulfillment: 'shipped', paymentMethod: 'cash-on-delivery' },
+      SHOP,
+    );
+
+    expect(email?.to).toBe('ada@example.com');
+    expect(email?.subject).toBe('Your Marlow order MR-1001 is on its way');
+    for (const body of [email?.text ?? '', email?.html ?? '']) {
+      expect(body).toContain('Your parcel has left the shop for Providence.');
+      expect(body).toContain('12 Loom Street');
+      expect(body).toContain('Cash when it arrives: have $186.00 ready for the carrier.');
+    }
+    expect(email?.html).toContain('href="https://marlow.shop/order/MR-1001"');
+  });
+
+  it('tells the client an order is ready to pick up, where, when, and what to bring', () => {
+    const email = orderProgressEmail({ ...PICKUP, fulfillment: 'ready' }, SHOP);
+
+    expect(email?.subject).toBe('Your Marlow order MR-1001 is ready to pick up');
+    for (const body of [email?.text ?? '', email?.html ?? '']) {
+      expect(body).toContain(
+        'Your pieces are waiting at the counter. Give the reference MR-1001 when you come, and pay there.',
+      );
+      expect(body).toContain('14 Selvedge Row');
+      expect(body).toContain('Monday to Saturday, 10 am to 7 pm');
+      expect(body).toContain('Pay at the shop: $178.00, at the counter.');
+    }
+  });
+
+  it('says whether a bank transfer has arrived', () => {
+    const ready = { ...PICKUP, fulfillment: 'ready' as const, paymentMethod: 'bank-transfer' as const };
+
+    expect(orderProgressEmail(ready, SHOP)?.text).toContain(
+      'Bank transfer, pending until the transfer arrives.',
+    );
+    expect(
+      orderProgressEmail({ ...ready, paidAt: '2026-10-15T10:00:00.000Z' }, SHOP)?.text,
+    ).toContain('Bank transfer, paid.');
+  });
+
+  it('sends nothing for the steps the client does not need to hear about', () => {
+    const quiet: Fulfillment[] = ['placed', 'preparing', 'delivered', 'picked-up', 'cancelled'];
+
+    for (const fulfillment of quiet) {
+      expect(orderProgressEmail({ ...ORDER, fulfillment }, SHOP)).toBeNull();
+    }
   });
 });
 

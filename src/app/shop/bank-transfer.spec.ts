@@ -18,6 +18,8 @@ function placed(paymentMethod = 'bank-transfer', authorization: string | null = 
     '/api/orders',
     {
       contact: { name: 'Ada Lovelace', email: 'ada@example.com', phone: '5550148' },
+      // Only an order picked up at the shop is paid there.
+      delivery: paymentMethod === 'shop-floor' ? 'pickup' : 'ship',
       shipping: {
         line1: '12 Loom Street',
         city: 'Providence',
@@ -30,6 +32,9 @@ function placed(paymentMethod = 'bank-transfer', authorization: string | null = 
     },
     authorization,
   );
+  if (result.status !== 201) {
+    throw new Error(`The test order was refused: ${JSON.stringify(result.body)}`);
+  }
   return result.body as ShopOrder;
 }
 

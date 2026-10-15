@@ -1,7 +1,13 @@
 import type { ShopOrder } from '../app/shop/checkout';
 import type { NeonIdentity } from '../app/shop/neon-adopt';
 import type { Mailer } from './mailer';
-import { accountCreatedEmail, authCodeEmail, authLinkEmail, orderPlacedEmail } from './shop-emails';
+import {
+  accountCreatedEmail,
+  authCodeEmail,
+  authLinkEmail,
+  orderPlacedEmail,
+  orderProgressEmail,
+} from './shop-emails';
 import type { AuthPurpose } from './shop-emails';
 
 /** An account older than this was not just created, whatever the browser says. */
@@ -37,6 +43,14 @@ export class ShopMail {
     await this.sendQuietly(() =>
       this.mailer.send(orderPlacedEmail(order, this.shopUrl, transferPath)),
     );
+  }
+
+  /** Staff moved an order: the client hears when the parcel leaves, or when the order waits at the counter. */
+  async orderMoved(order: ShopOrder): Promise<void> {
+    const email = orderProgressEmail(order, this.shopUrl);
+    if (email) {
+      await this.sendQuietly(() => this.mailer.send(email));
+    }
   }
 
   /** "Your account is open": sent once, straight after a sign-up. It asks the person to confirm nothing. */

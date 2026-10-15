@@ -120,7 +120,7 @@ describe('neon row mapping', () => {
       order('order-b', 'MR-1002', null),
     ];
 
-    expect(ordersFromRows(rows, [], products).map((item) => item.shipping.region)).toEqual([
+    expect(ordersFromRows(rows, [], products).map((item) => item.shipping?.region)).toEqual([
       'Rhode Island',
       '',
     ]);
@@ -183,6 +183,7 @@ function order(id: string, reference: string, clientId: string | null): OrderRec
     contact_name: 'Avery Cole',
     contact_email: 'avery.persona@marlow.shop',
     contact_phone: '5550101',
+    delivery: 'ship',
     ship_line1: '1 Loom',
     ship_city: 'Providence',
     ship_region: null,

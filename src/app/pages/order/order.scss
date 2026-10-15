@@ -173,6 +173,13 @@
   }
 }
 
+// The shop's hours, under its address.
+.facts__note {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: var(--text-sm);
+}
+
 // The guest's way to cancel: there is no button, so it reads as a quiet note.
 .guest-cancel {
   max-width: 44rem;

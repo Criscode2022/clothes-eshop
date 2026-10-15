@@ -4,7 +4,7 @@ import { StockLimitError, addLine, changeQuantity } from './cart';
 import type { CartLine } from './cart';
 import { CatalogStore } from './catalog-store';
 import { quoteOrder } from './checkout';
-import type { OrderQuote } from './checkout';
+import type { DeliveryMethod, OrderQuote } from './checkout';
 
 export interface BagLine extends CartLine {
   readonly name: string;
@@ -29,8 +29,8 @@ export class Bag {
   readonly noticeMessage = this.notice.asReadonly();
   readonly count = computed(() => this.lines().reduce((sum, line) => sum + line.quantity, 0));
   readonly detailed = computed(() => this.describe(this.lines()));
-  /** What the bag costs now, or null when it is empty or a line no longer fits the floor. */
-  readonly quote = computed(() => this.quoteLines(this.lines()));
+  /** What the bag costs shipped, or null when it is empty or a line no longer fits the floor. */
+  readonly quote = computed(() => this.quoteFor('ship'));
 
   /** Adds one of a size. A refusal is also left in the notice so the page can say why. */
   add(productId: string, variantId: string): AddOutcome {
@@ -89,12 +89,14 @@ export class Bag {
     return { added: false, reason };
   }
 
-  private quoteLines(lines: readonly CartLine[]): OrderQuote | null {
+  /** What the bag costs reaching the client this way; read inside a computed, it follows the bag. */
+  quoteFor(delivery: DeliveryMethod): OrderQuote | null {
+    const lines = this.lines();
     if (lines.length === 0) {
       return null;
     }
     try {
-      return quoteOrder(lines, this.catalog.pieces());
+      return quoteOrder(lines, this.catalog.pieces(), delivery);
     } catch {
       // A line the floor can no longer fill shows in the bag; checkout waits until it is fixed.
       return null;

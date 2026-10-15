@@ -1,7 +1,10 @@
 import { MARLOW_ACCOUNT, SANDBOX_BANK } from '../app/shop/bank-transfer';
 import { addressLines, paymentLabel } from '../app/shop/checkout';
 import type { ShopOrder } from '../app/shop/checkout';
+import { fulfillmentNote } from '../app/shop/fulfillment';
+import type { Fulfillment } from '../app/shop/fulfillment';
 import { formatMoney } from '../app/shop/money';
+import { PICKUP_POINT } from '../app/shop/pickup-point';
 
 /** One message, ready for any mailer: the HTML part and the plain-text part say the same thing. */
 export interface Email {
@@ -43,7 +46,8 @@ export function orderPlacedEmail(
   const payment = transfer
     ? `${paymentLabel(order.paymentMethod)}, pending until the transfer arrives. No card was taken.`
     : `${paymentLabel(order.paymentMethod)}. No card was taken.`;
-  const address = [order.contact.name, ...addressLines(order.shipping)];
+  const place = handoverOf(order);
+  const placeNote = order.delivery === 'pickup' ? `${place.note} ${READY_EMAIL_NOTE}` : '';
   const lines = order.lines.map((line) => ({
     name: line.name,
     detail: `${line.color}, size ${line.size}, ${line.quantity} × ${formatMoney(line.unitPriceCents)}`,
@@ -57,12 +61,13 @@ export function orderPlacedEmail(
     ...lines.map((line) => `${line.name}: ${line.detail}, ${line.price}`),
     '',
     `Subtotal: ${formatMoney(order.subtotalCents)}`,
-    `Shipping: ${shipping}`,
+    `${shippingRowOf(order)}: ${shipping}`,
     `Total: ${formatMoney(order.totalCents)}`,
     '',
     `Payment: ${payment}`,
     ...(transfer ? ['', ...transfer.text, ''] : []),
-    `Delivery to: ${address.join(', ')}`,
+    `${place.heading}: ${place.lines.join(', ')}`,
+    ...(placeNote ? [placeNote] : []),
     '',
     'Keep the reference: it is how the shop finds your order.',
     `See your order: ${orderUrl}`,
@@ -79,7 +84,7 @@ export function orderPlacedEmail(
     .join('');
   const totals = [
     ['Subtotal', formatMoney(order.subtotalCents)],
-    ['Shipping', shipping],
+    [shippingRowOf(order), shipping],
   ]
     .map(
       ([label, value]) => `<tr>
@@ -110,7 +115,52 @@ export function orderPlacedEmail(
         </table>
         <p style="${P}margin-top:24px"><strong style="font-weight:500">Payment</strong><br>${escape(payment)}</p>
         ${transfer?.html ?? ''}
-        <p style="${P}"><strong style="font-weight:500">Delivery to</strong><br>${address.map(escape).join('<br>')}</p>`,
+        ${handoverHtml(place, placeNote)}`,
+      action: { label: 'See your order', href: orderUrl },
+      footnote: 'Keep the reference: it is how the shop finds your order.',
+    }),
+  };
+}
+
+/** The steps a client hears about by email: when to expect the parcel, and when to come for the order. */
+const PROGRESS_NEWS: Partial<Record<Fulfillment, string>> = {
+  shipped: 'is on its way',
+  ready: 'is ready to pick up',
+};
+
+/** "On its way" or "Ready to pick up", or null for a step that needs no email. */
+export function orderProgressEmail(order: ShopOrder, shopUrl: string): Email | null {
+  const news = PROGRESS_NEWS[order.fulfillment];
+  if (!news) {
+    return null;
+  }
+  const orderUrl = `${shopUrl}/order/${encodeURIComponent(order.reference)}`;
+  const heading = `Your order ${news}`;
+  const note = fulfillmentNote(order);
+  const place = handoverOf(order);
+  const payment = paymentDueOf(order);
+  return {
+    to: order.contact.email,
+    subject: `Your Marlow order ${order.reference} ${news}`,
+    text: [
+      `${heading}.`,
+      '',
+      note,
+      '',
+      `${place.heading}: ${place.lines.join(', ')}`,
+      ...(place.note ? [place.note] : []),
+      '',
+      payment,
+      '',
+      `See your order: ${orderUrl}`,
+    ].join('\n'),
+    html: layout({
+      preheader: note,
+      heading: `${heading}.`,
+      body: `
+        <p style="${P}">${escape(note)}</p>
+        ${handoverHtml(place, place.note)}
+        <p style="${P}"><strong style="font-weight:500">Payment</strong><br>${escape(payment)}</p>`,
       action: { label: 'See your order', href: orderUrl },
       footnote: 'Keep the reference: it is how the shop finds your order.',
     }),
@@ -237,6 +287,58 @@ const HAIRLINE = '#e3e3e1';
 const SURFACE = '#f5f5f4';
 const P = 'margin:0 0 16px;';
 const CELL = `padding:12px 0;border-bottom:1px solid ${HAIRLINE};vertical-align:top;`;
+
+const READY_EMAIL_NOTE = 'We email you when it is ready to pick up.';
+
+interface Handover {
+  /** "Ship to" or "Pick up at". */
+  readonly heading: string;
+  readonly lines: readonly string[];
+  /** The shop's hours, for an order picked up there. */
+  readonly note: string;
+}
+
+/** Where the order goes: the client's address, or the shop's counter. */
+function handoverOf(order: ShopOrder): Handover {
+  if (order.shipping) {
+    return {
+      heading: 'Ship to',
+      lines: [order.contact.name, ...addressLines(order.shipping)],
+      note: '',
+    };
+  }
+  return {
+    heading: 'Pick up at',
+    lines: [PICKUP_POINT.name, ...PICKUP_POINT.lines],
+    note: `${PICKUP_POINT.hours}.`,
+  };
+}
+
+function handoverHtml(place: Handover, note: string): string {
+  const lines = place.lines.map(escape).join('<br>');
+  const after = note ? `<br><span style="color:${MUTED}">${escape(note)}</span>` : '';
+  return `<p style="${P}"><strong style="font-weight:500">${escape(place.heading)}</strong><br>${lines}${after}</p>`;
+}
+
+/** The totals row that ships the order, or says picking it up costs nothing. */
+function shippingRowOf(order: ShopOrder): string {
+  return order.delivery === 'pickup' ? 'Pick up' : 'Shipping';
+}
+
+/** What is left to pay when the order arrives or is picked up, and how. */
+function paymentDueOf(order: ShopOrder): string {
+  const total = formatMoney(order.totalCents);
+  switch (order.paymentMethod) {
+    case 'shop-floor':
+      return `Pay at the shop: ${total}, at the counter.`;
+    case 'cash-on-delivery':
+      return `Cash when it arrives: have ${total} ready for the carrier.`;
+    case 'bank-transfer':
+      return order.paidAt
+        ? 'Bank transfer, paid.'
+        : 'Bank transfer, pending until the transfer arrives.';
+  }
+}
 
 /** Where to send the money, and the simulated bank that sends it. Both are fictional, and the email says so. */
 function transferInstructions(order: ShopOrder, url: string): { text: string[]; html: string } {

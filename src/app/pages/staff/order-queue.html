@@ -80,6 +80,7 @@
           <tr hlmTr>
             <th hlmTh scope="col">Order</th>
             <th hlmTh scope="col">Client</th>
+            <th hlmTh scope="col">Delivery</th>
             <th hlmTh scope="col" class="numeric">Pieces</th>
             <th hlmTh scope="col" class="numeric">Total</th>
             <th hlmTh scope="col">Payment</th>
@@ -108,6 +109,14 @@
                   <span class="muted">Account</span>
                 } @else {
                   <span class="muted">Guest</span>
+                }
+              </td>
+              <td hlmTd>
+                <span class="client">{{ deliveryName(order.delivery) }}</span>
+                @if (order.shipping; as shipping) {
+                  <span class="muted">{{ shipping.city }}, {{ shipping.country }}</span>
+                } @else {
+                  <span class="muted">At the counter</span>
                 }
               </td>
               <td hlmTd class="numeric">{{ pieceCount(order) }}</td>
@@ -181,10 +190,10 @@
             </tr>
             @if (openReference() === order.reference) {
               <tr class="details" [id]="'lines-' + order.reference">
-                <td hlmTd colspan="7">
+                <td hlmTd colspan="8">
                   <div class="details__grid">
                     <div>
-                      <h3 class="details__title">To pick</h3>
+                      <h3 class="details__title">To prepare</h3>
                       <ul class="details__lines" role="list">
                         @for (line of order.lines; track line.variantId) {
                           <li>
@@ -194,15 +203,25 @@
                         }
                       </ul>
                     </div>
-                    <div>
-                      <h3 class="details__title">Ship to</h3>
-                      <p>
-                        {{ order.contact.name }}
-                        @for (line of addressLines(order.shipping); track $index) {
-                          <br />{{ line }}
-                        }
-                      </p>
-                    </div>
+                    @if (order.shipping; as shipping) {
+                      <div>
+                        <h3 class="details__title">Ship to</h3>
+                        <p>
+                          {{ order.contact.name }}
+                          @for (line of addressLines(shipping); track $index) {
+                            <br />{{ line }}
+                          }
+                        </p>
+                      </div>
+                    } @else {
+                      <div>
+                        <h3 class="details__title">Pick up</h3>
+                        <p>
+                          {{ order.contact.name }} picks it up at the counter, giving the reference
+                          {{ order.reference }}.
+                        </p>
+                      </div>
+                    }
                     <div>
                       <h3 class="details__title">Contact</h3>
                       <p>

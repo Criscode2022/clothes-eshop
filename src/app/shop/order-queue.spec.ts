@@ -1,12 +1,13 @@
-import type { Fulfillment, ShopOrder } from './checkout';
-import { fulfillmentName, fulfillmentTrack } from './checkout';
-import { ordersInView, queueCounts } from './order-queue';
+import type { ShopOrder } from './checkout';
+import type { Fulfillment } from './fulfillment';
+import { QUEUE_VIEWS, ordersInView, queueCounts } from './order-queue';
 
 function order(reference: string, name: string, fulfillment: Fulfillment): ShopOrder {
   return {
     reference,
     clientId: null,
     contact: { name, email: `${name.split(' ')[0]?.toLowerCase()}@example.com`, phone: '5550148' },
+    delivery: 'ship',
     shipping: {
       line1: '12 Loom Street',
       city: 'Providence',
@@ -26,27 +27,44 @@ function order(reference: string, name: string, fulfillment: Fulfillment): ShopO
 }
 
 const book = [
-  order('MR-1001', 'Ada Lovelace', 'completed'),
+  order('MR-1001', 'Ada Lovelace', 'delivered'),
   order('MR-1002', 'Avery Cole', 'placed'),
-  order('MR-1003', 'Noah Pell', 'picking'),
+  order('MR-1003', 'Noah Pell', 'preparing'),
   order('MR-1004', 'Grace Hopper', 'cancelled'),
-  order('MR-1005', 'Avery Cole', 'ready'),
+  order('MR-1005', 'Avery Cole', 'shipped'),
+  { ...order('MR-1006', 'Joan Clarke', 'ready'), delivery: 'pickup' as const, shipping: null },
 ];
 
 describe('desk order queue', () => {
   it('counts the open orders and each state', () => {
     expect(queueCounts(book)).toEqual({
-      open: 3,
+      open: 4,
       placed: 1,
-      picking: 1,
+      preparing: 1,
+      shipped: 1,
       ready: 1,
-      completed: 1,
+      delivered: 1,
+      'picked-up': 0,
       cancelled: 1,
     });
   });
 
-  it('shows open orders newest first', () => {
+  it('names a view for each state, after the open orders', () => {
+    expect(QUEUE_VIEWS.map((view) => view.label)).toEqual([
+      'Open',
+      'Order placed',
+      'Being prepared',
+      'On its way',
+      'Ready to pick up',
+      'Delivered',
+      'Picked up',
+      'Cancelled',
+    ]);
+  });
+
+  it('shows open orders newest first, a parcel on its way among them', () => {
     expect(ordersInView(book, 'open', '').map((item) => item.reference)).toEqual([
+      'MR-1006',
       'MR-1005',
       'MR-1003',
       'MR-1002',
@@ -62,24 +80,6 @@ describe('desk order queue', () => {
     expect(ordersInView(book, 'open', ' mr-1003 ').map((item) => item.reference)).toEqual([
       'MR-1003',
     ]);
-    expect(ordersInView(book, 'completed', 'avery')).toEqual([]);
-  });
-});
-
-describe('fulfillment track', () => {
-  it('marks the steps behind, at, and ahead of an order', () => {
-    expect(fulfillmentTrack('picking')).toEqual([
-      { state: 'placed', label: 'Placed', status: 'done' },
-      { state: 'picking', label: 'Picking', status: 'current' },
-      { state: 'ready', label: 'Ready', status: 'upcoming' },
-      { state: 'completed', label: 'Completed', status: 'upcoming' },
-    ]);
-    expect(fulfillmentTrack('completed').every((step) => step.status !== 'upcoming')).toBe(true);
-  });
-
-  it('has no track for a cancelled order, only its name', () => {
-    expect(fulfillmentTrack('cancelled')).toEqual([]);
-    expect(fulfillmentName('cancelled')).toBe('Cancelled');
-    expect(fulfillmentName('ready')).toBe('Ready');
+    expect(ordersInView(book, 'delivered', 'avery')).toEqual([]);
   });
 });
