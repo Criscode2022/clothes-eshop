@@ -285,6 +285,7 @@ describe('shop routes', () => {
     expect(header().textContent).not.toContain('Avery Cole');
     expect(header().querySelector('a[href="/sign-in"]')).not.toBeNull();
     expect(document.activeElement).toBe(header().querySelector('a[href="/sign-in"]'));
+    expect(document.querySelector('.toast--quiet')?.textContent).toContain('Signed out.');
   });
 
   it('gives staff their desk in the header instead of client orders', async () => {

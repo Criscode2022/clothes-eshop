@@ -145,8 +145,8 @@ describe('account pages', () => {
     await click(fixture, 'Sign in');
 
     expect(neon.calls).toEqual(['sign-in ada@example.com my-password']);
-    expect(shopCalls).toEqual(['POST /api/session/neon']);
-    expect(TestBed.inject(Router).url).toBe('/account');
+    expect(shopCalls).toEqual(['POST /api/session/neon', 'GET /api/orders']);
+    expect(TestBed.inject(Router).url).toBe('/account/orders');
     expect(TestBed.inject(ShopSession).current()?.name).toBe('Ada Lovelace');
   });
 

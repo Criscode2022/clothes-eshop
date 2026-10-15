@@ -8,6 +8,7 @@ import { Bag } from '../shop/bag';
 import { BagDrawer } from '../shop/bag-drawer';
 import { BagPersistence } from '../shop/bag-persistence';
 import { ShopClient } from '../shop/shop-client';
+import { ShopNotice } from '../shop/shop-notice';
 import { BagPanel } from './bag-panel/bag-panel';
 import { PageLoading } from './page-loading';
 import { SiteFooter } from './site-footer';
@@ -24,6 +25,7 @@ export class Shell {
   private readonly main = viewChild.required<ElementRef<HTMLElement>>('main');
   protected readonly bag = inject(Bag);
   protected readonly drawer = inject(BagDrawer);
+  protected readonly notice = inject(ShopNotice);
 
   constructor() {
     const router = inject(Router);
@@ -59,6 +61,10 @@ export class Shell {
 
   protected dismissNotice(): void {
     this.bag.clearNotice();
+  }
+
+  protected dismissShopNotice(): void {
+    this.notice.dismiss();
   }
 
   private focusMain(): void {

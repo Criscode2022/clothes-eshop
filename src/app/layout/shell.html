@@ -22,11 +22,25 @@
   <app-bag-panel />
 }
 
-<div class="toast-region" role="status">
+<div class="toast-region">
   @if (bag.noticeMessage(); as notice) {
-    <p class="toast" animate.enter="line-enter" animate.leave="line-leave">
+    <p class="toast" role="status" animate.enter="line-enter" animate.leave="line-leave">
       <span>{{ notice }}</span>
       <button type="button" class="toast__close" (click)="dismissNotice()">
+        <ng-icon name="lucideX" />
+        <span class="sr-only">Dismiss</span>
+      </button>
+    </p>
+  }
+  @if (notice.text(); as note) {
+    <p
+      class="toast toast--quiet"
+      role="status"
+      animate.enter="line-enter"
+      animate.leave="line-leave"
+    >
+      <span>{{ note }}</span>
+      <button type="button" class="toast__close" (click)="dismissShopNotice()">
         <ng-icon name="lucideX" />
         <span class="sr-only">Dismiss</span>
       </button>

@@ -12,6 +12,7 @@ import type { Product } from './catalog';
 import { CatalogStore } from './catalog-store';
 import { NeonAuth } from './neon-auth';
 import { SavedSession } from './saved-session';
+import { ShopNotice } from './shop-notice';
 import { ShopSession } from './shop-session';
 
 export interface PlaceOrderBody {
@@ -35,6 +36,7 @@ export class ShopClient {
   private readonly catalog = inject(CatalogStore);
   private readonly neon = inject(NeonAuth);
   private readonly saved = inject(SavedSession);
+  private readonly notice = inject(ShopNotice);
   private readonly document = inject(DOCUMENT);
   private resumed: Promise<void> | null = null;
 
@@ -62,6 +64,7 @@ export class ShopClient {
     this.session.clear();
     this.saved.forget();
     await this.signOutOfNeon();
+    this.notice.show('Signed out.');
   }
 
   /** The session carries the name, so the server answers with one under the new name. */

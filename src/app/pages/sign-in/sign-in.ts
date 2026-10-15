@@ -10,8 +10,9 @@ import { ShopClient } from '../../shop/shop-client';
 import { ShopButtonImports } from '../../ui/shop-button';
 import { TextField } from '../../ui/text-field';
 
+/** Where a person lands once they are in: their own orders. */
 const LANDING: Record<ShopRole, string> = {
-  client: '/account',
+  client: '/account/orders',
   worker: '/desk',
   owner: '/owner',
 };
