@@ -81,10 +81,7 @@ import { TextField } from '../../ui/text-field';
               Send the link
             }
           </button>
-          <p class="note">
-            Floor accounts share the password <code>marlow-floor</code> and cannot be reset.
-            <a routerLink="/sign-in">Back to sign in</a>
-          </p>
+          <p class="note"><a routerLink="/sign-in">Back to sign in</a></p>
         </form>
       }
     </div>

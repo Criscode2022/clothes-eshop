@@ -5,8 +5,8 @@ const SESSION_KEY = 'marlow.session';
 
 /**
  * Keeps this browser's shop session across reloads. The token is signed by the shop's server, which
- * checks it again on every request; its prefix says whether Neon Auth can vouch for the person once it
- * runs out, so guests and floor accounts never load the Neon Auth SDK.
+ * checks it again on every request. Only a browser that saved one asks Neon Auth once it runs out, so
+ * guests never load the Neon Auth SDK.
  */
 @Service()
 export class SavedSession {

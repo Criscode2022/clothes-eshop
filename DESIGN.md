@@ -273,7 +273,7 @@ An outlined Spartan badge holding a small dot and the state's name: Placed in In
 ### Details and lists
 
 - **Accordion:** the product's Cloth and care (open) and Fit, as Spartan accordion items at label size, the chevron turning with the panel.
-- **Items:** the floor accounts on sign-in and the client's orders are outlined Spartan items that darken their border on hover and nudge their chevron.
+- **Items:** the client's orders are outlined Spartan items that darken their border on hover and nudge their chevron.
 - **Tables:** the desk and backoffice use Spartan's table parts at the condensed data width, with an Ink Black rule under the header and a Fitting-Room Grey picking list under an opened order.
 
 ## Do's and Don'ts

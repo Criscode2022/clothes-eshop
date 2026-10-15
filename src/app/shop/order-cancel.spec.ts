@@ -1,7 +1,7 @@
 import type { Actor } from './access';
 import { canBeCancelled } from './checkout';
 import { cancelOrder, listCatalog, moveFulfillment, placeOrder, resetShop } from './order-book';
-import { FLOOR_PASSWORD_HINT, handleShopHttp, resetShopServer } from './shop-server';
+import { handleShopHttp, openSession, resetShopServer } from './shop-server';
 
 const avery: Actor = {
   id: '8a1c1a10-0000-4000-8000-000000000001',
@@ -106,14 +106,8 @@ describe('cancelling an order', () => {
 describe('POST /api/orders/:reference/cancel', () => {
   beforeEach(() => resetShopServer());
 
-  function tokenFor(email: string): string {
-    const result = handleShopHttp(
-      'POST',
-      '/api/session',
-      { email, password: FLOOR_PASSWORD_HINT },
-      null,
-    );
-    return `Bearer ${(result.body as { token: string }).token}`;
+  function signedInAs(actor: Actor): string {
+    return `Bearer ${openSession(actor).token}`;
   }
 
   it('cancels the signed-in client’s order, and answers 403 without a session', () => {
@@ -124,9 +118,9 @@ describe('POST /api/orders/:reference/cancel', () => {
       status: 403,
       body: { message: 'Sign in to cancel an order.' },
     });
-    expect(handleShopHttp('POST', path, {}, tokenFor('noah@marlow.shop')).status).toBe(400);
+    expect(handleShopHttp('POST', path, {}, signedInAs(noah)).status).toBe(400);
 
-    const cancelled = handleShopHttp('POST', path, {}, tokenFor('avery@marlow.shop'));
+    const cancelled = handleShopHttp('POST', path, {}, signedInAs(avery));
 
     expect(cancelled.status).toBe(200);
     expect((cancelled.body as { fulfillment: string }).fulfillment).toBe('cancelled');

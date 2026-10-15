@@ -2,8 +2,7 @@ import type { Actor } from './access';
 import { handleAccountHttp } from './account-server';
 import type { AccountDirectory, AccountServerDeps, FreshSignIn } from './account-server';
 import { listOrders, placeOrder } from './order-book';
-import { accountKindOf } from './session-tokens';
-import { FLOOR_PASSWORD_HINT, handleShopHttp, openSession, resetShopServer } from './shop-server';
+import { handleShopHttp, openSession, resetShopServer } from './shop-server';
 
 const ADA: Actor = {
   id: '5b0e1c2d-3e4f-4a5b-8c6d-7e8f9a0b1c2d',
@@ -44,33 +43,28 @@ function neonSession(actor: Actor = ADA): string {
   return `Bearer ${openSession(actor).token}`;
 }
 
-function floorSession(email = 'avery@marlow.shop'): string {
-  const result = handleShopHttp(
-    'POST',
-    '/api/session',
-    { email, password: FLOOR_PASSWORD_HINT },
-    null,
-  );
-  return `Bearer ${(result.body as { token: string }).token}`;
-}
-
 describe('shop sessions', () => {
   beforeEach(() => resetShopServer());
 
   it('tells a reloaded page whose saved session it holds', () => {
-    const floor = floorSession();
     const neon = neonSession();
 
-    expect(handleShopHttp('GET', '/api/session', null, floor).body).toEqual({
-      token: floor.slice('Bearer '.length),
-      actor: expect.objectContaining({ name: 'Avery Cole', role: 'client' }),
-    });
     expect(handleShopHttp('GET', '/api/session', null, neon).body).toEqual({
       token: neon.slice('Bearer '.length),
       actor: ADA,
     });
-    expect(accountKindOf(floor.slice('Bearer '.length))).toBe('floor');
-    expect(accountKindOf(neon.slice('Bearer '.length))).toBe('neon');
+  });
+
+  it('no longer signs anyone in to the retired floor accounts', () => {
+    const result = handleShopHttp(
+      'POST',
+      '/api/session',
+      { email: 'sloan@marlow.shop', password: 'marlow-floor' },
+      null,
+    );
+
+    expect(result.status).toBe(404);
+    expect(result.body).not.toHaveProperty('token');
   });
 
   it('says when a saved session has ended or was never the shop own', () => {
@@ -119,26 +113,6 @@ describe('account requests', () => {
       status: 400,
       body: { message: 'Enter your name, at least 2 letters.' },
     });
-  });
-
-  it('keeps the shared floor accounts as they are', async () => {
-    const rename = await handleAccountHttp(
-      'PATCH',
-      '/api/account',
-      { name: 'Someone' },
-      floorSession(),
-      deps(),
-    );
-    const remove = await handleAccountHttp(
-      'DELETE',
-      '/api/account',
-      { token: 'fresh-jwt' },
-      floorSession(),
-      deps(),
-    );
-
-    expect(rename?.status).toBe(403);
-    expect(remove?.status).toBe(403);
   });
 
   it('says plainly when the shop has no database to change accounts in', async () => {

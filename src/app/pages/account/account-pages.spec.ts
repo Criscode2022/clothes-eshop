@@ -15,12 +15,7 @@ import { handleAccountHttp } from '../../shop/account-server';
 import type { AccountDirectory } from '../../shop/account-server';
 import { NeonAuth } from '../../shop/neon-auth';
 import { ShopClient } from '../../shop/shop-client';
-import {
-  FLOOR_PASSWORD_HINT,
-  handleShopHttp,
-  openSession,
-  resetShopServer,
-} from '../../shop/shop-server';
+import { handleShopHttp, openSession, resetShopServer } from '../../shop/shop-server';
 import { ShopSession } from '../../shop/shop-session';
 
 const ADA: Actor = {
@@ -78,12 +73,14 @@ class Directory implements AccountDirectory {
 describe('account pages', () => {
   let neon: FakeNeonAuth;
   let directory: Directory;
+  let shopCalls: string[];
 
   const api: HttpInterceptorFn = (req, next) => {
     const url = new URL(req.url, 'http://marlow.test');
     if (!url.pathname.startsWith('/api/')) {
       return next(req);
     }
+    shopCalls.push(`${req.method} ${url.pathname}`);
     if (url.pathname === '/api/session/neon') {
       // The real server asks the Data API; here only the fake's token is a Marlow account.
       const token = (req.body as { token?: unknown } | null)?.token;
@@ -116,9 +113,10 @@ describe('account pages', () => {
     localStorage.clear();
     neon = new FakeNeonAuth();
     directory = new Directory();
+    shopCalls = [];
   });
 
-  async function render(url: string, signIn?: 'neon' | 'floor'): Promise<ComponentFixture<App>> {
+  async function render(url: string, signIn?: 'neon'): Promise<ComponentFixture<App>> {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
@@ -133,27 +131,23 @@ describe('account pages', () => {
       const { token } = openSession(ADA);
       session.adopt(ADA, token);
     }
-    if (signIn === 'floor') {
-      const result = handleShopHttp(
-        'POST',
-        '/api/session',
-        { email: 'avery@marlow.shop', password: FLOOR_PASSWORD_HINT },
-        null,
-      );
-      const body = result.body as { token: string; actor: Actor };
-      session.adopt(body.actor, body.token);
-    }
     await go(fixture, url);
     return fixture;
   }
 
-  it('shows a floor account read-only, with no password or delete controls', async () => {
-    await render('/account', 'floor');
+  it('signs in through Neon Auth alone, with no shared accounts on the page', async () => {
+    const fixture = await render('/sign-in');
+    expect(document.body.textContent).not.toContain('Floor accounts');
+    expect(document.body.textContent).not.toContain('marlow-floor');
 
-    expect(document.body.textContent).toContain('Your account');
-    expect(document.body.textContent).toContain('shared floor account');
-    expect(document.getElementById('account-name')).toBeNull();
-    expect(buttonNamed('Delete account')).toBeUndefined();
+    await typeInto(fixture, 'sign-in-email', 'ada@example.com');
+    await typeInto(fixture, 'sign-in-password', 'my-password');
+    await click(fixture, 'Sign in');
+
+    expect(neon.calls).toEqual(['sign-in ada@example.com my-password']);
+    expect(shopCalls).toEqual(['POST /api/session/neon']);
+    expect(TestBed.inject(Router).url).toBe('/account');
+    expect(TestBed.inject(ShopSession).current()?.name).toBe('Ada Lovelace');
   });
 
   it('saves a new name and shows it at once', async () => {
@@ -258,14 +252,14 @@ describe('account pages', () => {
       expect(neon.calls).toEqual([]);
     });
 
-    it('keeps a floor account signed in', async () => {
-      await render('/');
-      await TestBed.inject(ShopClient).signIn('avery@marlow.shop', FLOOR_PASSWORD_HINT);
+    it('lets go of a session saved for one of the retired floor accounts', async () => {
+      localStorage.setItem('marlow.session', 'floor_eyJhY3RvciI6e319.c2lnbmF0dXJl');
 
       await render('/account');
 
-      expect(TestBed.inject(Router).url).toBe('/account');
-      expect(TestBed.inject(ShopSession).current()?.name).toBe('Avery Cole');
+      expect(TestBed.inject(Router).url).toBe('/sign-in');
+      expect(TestBed.inject(ShopSession).isSignedIn()).toBe(false);
+      expect(localStorage.getItem('marlow.session')).toBeNull();
     });
 
     it('asks Neon Auth again once the saved session has run out', async () => {

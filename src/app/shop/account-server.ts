@@ -1,6 +1,6 @@
 import type { Actor } from './access';
 import { unlinkClientOrders } from './order-book';
-import { openSession, sessionOf } from './shop-server';
+import { actorOf, openSession } from './shop-server';
 import type { ShopHttpResult } from './shop-server';
 
 /** Where real (Neon) accounts live. The Node server reaches it through the database; the browser never does. */
@@ -53,7 +53,7 @@ async function rename(
   authorization: string | null,
   deps: AccountServerDeps,
 ): Promise<ShopHttpResult> {
-  const gate = realAccount(authorization, deps, 'change');
+  const gate = signedInAccount(authorization, deps, 'change');
   if ('refusal' in gate) {
     return gate.refusal;
   }
@@ -72,7 +72,7 @@ async function remove(
   authorization: string | null,
   deps: AccountServerDeps,
 ): Promise<ShopHttpResult> {
-  const gate = realAccount(authorization, deps, 'delete');
+  const gate = signedInAccount(authorization, deps, 'delete');
   if ('refusal' in gate) {
     return gate.refusal;
   }
@@ -94,25 +94,20 @@ type AccountGate =
   | { readonly refusal: ShopHttpResult }
   | { readonly actor: Actor; readonly directory: AccountDirectory };
 
-/** Only a signed-in real account, in a shop with a database, may change itself. */
-function realAccount(
+/** Only a signed-in account, in a shop with a database, may change itself. */
+function signedInAccount(
   authorization: string | null,
   deps: AccountServerDeps,
   action: 'change' | 'delete',
 ): AccountGate {
-  const session = sessionOf(authorization);
-  if (!session) {
+  const actor = actorOf(authorization);
+  if (!actor) {
     return { refusal: problem(401, `Sign in to ${action} your account.`) };
-  }
-  if (session.kind === 'floor') {
-    return {
-      refusal: problem(403, 'Floor accounts are shared demo people. They stay as they are.'),
-    };
   }
   if (!deps.directory) {
     return { refusal: problem(503, `The shop needs its database to ${action} an account.`) };
   }
-  return { actor: session.actor, directory: deps.directory };
+  return { actor, directory: deps.directory };
 }
 
 function readField(body: unknown, key: string): string {

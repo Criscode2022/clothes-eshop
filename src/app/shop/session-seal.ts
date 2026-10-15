@@ -1,30 +1,24 @@
 import { createHmac, hkdfSync, randomBytes, timingSafeEqual } from 'node:crypto';
 import type { Actor, ShopRole } from './access';
-import { accountKindOf } from './session-tokens';
-import type { AccountKind } from './session-tokens';
-
-const HOUR_MS = 60 * 60_000;
 
 /**
- * How long a session lasts. A Neon session ends sooner: the browser then asks Neon Auth again, so a
- * changed role or a signed-out device catches up within hours. Floor accounts are fixed demo people.
+ * A Neon session ends after 12 hours; the browser then asks Neon Auth again, so a changed role or a
+ * signed-out device catches up within hours.
  */
-const LIFETIME_MS: Record<AccountKind, number> = {
-  floor: 7 * 24 * HOUR_MS,
-  neon: 12 * HOUR_MS,
-};
+const LIFETIME_MS = 12 * 60 * 60_000;
+
+/**
+ * Every session is a Neon account's. Tokens signed for the retired floor accounts start with `floor_`,
+ * so they no longer read, even before they run out.
+ */
+const PREFIX = 'neon_';
 
 const ROLES: readonly ShopRole[] = ['client', 'worker', 'owner'];
 
-export interface SessionClaims {
-  readonly actor: Actor;
-  readonly kind: AccountKind;
-}
-
 /**
- * Signs shop sessions so every server instance can read them without sharing memory: Netlify runs the
- * shop as functions that start, stop, and run side by side. A token is `<kind>_<payload>.<signature>`,
- * where the payload names the person and when the session ends, and the HMAC covers the kind too.
+ * Signs shop sessions so every server process can read them without sharing memory: a restart or a new
+ * deploy starts a fresh process. A token is `neon_<payload>.<signature>`, where the payload names the
+ * person and when the session ends, and the HMAC covers the prefix too.
  */
 export class SessionSeal {
   constructor(
@@ -32,23 +26,26 @@ export class SessionSeal {
     private readonly now: () => number = () => Date.now(),
   ) {}
 
-  issue(kind: AccountKind, actor: Actor): string {
+  issue(actor: Actor): string {
     const payload = Buffer.from(
-      JSON.stringify({ actor, expiresAt: this.now() + LIFETIME_MS[kind] }),
+      JSON.stringify({ actor, expiresAt: this.now() + LIFETIME_MS }),
     ).toString('base64url');
-    const unsigned = `${kind}_${payload}`;
+    const unsigned = `${PREFIX}${payload}`;
     return `${unsigned}.${this.sign(unsigned)}`;
   }
 
   /** The person behind a token this shop signed, or null when it is forged, from another key, or over. */
-  read(token: string): SessionClaims | null {
-    const kind = accountKindOf(token);
+  read(token: string): Actor | null {
     const dot = token.lastIndexOf('.');
-    if (!kind || dot < 0 || !this.signs(token.slice(0, dot), token.slice(dot + 1))) {
+    if (
+      !token.startsWith(PREFIX) ||
+      dot < 0 ||
+      !this.signs(token.slice(0, dot), token.slice(dot + 1))
+    ) {
       return null;
     }
-    const payload = payloadOf(token.slice(`${kind}_`.length, dot));
-    return payload && payload.expiresAt > this.now() ? { actor: payload.actor, kind } : null;
+    const payload = payloadOf(token.slice(PREFIX.length, dot));
+    return payload && payload.expiresAt > this.now() ? payload.actor : null;
   }
 
   private sign(unsigned: string): string {

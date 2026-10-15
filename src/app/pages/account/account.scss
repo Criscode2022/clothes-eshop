@@ -60,22 +60,6 @@
   color: var(--color-text-muted);
 }
 
-.facts {
-  display: grid;
-  gap: 1rem;
-  margin: 0;
-  font-size: var(--text-ui);
-
-  dt {
-    font-size: var(--text-sm);
-    font-weight: 500;
-  }
-
-  dd {
-    margin: 0.25rem 0 0;
-  }
-}
-
 .readonly {
   display: grid;
   gap: 0.25rem;

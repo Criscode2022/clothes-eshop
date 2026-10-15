@@ -1,19 +1,15 @@
 import { DOCUMENT } from '@angular/common';
 import { Service, inject } from '@angular/core';
 import type { VanillaBetterAuthClient as AuthClient } from '@neondatabase/auth';
-import { NEON_AUTH_RELAY_PATH, NEON_AUTH_URL } from './neon-public';
+import { NEON_AUTH_RELAY_PATH } from './neon-public';
 
 /**
- * Safari, and every browser on an iPhone or iPad (they all run on Safari's engine), refuses cookies from
- * another site, so it would forget Neon Auth's session on every reload.
+ * Every browser reaches Neon Auth through the shop's own domain, where its session cookie is
+ * first-party. Safari, Brave, private windows, and any browser that blocks third-party cookies refuse a
+ * cookie set by Neon Auth's own domain, so a direct sign-in succeeds and the session check after it fails.
  */
-export function isSafari(userAgent: string): boolean {
-  return /AppleWebKit\//.test(userAgent) && !/(Chrome|Chromium)\//.test(userAgent);
-}
-
-/** Safari reaches Neon Auth through the shop's own domain, where its cookie is first-party; others go direct. */
-export function neonAuthBaseUrl(origin: string, userAgent: string): string {
-  return isSafari(userAgent) ? `${origin}${NEON_AUTH_RELAY_PATH}` : NEON_AUTH_URL;
+export function neonAuthBaseUrl(origin: string): string {
+  return `${origin}${NEON_AUTH_RELAY_PATH}`;
 }
 
 /** Neon Auth answers `{ error }` instead of throwing; this turns that into an error the page can show. */
@@ -97,8 +93,7 @@ export class NeonAuth {
   }
 
   private auth(): Promise<AuthClient> {
-    const userAgent = this.document.defaultView?.navigator.userAgent ?? '';
-    this.client ??= connect(neonAuthBaseUrl(this.document.location.origin, userAgent));
+    this.client ??= connect(neonAuthBaseUrl(this.document.location.origin));
     return this.client;
   }
 }

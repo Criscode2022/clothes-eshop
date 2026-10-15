@@ -56,38 +56,6 @@
           }
         </button>
       </form>
-
-      <div class="floor" aria-labelledby="floor-title">
-        <h3 id="floor-title" class="floor__title">Floor accounts</h3>
-        <p class="floor__note">
-          Demo people who open the client, desk, and backoffice views. They share the password
-          <code>{{ floorPassword }}</code
-          >.
-        </p>
-        <ul class="floor__list" role="list">
-          @for (account of floorAccounts; track account.email) {
-            <li>
-              <button
-                hlmItem
-                variant="outline"
-                type="button"
-                class="floor__account"
-                [disabled]="signingIn()"
-                (click)="useFloorAccount(account.email)"
-              >
-                <span hlmItemContent>
-                  <span hlmItemTitle>{{ account.name }}</span>
-                  <span hlmItemDescription>{{ account.email }}</span>
-                </span>
-                <span hlmItemActions>
-                  <span hlmBadge variant="secondary">{{ opens(account.role) }}</span>
-                  <ng-icon name="lucideChevronRight" class="floor__go" />
-                </span>
-              </button>
-            </li>
-          }
-        </ul>
-      </div>
     </section>
 
     <section class="panel" aria-labelledby="create-title">

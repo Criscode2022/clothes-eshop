@@ -15,9 +15,29 @@ import { formatMoney } from './money';
 import { quoteOrder } from './checkout';
 import { SEED_PRODUCTS } from './catalog';
 import type { Product } from './catalog';
-import { FLOOR_PASSWORD_HINT, handleShopHttp, resetShopServer } from './shop-server';
+import { NeonAuth } from './neon-auth';
+import { handleShopHttp, openSession, resetShopServer } from './shop-server';
 import { ShopSession } from './shop-session';
 import type { Actor } from './access';
+
+const AVERY: Actor = {
+  id: '8a1c1a10-0000-4000-8000-000000000001',
+  role: 'client',
+  name: 'Avery Cole',
+  email: 'avery@example.com',
+};
+const JORDAN: Actor = {
+  id: '8a1c1a10-0000-4000-8000-000000000003',
+  role: 'worker',
+  name: 'Jordan Hale',
+  email: 'jordan@example.com',
+};
+const SLOAN: Actor = {
+  id: '8a1c1a10-0000-4000-8000-000000000004',
+  role: 'owner',
+  name: 'Sloan Marlow',
+  email: 'sloan@example.com',
+};
 
 const shopApiInterceptor: HttpInterceptorFn = (req, next) => {
   const url = new URL(req.url, 'http://marlow.test');
@@ -128,7 +148,7 @@ describe('shop routes', () => {
 
   it('shows a signed-in client their name, their orders, and a way to sign out', async () => {
     const { fixture } = await render('/');
-    adopt(fixture, 'avery@marlow.shop');
+    adopt(fixture, AVERY);
     await settle(fixture);
     const header = (): HTMLElement => document.querySelector('header')!;
 
@@ -146,7 +166,7 @@ describe('shop routes', () => {
 
   it('gives staff their desk in the header instead of client orders', async () => {
     const { fixture } = await render('/');
-    adopt(fixture, 'jordan@marlow.shop');
+    adopt(fixture, JORDAN);
     await settle(fixture);
     const header = document.querySelector('header')!;
 
@@ -158,7 +178,7 @@ describe('shop routes', () => {
 
   it('keeps the bag before sign out, which stands last in the header', async () => {
     const { fixture } = await render('/');
-    adopt(fixture, 'avery@marlow.shop');
+    adopt(fixture, AVERY);
     await settle(fixture);
 
     const tools = [...document.querySelectorAll('header .bar__tools > *')];
@@ -203,7 +223,7 @@ describe('shop routes', () => {
 
   it('lets a client cancel their own order from its page, after saying yes', async () => {
     const { fixture } = await render('/');
-    adopt(fixture, 'avery@marlow.shop');
+    adopt(fixture, AVERY);
     handleShopHttp(
       'POST',
       '/api/orders',
@@ -233,12 +253,7 @@ describe('shop routes', () => {
   });
 
   it("opens a signed-in client's order straight after a reload", async () => {
-    const signedIn = handleShopHttp(
-      'POST',
-      '/api/session',
-      { email: 'avery@marlow.shop', password: FLOOR_PASSWORD_HINT },
-      null,
-    ).body as { token: string };
+    const signedIn = openSession(AVERY);
     handleShopHttp('POST', '/api/orders', shirtDraft(), `Bearer ${signedIn.token}`);
     localStorage.setItem('marlow.session', signedIn.token);
 
@@ -264,13 +279,13 @@ describe('shop routes', () => {
     await go(fixture, '/desk');
     expect(document.body.textContent).toContain('closed to you');
 
-    adopt(fixture, 'avery@marlow.shop');
+    adopt(fixture, AVERY);
     await go(fixture, '/owner');
     expect(document.body.textContent).toContain('closed to you');
     await go(fixture, '/desk');
     expect(document.body.textContent).toContain('closed to you');
 
-    adopt(fixture, 'jordan@marlow.shop');
+    adopt(fixture, JORDAN);
     await go(fixture, '/owner/pieces');
     expect(document.body.textContent).toContain('closed to you');
     await go(fixture, '/desk');
@@ -279,7 +294,7 @@ describe('shop routes', () => {
     expect(document.body.textContent).toContain('On hand');
     expect(document.getElementById('piece-price')).toBeNull();
 
-    adopt(fixture, 'sloan@marlow.shop');
+    adopt(fixture, SLOAN);
     await go(fixture, '/owner');
     expect(document.body.textContent).toContain('Every order');
     await go(fixture, '/owner/pieces');
@@ -293,6 +308,7 @@ async function render(url: string): Promise<{ fixture: ComponentFixture<App> }> 
     providers: [
       provideRouter(routes, withComponentInputBinding()),
       provideHttpClient(withInterceptors([shopApiInterceptor])),
+      { provide: NeonAuth, useClass: SignedOutNeonAuth },
     ],
   });
   const fixture = TestBed.createComponent(App);
@@ -312,15 +328,18 @@ async function go(fixture: ComponentFixture<App>, url: string): Promise<void> {
   await settle(fixture);
 }
 
-function adopt(fixture: ComponentFixture<App>, email: string): void {
-  const result = handleShopHttp(
-    'POST',
-    '/api/session',
-    { email, password: FLOOR_PASSWORD_HINT },
-    null,
-  );
-  const body = result.body as { token: string; actor: Actor };
-  fixture.componentRef.injector.get(ShopSession).adopt(body.actor, body.token);
+/** Neon Auth without a network: every account is a Neon account, so signing out tells it too. */
+class SignedOutNeonAuth {
+  async signOut(): Promise<void> {}
+  async currentSessionToken(): Promise<string | null> {
+    return null;
+  }
+}
+
+/** Signed in as the server signs in a Neon account, with the role the database gave it. */
+function adopt(fixture: ComponentFixture<App>, actor: Actor): void {
+  const { token } = openSession(actor);
+  fixture.componentRef.injector.get(ShopSession).adopt(actor, token);
 }
 
 function shirtDraft() {

@@ -5,7 +5,7 @@ import { canChangePrice, canOpenArea, ordersVisibleTo } from './access';
 import type { Actor } from './access';
 import { formatMoney, shippingFor } from './money';
 import { listCatalog, listOrders, placeOrder, resetShop, setProductPrice, setVariantStock } from './order-book';
-import { FLOOR_PASSWORD_HINT, handleShopHttp, resetShopServer } from './shop-server';
+import { handleShopHttp, openSession, resetShopServer } from './shop-server';
 
 const avery: Actor = {
   id: '8a1c1a10-0000-4000-8000-000000000001',
@@ -145,7 +145,7 @@ describe('staff powers', () => {
       'POST',
       `/api/orders/${order.reference}/fulfillment`,
       { fulfillment: 'cancelled' },
-      signIn('jordan@marlow.shop'),
+      signedInAs(jordan),
     );
     expect(moved.status).toBe(200);
     expect((moved.body as { fulfillment: string }).fulfillment).toBe('cancelled');
@@ -192,17 +192,15 @@ describe('shop server', () => {
     expect(read.status).toBe(200);
     expect((read.body as { totalCents: number }).totalCents).toBe(body.totalCents);
 
-    const refused = handleShopHttp('POST', '/api/products/oxford-shirt/price', { priceCents: 100 }, signIn('jordan@marlow.shop'));
+    const refused = handleShopHttp('POST', '/api/products/oxford-shirt/price', { priceCents: 100 }, signedInAs(jordan));
     expect(refused.status).toBe(403);
 
-    const priced = handleShopHttp('POST', '/api/products/oxford-shirt/price', { priceCents: 9000 }, signIn('sloan@marlow.shop'));
+    const priced = handleShopHttp('POST', '/api/products/oxford-shirt/price', { priceCents: 9000 }, signedInAs(sloan));
     expect(priced.status).toBe(200);
     expect((priced.body as { priceCents: number }).priceCents).toBe(9000);
   });
 });
 
-function signIn(email: string): string {
-  const result = handleShopHttp('POST', '/api/session', { email, password: FLOOR_PASSWORD_HINT }, null);
-  const token = (result.body as { token: string }).token;
-  return `Bearer ${token}`;
+function signedInAs(actor: Actor): string {
+  return `Bearer ${openSession(actor).token}`;
 }

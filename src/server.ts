@@ -29,7 +29,7 @@ import {
 import { ShopMail } from './mail/shop-mail';
 
 loadLocalEnv();
-// Netlify runs this server as many short-lived instances. Each derives the same session key from the
+// A restart or a new deploy starts a fresh process. Each derives the same session key from the
 // database secret, so a session signed by one is good on the next.
 signSessionsWith(process.env['DATABASE_URL']);
 
@@ -59,9 +59,9 @@ app.post('/api/neon-auth/webhook', express.text({ type: '*/*', limit: '64kb' }),
 });
 
 /**
- * Safari refuses Neon Auth's cookie on Neon's own domain, so its auth calls come through here and the
- * session cookie becomes the shop's own. Other browsers talk to Neon Auth directly. Passwords pass
- * through on their way to Neon Auth; nothing here logs or keeps them.
+ * Every browser's Neon Auth calls come through here, so the session cookie is the shop's own: many
+ * browsers refuse a cookie set by Neon's own domain. Passwords pass through on their way to Neon Auth;
+ * nothing here logs or keeps them.
  */
 app.use(NEON_AUTH_RELAY_PATH, express.text({ type: '*/*', limit: '64kb' }), (req, res) => {
   void relayNeonAuth(neonAuthUrl, webRequestOf(req), req.path.replace(/^\//, ''))
@@ -147,7 +147,7 @@ async function serveApi(
   authorization: string | null,
 ): Promise<{ status: number; body: unknown }> {
   if (path === '/api/session') {
-    // Signing in to a floor account or reading a saved session needs no records from the branch.
+    // Reading a saved session needs no records from the branch.
     return handleShopHttp(method, path, body, authorization);
   }
   if (shopDatabaseConfigured()) {

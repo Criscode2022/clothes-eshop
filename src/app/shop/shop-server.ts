@@ -1,4 +1,4 @@
-import type { Actor, ShopRole } from './access';
+import type { Actor } from './access';
 import { ShopRuleError, StockLimitError } from './cart';
 import type { CartLine } from './cart';
 import type { ContactDetails, Fulfillment, ShippingDetails } from './checkout';
@@ -18,47 +18,6 @@ import {
 } from './order-book';
 import type { NewPiece, NewVariant } from './order-book';
 import { SessionSeal, sessionKeyFrom } from './session-seal';
-import type { SessionClaims } from './session-seal';
-
-/**
- * Floor accounts for the shop before Neon Auth is configured.
- * The password is a demo floor password, not a provider token.
- * Roles are assigned here on the server. The browser cannot pick its own role.
- */
-const FLOOR_PASSWORD = 'marlow-floor';
-
-const FLOOR_ACCOUNTS: readonly (Actor & { readonly password: string })[] = [
-  {
-    id: '8a1c1a10-0000-4000-8000-000000000001',
-    role: 'client',
-    name: 'Avery Cole',
-    email: 'avery@marlow.shop',
-    password: FLOOR_PASSWORD,
-  },
-  {
-    id: '8a1c1a10-0000-4000-8000-000000000002',
-    role: 'client',
-    name: 'Noah Pell',
-    email: 'noah@marlow.shop',
-    password: FLOOR_PASSWORD,
-  },
-  {
-    id: '8a1c1a10-0000-4000-8000-000000000003',
-    role: 'worker',
-    name: 'Jordan Hale',
-    email: 'jordan@marlow.shop',
-    password: FLOOR_PASSWORD,
-  },
-  {
-    id: '8a1c1a10-0000-4000-8000-000000000004',
-    role: 'owner',
-    name: 'Sloan Marlow',
-    email: 'sloan@marlow.shop',
-    password: FLOOR_PASSWORD,
-  },
-];
-
-export const FLOOR_PASSWORD_HINT = FLOOR_PASSWORD;
 
 /** Signs with a random key until the server hands it the secret every instance shares. */
 let seal = new SessionSeal(sessionKeyFrom(undefined));
@@ -100,10 +59,7 @@ function dispatch(
   body: unknown,
   authorization: string | null,
 ): ShopHttpResult {
-  const actor = actorFrom(authorization);
-  if (method === 'POST' && path === '/api/session') {
-    return signIn(body);
-  }
+  const actor = actorOf(authorization);
   if (method === 'GET' && path === '/api/session') {
     return savedSession(authorization);
   }
@@ -162,48 +118,27 @@ function dispatch(
   return { status: 404, body: { message: 'That shop route does not exist.' } };
 }
 
-/** Opens a session for an actor the database already accepted. The browser does not choose the role. */
+/**
+ * Opens a session for a Neon account the database already accepted. The browser does not choose the
+ * role: it comes from `app_private`.
+ */
 export function openSession(actor: Actor): { token: string; actor: Actor } {
-  return { token: seal.issue('neon', actor), actor };
+  return { token: seal.issue(actor), actor };
 }
 
-/** The person behind a request and the kind of account they signed in with, or null without a session. */
-export function sessionOf(authorization: string | null): SessionClaims | null {
+/** The person behind a request, or null without a live session. */
+export function actorOf(authorization: string | null): Actor | null {
   const token = tokenFrom(authorization);
   return token ? seal.read(token) : null;
 }
 
-/** A reloaded page asks whose session it saved; the answer is null once the session has ended. */
+/** A reloaded page asks whose session it saved; the answer is 401 once the session has ended. */
 function savedSession(authorization: string | null): ShopHttpResult {
-  const session = sessionOf(authorization);
-  if (!session) {
+  const actor = actorOf(authorization);
+  if (!actor) {
     return { status: 401, body: { message: 'That session has ended. Sign in again.' } };
   }
-  return { status: 200, body: { token: tokenFrom(authorization), actor: session.actor } };
-}
-
-function signIn(body: unknown): ShopHttpResult {
-  const record = asRecord(body);
-  const email = readString(record, 'email').toLowerCase();
-  const password = readString(record, 'password');
-  const account = FLOOR_ACCOUNTS.find((item) => item.email === email && item.password === password);
-  if (!account) {
-    return {
-      status: 401,
-      body: { message: 'That email and password do not match a floor account.' },
-    };
-  }
-  const actor: Actor = {
-    id: account.id,
-    role: account.role,
-    name: account.name,
-    email: account.email,
-  };
-  return { status: 200, body: { token: seal.issue('floor', actor), actor } };
-}
-
-function actorFrom(authorization: string | null): Actor | null {
-  return sessionOf(authorization)?.actor ?? null;
+  return { status: 200, body: { token: tokenFrom(authorization), actor } };
 }
 
 function tokenFrom(authorization: string | null): string | null {
@@ -322,8 +257,4 @@ function readInteger(record: Record<string, unknown>, key: string): number {
 
 function decode(value: string): string {
   return decodeURIComponent(value);
-}
-
-export function floorRole(email: string): ShopRole | null {
-  return FLOOR_ACCOUNTS.find((account) => account.email === email)?.role ?? null;
 }

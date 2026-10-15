@@ -11,116 +11,93 @@
         <p class="block__note">The name the shop uses on your orders and in its emails.</p>
       </div>
 
-      @if (isFloor()) {
-        <div class="block__body">
-          <dl class="facts">
-            <div>
-              <dt>Name</dt>
-              <dd>{{ me.name }}</dd>
-            </div>
-            <div>
-              <dt>Email</dt>
-              <dd>{{ me.email }}</dd>
-            </div>
-          </dl>
-          <p class="block__note">
-            This is a shared floor account for trying the shop, so its details stay as they are.
-            <a routerLink="/sign-in">Create your own account</a> to change a name or a password.
-          </p>
+      <form class="block__body" novalidate (submit)="saveName(); $event.preventDefault()">
+        @if (nameError()) {
+          <div hlmAlert variant="destructive">
+            <ng-icon name="lucideCircleAlert" />
+            <p hlmAlertDescription>{{ nameError() }}</p>
+          </div>
+        }
+        <app-text-field
+          inputId="account-name"
+          label="Name"
+          autocomplete="name"
+          [field]="nameForm.name"
+        />
+        <div class="readonly">
+          <span class="readonly__label">Email</span>
+          <span class="readonly__value">{{ me.email }}</span>
+          <span class="block__note">The email of an account cannot be changed yet.</span>
         </div>
-      } @else {
-        <form class="block__body" novalidate (submit)="saveName(); $event.preventDefault()">
-          @if (nameError()) {
-            <div hlmAlert variant="destructive">
-              <ng-icon name="lucideCircleAlert" />
-              <p hlmAlertDescription>{{ nameError() }}</p>
-            </div>
-          }
-          <app-text-field
-            inputId="account-name"
-            label="Name"
-            autocomplete="name"
-            [field]="nameForm.name"
-          />
-          <div class="readonly">
-            <span class="readonly__label">Email</span>
-            <span class="readonly__value">{{ me.email }}</span>
-            <span class="block__note">The email of an account cannot be changed yet.</span>
-          </div>
-          <div class="actions">
-            <button hlmBtn type="submit" [disabled]="savingName()" [attr.aria-busy]="savingName()">
-              @if (savingName()) {
-                <hlm-spinner aria-hidden="true" />
-                Saving
-              } @else {
-                Save name
-              }
-            </button>
-            <p class="status" role="status">{{ nameStatus() }}</p>
-          </div>
-        </form>
-      }
+        <div class="actions">
+          <button hlmBtn type="submit" [disabled]="savingName()" [attr.aria-busy]="savingName()">
+            @if (savingName()) {
+              <hlm-spinner aria-hidden="true" />
+              Saving
+            } @else {
+              Save name
+            }
+          </button>
+          <p class="status" role="status">{{ nameStatus() }}</p>
+        </div>
+      </form>
     </section>
 
-    @if (!isFloor()) {
-      <section class="block" aria-labelledby="password-title">
-        <div class="block__about">
-          <h2 id="password-title" class="block__title">Password</h2>
-          <p class="block__note">
-            At least 8 characters. Changing it signs out your other devices.
-          </p>
-        </div>
-        <form class="block__body" novalidate (submit)="changePassword(); $event.preventDefault()">
-          @if (passwordError()) {
-            <div hlmAlert variant="destructive">
-              <ng-icon name="lucideCircleAlert" />
-              <p hlmAlertDescription>{{ passwordError() }}</p>
-            </div>
-          }
-          <app-text-field
-            inputId="password-current"
-            label="Current password"
-            type="password"
-            autocomplete="current-password"
-            [field]="passwordForm.current"
-          />
-          <app-text-field
-            inputId="password-new"
-            label="New password"
-            type="password"
-            autocomplete="new-password"
-            [field]="passwordForm.next"
-          />
-          <app-text-field
-            inputId="password-confirm"
-            label="New password again"
-            type="password"
-            autocomplete="new-password"
-            [field]="passwordForm.confirm"
-          />
-          <div class="actions">
-            <button
-              hlmBtn
-              variant="outline"
-              type="submit"
-              [disabled]="savingPassword()"
-              [attr.aria-busy]="savingPassword()"
-            >
-              @if (savingPassword()) {
-                <hlm-spinner aria-hidden="true" />
-                Changing password
-              } @else {
-                Change password
-              }
-            </button>
-            <p class="status" role="status">{{ passwordStatus() }}</p>
+    <section class="block" aria-labelledby="password-title">
+      <div class="block__about">
+        <h2 id="password-title" class="block__title">Password</h2>
+        <p class="block__note">At least 8 characters. Changing it signs out your other devices.</p>
+      </div>
+      <form class="block__body" novalidate (submit)="changePassword(); $event.preventDefault()">
+        @if (passwordError()) {
+          <div hlmAlert variant="destructive">
+            <ng-icon name="lucideCircleAlert" />
+            <p hlmAlertDescription>{{ passwordError() }}</p>
           </div>
-          <p class="block__note">
-            Forgot it? <a routerLink="/forgot-password">Get a link to choose a new one</a>.
-          </p>
-        </form>
-      </section>
-    }
+        }
+        <app-text-field
+          inputId="password-current"
+          label="Current password"
+          type="password"
+          autocomplete="current-password"
+          [field]="passwordForm.current"
+        />
+        <app-text-field
+          inputId="password-new"
+          label="New password"
+          type="password"
+          autocomplete="new-password"
+          [field]="passwordForm.next"
+        />
+        <app-text-field
+          inputId="password-confirm"
+          label="New password again"
+          type="password"
+          autocomplete="new-password"
+          [field]="passwordForm.confirm"
+        />
+        <div class="actions">
+          <button
+            hlmBtn
+            variant="outline"
+            type="submit"
+            [disabled]="savingPassword()"
+            [attr.aria-busy]="savingPassword()"
+          >
+            @if (savingPassword()) {
+              <hlm-spinner aria-hidden="true" />
+              Changing password
+            } @else {
+              Change password
+            }
+          </button>
+          <p class="status" role="status">{{ passwordStatus() }}</p>
+        </div>
+        <p class="block__note">
+          Forgot it? <a routerLink="/forgot-password">Get a link to choose a new one</a>.
+        </p>
+      </form>
+    </section>
 
     @if (isClient()) {
       <section class="block" aria-labelledby="orders-title">
@@ -153,76 +130,74 @@
       </div>
     </section>
 
-    @if (!isFloor()) {
-      <section class="block block--last" aria-labelledby="delete-title">
-        <div class="block__about">
-          <h2 id="delete-title" class="block__title">Delete account</h2>
-          <p class="block__note">This cannot be undone.</p>
-        </div>
-        <div class="block__body">
-          @if (canDelete()) {
-            <p class="block__text">
-              Deleting the account removes your sign-in, your name, and your password from Marlow.
-              Orders you placed stay with the shop, so open ones still ship, but they are no longer
-              linked to an account.
-            </p>
-            <hlm-alert-dialog (stateChanged)="$event === 'closed' && forgetDeletePassword()">
-              <button hlmAlertDialogTrigger hlmBtn variant="destructive" type="button">
-                Delete account
-              </button>
-              <hlm-alert-dialog-content *hlmAlertDialogPortal="let ctx" class="confirm">
-                <hlm-alert-dialog-header>
-                  <h2 hlmAlertDialogTitle class="confirm__title">Delete your account?</h2>
-                  <p hlmAlertDialogDescription class="confirm__text">
-                    Your sign-in and your name are removed from Marlow. Orders you placed stay with
-                    the shop without a link to you.
-                  </p>
-                </hlm-alert-dialog-header>
-                <form
-                  class="confirm__form"
-                  novalidate
-                  (submit)="deleteAccount(); $event.preventDefault()"
-                >
-                  @if (deleteError()) {
-                    <div hlmAlert variant="destructive">
-                      <ng-icon name="lucideCircleAlert" />
-                      <p hlmAlertDescription>{{ deleteError() }}</p>
-                    </div>
-                  }
-                  <app-text-field
-                    inputId="delete-password"
-                    label="Your password"
-                    type="password"
-                    autocomplete="current-password"
-                    [field]="deleteForm.password"
-                  />
-                  <hlm-alert-dialog-footer class="confirm__actions">
-                    <button hlmBtn variant="outline" type="button" (click)="ctx.close()">
-                      Keep the account
-                    </button>
-                    <button
-                      hlmBtn
-                      variant="destructive"
-                      type="submit"
-                      [disabled]="deleting()"
-                      [attr.aria-busy]="deleting()"
-                    >
-                      @if (deleting()) {
-                        <hlm-spinner aria-hidden="true" />
-                        Deleting
-                      } @else {
-                        Delete account
-                      }
-                    </button>
-                  </hlm-alert-dialog-footer>
-                </form>
-              </hlm-alert-dialog-content>
-            </hlm-alert-dialog>
-          } @else {
-            <p class="block__text">Staff accounts are closed by the owner, not from this page.</p>
-          }
-        </div>
-      </section>
-    }
+    <section class="block block--last" aria-labelledby="delete-title">
+      <div class="block__about">
+        <h2 id="delete-title" class="block__title">Delete account</h2>
+        <p class="block__note">This cannot be undone.</p>
+      </div>
+      <div class="block__body">
+        @if (isClient()) {
+          <p class="block__text">
+            Deleting the account removes your sign-in, your name, and your password from Marlow.
+            Orders you placed stay with the shop, so open ones still ship, but they are no longer
+            linked to an account.
+          </p>
+          <hlm-alert-dialog (stateChanged)="$event === 'closed' && forgetDeletePassword()">
+            <button hlmAlertDialogTrigger hlmBtn variant="destructive" type="button">
+              Delete account
+            </button>
+            <hlm-alert-dialog-content *hlmAlertDialogPortal="let ctx" class="confirm">
+              <hlm-alert-dialog-header>
+                <h2 hlmAlertDialogTitle class="confirm__title">Delete your account?</h2>
+                <p hlmAlertDialogDescription class="confirm__text">
+                  Your sign-in and your name are removed from Marlow. Orders you placed stay with
+                  the shop without a link to you.
+                </p>
+              </hlm-alert-dialog-header>
+              <form
+                class="confirm__form"
+                novalidate
+                (submit)="deleteAccount(); $event.preventDefault()"
+              >
+                @if (deleteError()) {
+                  <div hlmAlert variant="destructive">
+                    <ng-icon name="lucideCircleAlert" />
+                    <p hlmAlertDescription>{{ deleteError() }}</p>
+                  </div>
+                }
+                <app-text-field
+                  inputId="delete-password"
+                  label="Your password"
+                  type="password"
+                  autocomplete="current-password"
+                  [field]="deleteForm.password"
+                />
+                <hlm-alert-dialog-footer class="confirm__actions">
+                  <button hlmBtn variant="outline" type="button" (click)="ctx.close()">
+                    Keep the account
+                  </button>
+                  <button
+                    hlmBtn
+                    variant="destructive"
+                    type="submit"
+                    [disabled]="deleting()"
+                    [attr.aria-busy]="deleting()"
+                  >
+                    @if (deleting()) {
+                      <hlm-spinner aria-hidden="true" />
+                      Deleting
+                    } @else {
+                      Delete account
+                    }
+                  </button>
+                </hlm-alert-dialog-footer>
+              </form>
+            </hlm-alert-dialog-content>
+          </hlm-alert-dialog>
+        } @else {
+          <p class="block__text">Staff accounts are closed by the owner, not from this page.</p>
+        }
+      </div>
+    </section>
   </div>
 }

@@ -36,7 +36,7 @@ The floor is the whole collection: no drops, no waiting list, no endless catalog
 - The browser never sees a connection string. Payment-provider calls and email sending never happen in browser code.
 - The Node server sends order confirmations, an "account is open" notice after sign-up, and password-reset links from the shop's Gmail account. A person can change their name and password or delete their account; the shop keeps their orders, unlinked.
 - Pieces the owner adds have no photograph until one is supplied, so every view must work without one.
-- Demo floor accounts (password `marlow-floor`) open the client, worker, and owner views: Avery Cole and Noah Pell are clients, Jordan Hale is a worker, Sloan Marlow is the owner.
+- Everyone signs in with their own Neon Auth account. The owner gives an account the worker or owner role in the database; there are no shared demo accounts.
 
 ## Brand Commitments
 

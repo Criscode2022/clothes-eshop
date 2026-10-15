@@ -8,7 +8,7 @@ const RELAYED_HEADERS = ['content-type', 'set-auth-jwt', 'set-auth-token'] as co
 
 /**
  * Relays one Neon Auth call through the shop's own domain, so the browser keeps Neon Auth's session
- * cookie as a first-party cookie. Safari refuses cookies from Neon Auth's own domain. `path` is what
+ * cookie as a first-party cookie: many browsers refuse a cookie from Neon Auth's own domain. `path` is what
  * follows `/api/auth`. Neon Auth's request handling comes from its SDK; the cookies are rewritten here.
  */
 export async function relayNeonAuth(

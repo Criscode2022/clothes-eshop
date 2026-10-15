@@ -10,7 +10,6 @@ import type { Product } from './catalog';
 import { CatalogStore } from './catalog-store';
 import { NeonAuth } from './neon-auth';
 import { SavedSession } from './saved-session';
-import { accountKindOf } from './session-tokens';
 import { ShopSession } from './shop-session';
 
 export interface PlaceOrderBody {
@@ -35,12 +34,6 @@ export class ShopClient {
   private readonly document = inject(DOCUMENT);
   private resumed: Promise<void> | null = null;
 
-  async signIn(email: string, password: string): Promise<Actor> {
-    return this.adopt(
-      await this.request<SessionResponse>('POST', '/api/session', { email, password }, false),
-    );
-  }
-
   async signInWithNeon(email: string, password: string): Promise<Actor> {
     return this.adoptNeon(await this.neonToken('sign-in', email, password));
   }
@@ -60,14 +53,11 @@ export class ShopClient {
     return this.resumed;
   }
 
-  /** The session is a signed token the browser holds, so forgetting it here is signing out. */
+  /** The session is a signed token the browser holds, so forgetting it here is signing out of the shop. */
   async signOut(): Promise<void> {
-    const neon = accountKindOf(this.session.token()) === 'neon';
     this.session.clear();
     this.saved.forget();
-    if (neon) {
-      await this.signOutOfNeon();
-    }
+    await this.signOutOfNeon();
   }
 
   /** The session carries the name, so the server answers with one under the new name. */
@@ -231,10 +221,8 @@ export class ShopClient {
       const session = await this.savedSessionOf(saved);
       if (session) {
         this.adopt(session);
-      } else if (accountKindOf(saved) === 'neon') {
-        await this.resumeNeonSession();
       } else {
-        this.saved.forget();
+        await this.resumeNeonSession();
       }
     } catch {
       // The shop or Neon Auth did not answer. The visitor stays signed out, and the next load asks again.

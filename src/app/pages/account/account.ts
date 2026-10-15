@@ -38,10 +38,8 @@ export class AccountPage {
   protected readonly session = inject(ShopSession);
 
   protected readonly person = this.session.current;
-  /** Floor accounts are shared demo people; their details stay as they are. */
-  protected readonly isFloor = computed(() => this.session.accountKind() === 'floor');
+  /** Only a client lists orders here and deletes their own account; the owner closes staff accounts. */
   protected readonly isClient = computed(() => this.person()?.role === 'client');
-  protected readonly canDelete = computed(() => !this.isFloor() && this.isClient());
 
   protected readonly nameModel = linkedSignal(() => ({ name: this.person()?.name ?? '' }));
   protected readonly nameForm = form(this.nameModel, (path) => {
