@@ -491,7 +491,7 @@ export const COUNTRIES: readonly Country[] = [
 export const CONTINENTS: readonly Continent[] = ['Americas', 'Europe', 'Asia'];
 
 /** A country on the list by its English name or its code, in any case; null when Marlow does not ship there. */
-export function countryNamed(value: string): Country | null {
+export function countryNamed(value: string | null | undefined): Country | null {
   const wanted = folded(value);
   if (!wanted) {
     return null;
@@ -524,7 +524,7 @@ function startsAWord(term: string, query: string): boolean {
   return term.startsWith(query) || term.split(/[\s-]+/).some((word) => word.startsWith(query));
 }
 
-/** Lower case, without accents, so "espana" finds España. */
-function folded(value: string): string {
-  return value.normalize('NFD').replace(/\p{M}/gu, '').trim().toLowerCase();
+/** Lower case, without accents, so "espana" finds España. A cleared field arrives as null. */
+function folded(value: string | null | undefined): string {
+  return (value ?? '').normalize('NFD').replace(/\p{M}/gu, '').trim().toLowerCase();
 }

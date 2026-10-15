@@ -223,6 +223,71 @@ describe('shop routes', () => {
     expect(fieldError('ship-postal')).toBeUndefined();
   });
 
+  it('lists every country again after the chosen name is cleared', async () => {
+    const { fixture } = await checkoutWithAShirt();
+    const listed = (): string[] =>
+      [...document.querySelectorAll<HTMLElement>('[data-slot="combobox-item"]')]
+        .filter((item) => !item.hasAttribute('data-hidden'))
+        .map((item) => item.textContent?.replace(/\s+/g, ' ').trim() ?? '');
+    const input = (): HTMLInputElement => document.getElementById('ship-country') as HTMLInputElement;
+
+    input().focus();
+    input().click();
+    await settle(fixture);
+    expect(listed()).toHaveLength(41);
+
+    await chooseCountry(fixture, 'spa', 'Spain');
+    expect(input().value).toBe('Spain');
+
+    input().focus();
+    input().click();
+    await settle(fixture);
+    expect(listed()).toHaveLength(41);
+
+    let current = input().value;
+    while (current.length > 0) {
+      current = current.slice(0, -1);
+      input().value = current;
+      input().dispatchEvent(new InputEvent('input', { bubbles: true }));
+      await settle(fixture);
+    }
+
+    expect(input().value).toBe('');
+    expect(listed()).toHaveLength(41);
+    expect(listed()).toContain('Japan');
+    expect(listed()).toContain('United States');
+  });
+
+  it('narrows the countries a moment after typing, and lists them all as soon as the text is gone', async () => {
+    const { fixture } = await checkoutWithAShirt();
+    const listed = (): string[] =>
+      [...document.querySelectorAll<HTMLElement>('[data-slot="combobox-item"]')]
+        .filter((item) => !item.hasAttribute('data-hidden'))
+        .map((item) => item.textContent?.replace(/\s+/g, ' ').trim() ?? '');
+    const input = document.getElementById('ship-country') as HTMLInputElement;
+
+    input.focus();
+    input.click();
+    await settle(fixture);
+
+    // The caret sits after the chosen country, so the letters arrive on the end of its name.
+    input.value = 'United Statesja';
+    input.dispatchEvent(new InputEvent('input', { bubbles: true }));
+    expect(input.value).toBe('ja');
+    expect(listed()).toHaveLength(41);
+
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    await settle(fixture);
+    expect(input.value).toBe('ja');
+    expect(listed()).toEqual(['Japan']);
+
+    input.value = '';
+    input.dispatchEvent(new InputEvent('input', { bubbles: true }));
+    await settle(fixture);
+    expect(input.value).toBe('');
+    expect(listed()).toHaveLength(41);
+  });
+
   it('keeps everything typed and points at what is missing when checkout is incomplete', async () => {
     const { fixture } = await render('/product/oxford-shirt');
     await choose(fixture, 'input[name="size"][value="M"]');

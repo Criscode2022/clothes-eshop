@@ -58,8 +58,8 @@ export function phoneProblem(value: string): string | null {
     : null;
 }
 
-export function countryProblem(value: string): string | null {
-  if (!value.trim()) {
+export function countryProblem(value: string | null | undefined): string | null {
+  if (!value?.trim()) {
     return 'Choose the country to send it to.';
   }
   return countryNamed(value) ? null : 'Choose a country from the list.';
@@ -180,6 +180,6 @@ function postalParts(rule: NonNullable<Country['postal']>, value: string): strin
   return match ? match.slice(1).filter((part) => part !== undefined) : null;
 }
 
-function tidy(value: string): string {
-  return value.trim().replace(/\s+/g, ' ');
+function tidy(value: string | null | undefined): string {
+  return (value ?? '').trim().replace(/\s+/g, ' ');
 }
