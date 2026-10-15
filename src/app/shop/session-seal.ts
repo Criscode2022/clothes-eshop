@@ -1,5 +1,6 @@
-import { createHmac, hkdfSync, randomBytes, timingSafeEqual } from 'node:crypto';
+import { createHmac, timingSafeEqual } from 'node:crypto';
 import type { Actor, ShopRole } from './access';
+import { serverKey } from './server-key';
 
 /**
  * A Neon session ends after 12 hours; the browser then asks Neon Auth again, so a changed role or a
@@ -59,16 +60,8 @@ export class SessionSeal {
   }
 }
 
-/**
- * The signing key. Every instance derives the same one from the server's secret, so they agree without
- * another setting; the derivation is one-way, so the key never reveals the secret. Without a secret, one
- * process signs with a random key, and its sessions end when it stops.
- */
 export function sessionKeyFrom(secret: string | undefined): Uint8Array {
-  if (!secret) {
-    return randomBytes(32);
-  }
-  return new Uint8Array(hkdfSync('sha256', secret, '', 'marlow shop sessions', 32));
+  return serverKey(secret, 'marlow shop sessions');
 }
 
 function payloadOf(encoded: string): { actor: Actor; expiresAt: number } | null {

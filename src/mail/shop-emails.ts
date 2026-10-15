@@ -1,3 +1,4 @@
+import { MARLOW_ACCOUNT, SANDBOX_BANK } from '../app/shop/bank-transfer';
 import { paymentLabel } from '../app/shop/checkout';
 import type { ShopOrder } from '../app/shop/checkout';
 import { formatMoney } from '../app/shop/money';
@@ -27,10 +28,21 @@ export interface AuthCode {
   readonly minutes: number;
 }
 
-export function orderPlacedEmail(order: ShopOrder, shopUrl: string): Email {
+/**
+ * The order confirmation. A bank transfer also gets the account to pay into and a link to the
+ * simulated bank (`transferPath`, signed for this order); the other methods are paid in person.
+ */
+export function orderPlacedEmail(
+  order: ShopOrder,
+  shopUrl: string,
+  transferPath: string | null,
+): Email {
   const orderUrl = `${shopUrl}/order/${encodeURIComponent(order.reference)}`;
   const shipping = order.shippingCents === 0 ? 'Free' : formatMoney(order.shippingCents);
-  const payment = `${paymentLabel(order.paymentMethod)}. No card was taken.`;
+  const transfer = transferPath ? transferInstructions(order, `${shopUrl}${transferPath}`) : null;
+  const payment = transfer
+    ? `${paymentLabel(order.paymentMethod)}, pending until the transfer arrives. No card was taken.`
+    : `${paymentLabel(order.paymentMethod)}. No card was taken.`;
   const address = [
     order.contact.name,
     order.shipping.line1,
@@ -54,6 +66,7 @@ export function orderPlacedEmail(order: ShopOrder, shopUrl: string): Email {
     `Total: ${formatMoney(order.totalCents)}`,
     '',
     `Payment: ${payment}`,
+    ...(transfer ? ['', ...transfer.text, ''] : []),
     `Delivery to: ${address.join(', ')}`,
     '',
     'Keep the reference: it is how the shop finds your order.',
@@ -101,6 +114,7 @@ export function orderPlacedEmail(order: ShopOrder, shopUrl: string): Email {
           </tr>
         </table>
         <p style="${P}margin-top:24px"><strong style="font-weight:500">Payment</strong><br>${escape(payment)}</p>
+        ${transfer?.html ?? ''}
         <p style="${P}"><strong style="font-weight:500">Delivery to</strong><br>${address.map(escape).join('<br>')}</p>`,
       action: { label: 'See your order', href: orderUrl },
       footnote: 'Keep the reference: it is how the shop finds your order.',
@@ -224,8 +238,42 @@ const FONT = "'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif";
 const INK = '#000000';
 const MUTED = '#61615e';
 const HAIRLINE = '#e3e3e1';
+/** The site's --color-surface, the fill its panels sit on. */
+const SURFACE = '#f5f5f4';
 const P = 'margin:0 0 16px;';
 const CELL = `padding:12px 0;border-bottom:1px solid ${HAIRLINE};vertical-align:top;`;
+
+/** Where to send the money, and the simulated bank that sends it. Both are fictional, and the email says so. */
+function transferInstructions(order: ShopOrder, url: string): { text: string[]; html: string } {
+  const rows = [
+    ['Account name', MARLOW_ACCOUNT.name],
+    ['IBAN', MARLOW_ACCOUNT.iban],
+    ['BIC', MARLOW_ACCOUNT.bic],
+    ['Amount', formatMoney(order.totalCents)],
+    ['Reference to quote', order.reference],
+  ];
+  const note = `This is a demo shop: the account is fictional, and the link opens ${SANDBOX_BANK}, a simulated bank where no money moves. Once the transfer is sent, the order is marked paid.`;
+  return {
+    text: [
+      'Pay by bank transfer to:',
+      ...rows.map(([label, value]) => `${label}: ${value}`),
+      `Pay with ${SANDBOX_BANK}: ${url}`,
+      note,
+    ],
+    html: `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:0 0 16px;background:${SURFACE}">
+          ${rows
+            .map(
+              ([label, value]) => `<tr>
+            <td style="padding:8px 16px;color:${MUTED}">${escape(label)}</td>
+            <td style="padding:8px 16px;text-align:right;font-weight:500">${escape(value)}</td>
+          </tr>`,
+            )
+            .join('')}
+        </table>
+        ${button(`Pay with ${SANDBOX_BANK}`, url)}
+        <p style="${P}color:${MUTED};font-size:13px">${escape(note)}</p>`,
+  };
+}
 
 function layout(parts: {
   preheader: string;
@@ -234,11 +282,7 @@ function layout(parts: {
   action?: { label: string; href: string };
   footnote: string;
 }): string {
-  const action = parts.action
-    ? `<p style="margin:24px 0">
-        <a href="${escape(parts.action.href)}" style="display:inline-block;padding:14px 24px;background:${INK};color:#ffffff;text-decoration:none;font-weight:500">${escape(parts.action.label)}</a>
-      </p>`
-    : '';
+  const action = parts.action ? button(parts.action.label, parts.action.href) : '';
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -264,6 +308,12 @@ function layout(parts: {
 </table>
 </body>
 </html>`;
+}
+
+function button(label: string, href: string): string {
+  return `<p style="margin:24px 0">
+        <a href="${escape(href)}" style="display:inline-block;padding:14px 24px;background:${INK};color:#ffffff;text-decoration:none;font-weight:500">${escape(label)}</a>
+      </p>`;
 }
 
 function escape(value: string): string {

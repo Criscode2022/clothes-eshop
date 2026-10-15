@@ -16,7 +16,7 @@ import { adoptNeonSession, verifyFreshNeonSignIn } from './app/shop/neon-adopt';
 import { relayNeonAuth } from './app/shop/neon-auth-relay';
 import { pullNeon, pushNeon, reportShopError, shopDatabaseConfigured } from './app/shop/neon-book';
 import { NEON_AUTH_RELAY_PATH, NEON_AUTH_URL } from './app/shop/neon-public';
-import { handleShopHttp, signSessionsWith } from './app/shop/shop-server';
+import { handleShopHttp, signWithSecret, transferPathOf } from './app/shop/shop-server';
 import { mailerFromEnv } from './mail/mailer';
 import {
   DeliveredEvents,
@@ -30,9 +30,9 @@ import { ShopMail } from './mail/shop-mail';
 import { isFilePath } from './static-files';
 
 loadLocalEnv();
-// A restart or a new deploy starts a fresh process. Each derives the same session key from the
-// database secret, so a session signed by one is good on the next.
-signSessionsWith(process.env['DATABASE_URL']);
+// A restart or a new deploy starts a fresh process. Each derives the same keys from the database secret,
+// so a session or a bank transfer link signed by one is good on the next.
+signWithSecret(process.env['DATABASE_URL']);
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
@@ -187,7 +187,8 @@ async function serveApi(
     }
   }
   if (placesOrder(method, path, result.status)) {
-    void shopMail.orderPlaced(result.body as ShopOrder);
+    const order = result.body as ShopOrder;
+    void shopMail.orderPlaced(order, transferPathOf(order));
   }
   return result;
 }
@@ -245,6 +246,7 @@ function writesShop(method: string, path: string, status: number): boolean {
   }
   return (
     path.startsWith('/api/orders') ||
+    path.startsWith('/api/transfers') ||
     path.startsWith('/api/products') ||
     path.startsWith('/api/variants')
   );

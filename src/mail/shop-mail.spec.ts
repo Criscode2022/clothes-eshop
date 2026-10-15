@@ -38,6 +38,7 @@ const ORDER = {
   totalCents: 800,
   paymentMethod: 'bank-transfer',
   fulfillment: 'placed',
+  paidAt: null,
 } satisfies ShopOrder;
 
 describe('shop mail', () => {
@@ -57,17 +58,23 @@ describe('shop mail', () => {
   });
 
   it('confirms a placed order to the address typed at checkout', async () => {
-    await mail.orderPlaced(ORDER);
+    await mail.orderPlaced(ORDER, '/bank/MR-1001/c0de');
 
     expect(mailer.sent.map((email) => [email.to, email.subject])).toEqual([
       ['ada@example.com', 'Your Marlow order MR-1001'],
     ]);
   });
 
+  it('sends a bank transfer the link to the simulated bank on this shop', async () => {
+    await mail.orderPlaced(ORDER, '/bank/MR-1001/c0de');
+
+    expect(mailer.sent[0]?.text).toContain('https://marlow.shop/bank/MR-1001/c0de');
+  });
+
   it('never fails the order when the email cannot go out, and says why in the log', async () => {
     mailer.failing = true;
 
-    await expect(mail.orderPlaced(ORDER)).resolves.toBeUndefined();
+    await expect(mail.orderPlaced(ORDER, null)).resolves.toBeUndefined();
     expect(reported).toHaveLength(1);
   });
 

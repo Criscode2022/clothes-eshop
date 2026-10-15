@@ -19,7 +19,8 @@ import { HlmEmptyImports } from '@spartan-ng/helm/empty';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import { HlmSpinner } from '@spartan-ng/helm/spinner';
 import { canCancelOrder } from '../../shop/access';
-import { canBeCancelled, paymentLabel } from '../../shop/checkout';
+import { paymentStateOf, paymentSummary } from '../../shop/bank-transfer';
+import { canBeCancelled } from '../../shop/checkout';
 import type { ShopOrder } from '../../shop/checkout';
 import { MoneyPipe } from '../../shop/money.pipe';
 import { ShopClient } from '../../shop/shop-client';
@@ -27,6 +28,7 @@ import { ShopSession } from '../../shop/shop-session';
 import { FulfillmentBadge } from '../../ui/fulfillment-badge';
 import { OrderTotals } from '../../ui/order-totals';
 import { OrderTrack } from '../../ui/order-track';
+import { PaymentBadge } from '../../ui/payment-badge';
 import { PiecePhoto } from '../../ui/piece-photo';
 import { ShopButtonImports } from '../../ui/shop-button';
 
@@ -44,6 +46,7 @@ import { ShopButtonImports } from '../../ui/shop-button';
     NgIcon,
     OrderTotals,
     OrderTrack,
+    PaymentBadge,
     PiecePhoto,
     RouterLink,
     ShopButtonImports,
@@ -63,7 +66,8 @@ export class OrderPage {
   /** True on the page checkout lands on, so it can thank the shopper; a revisit reads as a plain record. */
   protected readonly justPlaced =
     inject(Router).currentNavigation()?.extras.state?.['placed'] === true;
-  protected readonly paymentLabel = paymentLabel;
+  protected readonly paymentStateOf = paymentStateOf;
+  protected readonly paymentSummary = paymentSummary;
   protected readonly copied = signal(false);
   protected readonly cancelling = signal(false);
   protected readonly cancelError = signal('');

@@ -7,6 +7,7 @@ import { HlmBreadcrumbImports } from '@spartan-ng/helm/breadcrumb';
 import { HlmEmptyImports } from '@spartan-ng/helm/empty';
 import { HlmItemImports } from '@spartan-ng/helm/item';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
+import { paymentStateOf } from '../../shop/bank-transfer';
 import { paymentLabel } from '../../shop/checkout';
 import type { ShopOrder } from '../../shop/checkout';
 import { MoneyPipe } from '../../shop/money.pipe';
@@ -14,6 +15,7 @@ import { newestOrdersFirst } from '../../shop/order-queue';
 import { ShopClient } from '../../shop/shop-client';
 import { ShopSession } from '../../shop/shop-session';
 import { FulfillmentBadge } from '../../ui/fulfillment-badge';
+import { PaymentBadge } from '../../ui/payment-badge';
 import { Reveal } from '../../ui/reveal';
 import { ShopButtonImports } from '../../ui/shop-button';
 
@@ -28,6 +30,7 @@ import { ShopButtonImports } from '../../ui/shop-button';
     HlmSkeleton,
     MoneyPipe,
     NgIcon,
+    PaymentBadge,
     Reveal,
     RouterLink,
     ShopButtonImports,
@@ -81,7 +84,9 @@ import { ShopButtonImports } from '../../ui/shop-button';
     }
 
     .order__end {
-      gap: 1.25rem;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 0.75rem 1.25rem;
     }
 
     .order__total {
@@ -112,6 +117,7 @@ import { ShopButtonImports } from '../../ui/shop-button';
   `,
 })
 export class AccountOrders {
+  protected readonly paymentStateOf = paymentStateOf;
   private readonly shop = inject(ShopClient);
   private readonly session = inject(ShopSession);
   protected readonly orders = resource({

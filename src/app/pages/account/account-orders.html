@@ -42,6 +42,9 @@
               <span hlmItemActions class="order__end">
                 <span class="order__total">{{ order.totalCents | money }}</span>
                 <app-fulfillment-badge [state]="order.fulfillment" />
+                @if (paymentStateOf(order) === 'pending') {
+                  <app-payment-badge state="pending" />
+                }
                 <ng-icon name="lucideChevronRight" class="order__go" />
               </span>
             </a>

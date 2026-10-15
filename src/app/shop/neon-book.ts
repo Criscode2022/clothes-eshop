@@ -42,6 +42,8 @@ export interface OrderRecord {
   readonly total_cents: number | string;
   readonly payment_method: string;
   readonly fulfillment: string;
+  /** The driver returns a timestamp as a Date or as text, depending on how it parses types. */
+  readonly paid_at: string | Date | null;
 }
 
 export interface LineRecord {
@@ -169,6 +171,7 @@ export function ordersFromRows(
       totalCents: whole(row.total_cents),
       paymentMethod,
       fulfillment,
+      paidAt: row.paid_at === null ? null : new Date(row.paid_at).toISOString(),
     });
   }
   return orders;
@@ -203,7 +206,7 @@ export function pullNeon(): Promise<void> {
     const orderRows = await sql<OrderRecord>`
       select id, reference, client_id, contact_name, contact_email, contact_phone,
              ship_line1, ship_city, ship_postal_code, ship_country,
-             subtotal_cents, shipping_cents, total_cents, payment_method, fulfillment
+             subtotal_cents, shipping_cents, total_cents, payment_method, fulfillment, paid_at
       from public.orders
     `;
     const lineRows = await sql<LineRecord>`
@@ -284,15 +287,18 @@ async function writeProduct(sql: Query, product: Product): Promise<void> {
 }
 
 async function writeOrder(sql: Query, order: ShopOrder): Promise<void> {
-  const existing = await sql<{ id: string; fulfillment: string }>`
-    select id, fulfillment from public.orders where reference = ${order.reference}
+  const existing = await sql<{ id: string; fulfillment: string; paid_at: string | Date | null }>`
+    select id, fulfillment, paid_at from public.orders where reference = ${order.reference}
   `;
   const current = existing[0];
   if (current) {
-    if (current.fulfillment !== order.fulfillment) {
+    if (
+      current.fulfillment !== order.fulfillment ||
+      (current.paid_at === null) !== (order.paidAt === null)
+    ) {
       await sql`
         update public.orders
-        set fulfillment = ${order.fulfillment}
+        set fulfillment = ${order.fulfillment}, paid_at = ${order.paidAt}::timestamptz
         where reference = ${order.reference}
       `;
     }
@@ -302,7 +308,7 @@ async function writeOrder(sql: Query, order: ShopOrder): Promise<void> {
     insert into public.orders (
       reference, client_id, contact_name, contact_email, contact_phone,
       ship_line1, ship_city, ship_postal_code, ship_country,
-      subtotal_cents, shipping_cents, total_cents, payment_method, fulfillment
+      subtotal_cents, shipping_cents, total_cents, payment_method, fulfillment, paid_at
     )
     values (
       ${order.reference},
@@ -318,7 +324,8 @@ async function writeOrder(sql: Query, order: ShopOrder): Promise<void> {
       ${order.shippingCents},
       ${order.totalCents},
       ${order.paymentMethod},
-      ${order.fulfillment}
+      ${order.fulfillment},
+      ${order.paidAt}::timestamptz
     )
     returning id
   `;

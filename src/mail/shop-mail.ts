@@ -32,8 +32,11 @@ export class ShopMail {
     return this.mailer.description;
   }
 
-  async orderPlaced(order: ShopOrder): Promise<void> {
-    await this.sendQuietly(() => this.mailer.send(orderPlacedEmail(order, this.shopUrl)));
+  /** `transferPath` is the signed link to the simulated bank, for an order paid by bank transfer. */
+  async orderPlaced(order: ShopOrder, transferPath: string | null): Promise<void> {
+    await this.sendQuietly(() =>
+      this.mailer.send(orderPlacedEmail(order, this.shopUrl, transferPath)),
+    );
   }
 
   /** "Your account is open": sent once, straight after a sign-up. It asks the person to confirm nothing. */

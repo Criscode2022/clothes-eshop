@@ -19,6 +19,7 @@ function order(reference: string, name: string, fulfillment: Fulfillment): ShopO
     totalCents: 9_700,
     paymentMethod: 'bank-transfer',
     fulfillment,
+    paidAt: null,
   };
 }
 

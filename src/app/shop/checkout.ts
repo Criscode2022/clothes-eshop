@@ -81,6 +81,8 @@ export interface ShopOrder {
   readonly totalCents: number;
   readonly paymentMethod: PaymentMethodId;
   readonly fulfillment: Fulfillment;
+  /** When a bank transfer arrived (ISO time); null until then, and for the methods paid in person. */
+  readonly paidAt: string | null;
 }
 
 export interface CheckoutDraft {

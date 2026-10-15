@@ -1,3 +1,4 @@
+import { MARLOW_ACCOUNT } from '../app/shop/bank-transfer';
 import type { ShopOrder } from '../app/shop/checkout';
 import { accountCreatedEmail, authCodeEmail, authLinkEmail, orderPlacedEmail } from './shop-emails';
 
@@ -30,10 +31,13 @@ const ORDER: ShopOrder = {
   totalCents: 18_600,
   paymentMethod: 'bank-transfer',
   fulfillment: 'placed',
+  paidAt: null,
 };
 
+const BANK_LINK = '/bank/MR-1001/c0de-for-mr-1001';
+
 describe('order confirmation email', () => {
-  const email = orderPlacedEmail(ORDER, SHOP);
+  const email = orderPlacedEmail(ORDER, SHOP, BANK_LINK);
 
   it('goes to the contact address with the reference in the subject', () => {
     expect(email.to).toBe('ada@example.com');
@@ -47,7 +51,9 @@ describe('order confirmation email', () => {
       expect(body).toContain('$178.00');
       expect(body).toContain('$8.00');
       expect(body).toContain('$186.00');
-      expect(body).toContain('Bank transfer. No card was taken.');
+      expect(body).toContain(
+        'Bank transfer, pending until the transfer arrives. No card was taken.',
+      );
       expect(body).toContain('12 Loom Street');
     }
     expect(email.text).toContain('https://marlow.shop/order/MR-1001');
@@ -60,9 +66,43 @@ describe('order confirmation email', () => {
   });
 
   it('says shipping is free when it is', () => {
-    const free = orderPlacedEmail({ ...ORDER, shippingCents: 0, totalCents: 17_800 }, SHOP);
+    const free = orderPlacedEmail(
+      { ...ORDER, shippingCents: 0, totalCents: 17_800 },
+      SHOP,
+      BANK_LINK,
+    );
 
     expect(free.text).toContain('Shipping: Free');
+  });
+});
+
+describe('bank transfer in the order email', () => {
+  const email = orderPlacedEmail(ORDER, SHOP, BANK_LINK);
+
+  it('gives the account to pay into, the amount, and the reference to quote', () => {
+    for (const body of [email.text, email.html]) {
+      expect(body).toContain(MARLOW_ACCOUNT.name);
+      expect(body).toContain(MARLOW_ACCOUNT.iban);
+      expect(body).toContain(MARLOW_ACCOUNT.bic);
+      expect(body).toContain('$186.00');
+      expect(body).toContain('Reference to quote');
+      expect(body).toContain('fictional');
+    }
+  });
+
+  it('links to the simulated bank, and still to the order', () => {
+    expect(email.text).toContain('https://marlow.shop/bank/MR-1001/c0de-for-mr-1001');
+    expect(email.html).toContain('href="https://marlow.shop/bank/MR-1001/c0de-for-mr-1001"');
+    expect(email.html).toContain('Pay with Sandbox Bank');
+    expect(email.html).toContain('href="https://marlow.shop/order/MR-1001"');
+  });
+
+  it('leaves bank details out of the methods paid in person', () => {
+    const atShop = orderPlacedEmail({ ...ORDER, paymentMethod: 'shop-floor' }, SHOP, null);
+
+    expect(atShop.text).toContain('Pay at the shop. No card was taken.');
+    expect(atShop.text).not.toContain(MARLOW_ACCOUNT.iban);
+    expect(atShop.html).not.toContain('Sandbox Bank');
   });
 });
 

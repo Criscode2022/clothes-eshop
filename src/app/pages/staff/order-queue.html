@@ -112,7 +112,17 @@
               </td>
               <td hlmTd class="numeric">{{ pieceCount(order) }}</td>
               <td hlmTd class="numeric">{{ order.totalCents | money }}</td>
-              <td hlmTd>{{ paymentLabel(order.paymentMethod) }}</td>
+              <td hlmTd>
+                <span class="client">{{ paymentLabel(order.paymentMethod) }}</span>
+                @switch (paymentStateOf(order)) {
+                  @case ('pending') {
+                    <span class="muted">Payment pending</span>
+                  }
+                  @case ('paid') {
+                    <span class="muted">Paid</span>
+                  }
+                }
+              </td>
               <td hlmTd><app-fulfillment-badge [state]="order.fulfillment" /></td>
               <td hlmTd>
                 <div class="actions">

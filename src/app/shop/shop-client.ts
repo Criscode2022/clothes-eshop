@@ -3,6 +3,7 @@ import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http
 import { Service, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import type { Actor } from './access';
+import type { TransferDetails } from './bank-transfer';
 import { ShopRuleError } from './cart';
 import type { CartLine } from './cart';
 import type { ContactDetails, Fulfillment, ShippingDetails, ShopOrder } from './checkout';
@@ -137,6 +138,15 @@ export class ShopClient {
     );
     this.refreshFloorAfter(order);
     return order;
+  }
+
+  /** What the simulated bank pays, at the link the order's email carried. No session: the code is the proof. */
+  transfer(reference: string, code: string): Promise<TransferDetails> {
+    return this.request<TransferDetails>('GET', transferPath(reference, code), null, false);
+  }
+
+  sendTransfer(reference: string, code: string): Promise<TransferDetails> {
+    return this.request<TransferDetails>('POST', transferPath(reference, code), {}, false);
   }
 
   async setStock(variantId: string, stock: number): Promise<Product> {
@@ -323,6 +333,10 @@ export class ShopClient {
   private headers(): HttpHeaders {
     return bearer(this.session.token());
   }
+}
+
+function transferPath(reference: string, code: string): string {
+  return `/api/transfers/${encodeURIComponent(reference)}/${encodeURIComponent(code)}`;
 }
 
 function bearer(token: string): HttpHeaders {

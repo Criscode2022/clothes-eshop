@@ -70,6 +70,9 @@
       </div>
       <div class="head__meta">
         <app-fulfillment-badge [state]="placed.fulfillment" />
+        @if (paymentStateOf(placed); as payment) {
+          <app-payment-badge [state]="payment" />
+        }
         <button
           hlmBtn
           variant="link"
@@ -83,6 +86,12 @@
         </button>
       </div>
       <p class="head__keep">Keep the reference: it is how the shop finds your order.</p>
+      @if (paymentStateOf(placed) === 'pending') {
+        <p class="head__transfer">
+          We emailed the bank details (account name and IBAN) to {{ placed.contact.email }}. The
+          order is pending until the transfer arrives.
+        </p>
+      }
       @if (cancelledNow()) {
         <p #cancelledNote class="head__cancelled" role="status" tabindex="-1">
           Order {{ placed.reference }} is cancelled. Its pieces are back on the floor.
@@ -129,7 +138,7 @@
       <dl hlmCard class="facts">
         <div hlmCardContent>
           <dt>Payment</dt>
-          <dd>{{ paymentLabel(placed.paymentMethod) }}. No card was taken.</dd>
+          <dd>{{ paymentSummary(placed) }}</dd>
         </div>
         <div hlmCardContent>
           <dt>Delivery to</dt>

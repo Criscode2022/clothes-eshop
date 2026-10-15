@@ -14,6 +14,7 @@ import {
   fulfillmentName,
   paymentLabel,
 } from '../../shop/checkout';
+import { paymentStateOf } from '../../shop/bank-transfer';
 import type { Fulfillment, ShopOrder } from '../../shop/checkout';
 import { MoneyPipe } from '../../shop/money.pipe';
 import { QUEUE_VIEWS, ordersInView, queueCounts } from '../../shop/order-queue';
@@ -50,6 +51,7 @@ export class OrderQueue {
   private readonly orders = signal<readonly ShopOrder[]>([]);
 
   protected readonly paymentLabel = paymentLabel;
+  protected readonly paymentStateOf = paymentStateOf;
   protected readonly views = QUEUE_VIEWS;
   protected readonly view = signal<QueueView>('open');
   protected readonly query = signal('');

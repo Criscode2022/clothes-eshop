@@ -115,5 +115,11 @@ export const routes: Routes = [
       },
     ],
   },
+  {
+    // Outside the shop's shell: the simulated bank a bank transfer email links to.
+    path: 'bank/:reference/:code',
+    title: 'Sandbox Bank (simulation)',
+    loadComponent: () => import('./pages/bank/sandbox-bank').then((m) => m.SandboxBank),
+  },
   { path: '**', redirectTo: '' },
 ];

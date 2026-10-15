@@ -16,7 +16,8 @@ import { quoteOrder } from './checkout';
 import { SEED_PRODUCTS } from './catalog';
 import type { Product } from './catalog';
 import { NeonAuth } from './neon-auth';
-import { handleShopHttp, openSession, resetShopServer } from './shop-server';
+import { handleShopHttp, openSession, resetShopServer, transferPathOf } from './shop-server';
+import type { ShopOrder } from './checkout';
 import { ShopSession } from './shop-session';
 import type { Actor } from './access';
 
@@ -277,6 +278,69 @@ describe('shop routes', () => {
     expect(document.body.textContent).toContain('Order MR-1001');
     expect(findButton('Cancel this order')).toBeUndefined();
     expect(document.body.textContent).toContain('give the shop the reference');
+  });
+
+  it('shows a bank transfer as pending, and says the bank details went by email', async () => {
+    handleShopHttp('POST', '/api/orders', shirtDraft(), null);
+    handleShopHttp('POST', '/api/orders', { ...shirtDraft(), paymentMethod: 'shop-floor' }, null);
+
+    const { fixture } = await render('/order/MR-1001');
+    expect(document.querySelector('.head')?.textContent).toContain('Payment pending');
+    expect(document.body.textContent).toContain(
+      'We emailed the bank details (account name and IBAN) to ada@example.com.',
+    );
+    expect(document.body.textContent).toContain('Bank transfer, awaiting the transfer.');
+
+    await go(fixture, '/order/MR-1002');
+    expect(document.body.textContent).not.toContain('Payment pending');
+    expect(document.body.textContent).not.toContain('We emailed the bank details');
+  });
+
+  it('pays a bank transfer at the simulated bank, and the order then reads as paid', async () => {
+    const order = handleShopHttp('POST', '/api/orders', shirtDraft(), null).body as ShopOrder;
+    const { fixture } = await render(transferPathOf(order)!);
+
+    const bank = document.body.textContent ?? '';
+    expect(bank).toContain('Sandbox Bank');
+    expect(bank).toContain('Marlow Ready-to-Wear Ltd');
+    expect(bank).toContain('GB94 SNDB 2026 1015 0000 42');
+    expect(bank).toContain('MR-1001');
+    expect(bank).toContain('No money moves');
+
+    await clickButton(fixture, `Send ${formatMoney(order.totalCents)}`);
+    expect(document.body.textContent).toContain('Transfer sent');
+    expect(document.activeElement?.textContent).toContain('Transfer sent');
+    expect(findButton('Send')).toBeUndefined();
+
+    await go(fixture, '/order/MR-1001');
+    expect(document.querySelector('.head')?.textContent).toContain('Paid');
+    expect(document.body.textContent).not.toContain('Payment pending');
+    expect(document.body.textContent).toContain('Bank transfer, paid.');
+  });
+
+  it('turns away a payment link the shop did not sign', async () => {
+    handleShopHttp('POST', '/api/orders', shirtDraft(), null);
+    await render('/bank/MR-1001/made-up-code');
+
+    expect(document.body.textContent).toContain('That payment link is not valid.');
+    expect(findButton('Send')).toBeUndefined();
+  });
+
+  it('marks a pending transfer in the client list and on the desk', async () => {
+    const { fixture } = await render('/');
+    adopt(fixture, AVERY);
+    handleShopHttp(
+      'POST',
+      '/api/orders',
+      shirtDraft(),
+      `Bearer ${TestBed.inject(ShopSession).token()}`,
+    );
+    await go(fixture, '/account/orders');
+    expect(document.querySelector('main')?.textContent).toContain('Payment pending');
+
+    adopt(fixture, JORDAN);
+    await go(fixture, '/desk');
+    expect(document.querySelector('main table')?.textContent).toContain('Payment pending');
   });
 
   it('refuses clients at both staff areas and workers at the backoffice', async () => {

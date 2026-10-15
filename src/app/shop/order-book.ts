@@ -120,6 +120,7 @@ export function placeOrder(
     totalCents: quote.totalCents,
     paymentMethod: draft.paymentMethod as ShopOrder['paymentMethod'],
     fulfillment: 'placed',
+    paidAt: null,
   };
   writeState({
     ...current,
@@ -178,15 +179,42 @@ export function cancelOrder(actor: Actor | null, reference: string): ShopOrder {
   return changeFulfillment(order, 'cancelled');
 }
 
+/** An order paid by bank transfer, or null for any other reference. The caller has checked the link. */
+export function transferOrder(reference: string): ShopOrder | null {
+  const order = readState().orders.find((item) => item.reference === reference);
+  return order?.paymentMethod === 'bank-transfer' ? order : null;
+}
+
+/** The transfer arrived. A second one changes nothing; a cancelled order takes no money. */
+export function payTransfer(reference: string, paidAt = new Date().toISOString()): ShopOrder {
+  const order = transferOrder(reference);
+  if (!order) {
+    throw new ShopRuleError('That order is not available.');
+  }
+  if (order.fulfillment === 'cancelled') {
+    throw new ShopRuleError(`Order ${order.reference} was cancelled, so there is nothing to pay.`);
+  }
+  if (order.paidAt) {
+    return order;
+  }
+  return replaceOrder({ ...order, paidAt });
+}
+
 /** A cancelled order's pieces go back on the floor, since nobody will take them. */
 function changeFulfillment(order: ShopOrder, target: Fulfillment): ShopOrder {
   const updated = { ...order, fulfillment: transitionFulfillment(order.fulfillment, target) };
+  if (target === 'cancelled') {
+    const current = readState();
+    writeState({ ...current, products: adjustStock(current.products, order.lines, 1) });
+  }
+  return replaceOrder(updated);
+}
+
+function replaceOrder(updated: ShopOrder): ShopOrder {
   const current = readState();
   writeState({
     ...current,
-    products:
-      target === 'cancelled' ? adjustStock(current.products, order.lines, 1) : current.products,
-    orders: current.orders.map((item) => (item.reference === order.reference ? updated : item)),
+    orders: current.orders.map((item) => (item.reference === updated.reference ? updated : item)),
   });
   return updated;
 }

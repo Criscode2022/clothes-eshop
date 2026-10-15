@@ -18,5 +18,6 @@ export const serverRoutes: ServerRoute[] = [
   { path: 'owner/pieces', renderMode: RenderMode.Client },
   { path: 'owner/new', renderMode: RenderMode.Client },
   { path: 'not-allowed', renderMode: RenderMode.Client },
+  { path: 'bank/:reference/:code', renderMode: RenderMode.Client },
   { path: '**', renderMode: RenderMode.Client },
 ];

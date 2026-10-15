@@ -109,6 +109,24 @@ describe('neon row mapping', () => {
     expect(referenceAfter(orders)).toBe(1001);
     expect(referenceAfter([{ reference: 'MR-1004' }])).toBe(1005);
   });
+
+  it('reads when a bank transfer was paid, as the database returns it, or that it is not yet', () => {
+    const products = productsFromRows(
+      [product('oxford-shirt', 'Oxford Cloth Shirt', 'shirts', 8900)],
+      [variant('oxford-shirt', 'oxford-shirt-s-white', 'S', 'White', 2)],
+    );
+    const rows = [
+      { ...order('order-a', 'MR-1001', null), paid_at: '2026-10-15 14:00:00+00' },
+      { ...order('order-b', 'MR-1002', null), paid_at: new Date('2026-10-15T15:30:00Z') },
+      order('order-c', 'MR-1003', null),
+    ];
+
+    expect(ordersFromRows(rows, [], products).map((item) => item.paidAt)).toEqual([
+      '2026-10-15T14:00:00.000Z',
+      '2026-10-15T15:30:00.000Z',
+      null,
+    ]);
+  });
 });
 
 function product(slug: string, name: string, category: string, price: number): ProductRecord {
@@ -125,7 +143,7 @@ function variant(
   return { product_slug: productSlug, slug, size, color, stock };
 }
 
-function order(id: string, reference: string, clientId: string): OrderRecord {
+function order(id: string, reference: string, clientId: string | null): OrderRecord {
   return {
     id,
     reference,
@@ -142,6 +160,7 @@ function order(id: string, reference: string, clientId: string): OrderRecord {
     total_cents: 9700,
     payment_method: 'bank-transfer',
     fulfillment: 'placed',
+    paid_at: null,
   };
 }
 

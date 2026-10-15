@@ -268,7 +268,11 @@ Every control is a Spartan part: Brain for behavior and accessibility, Helm (`ly
 
 ### Status badge
 
-An outlined Spartan badge holding a small dot and the state's name: Placed in Ink Black, Picking and Ready in Rust Notice, Completed in Bottle Green, Cancelled in Oxblood Error. The name always carries the meaning.
+An outlined Spartan badge holding a small dot and the state's name (`StatusBadge`): Placed in Ink Black, Picking and Ready in Rust Notice, Completed in Bottle Green, Cancelled in Oxblood Error. A bank transfer's payment uses the same badge beside it: "Payment pending" in Rust Notice, "Paid" in Bottle Green. The name always carries the meaning.
+
+### Simulated bank
+
+`/bank/<reference>/<code>` stands outside the shop: no Marlow header or footer, a plain bar naming "Sandbox Bank" with a "Simulation" tag, a line saying no money moves, and one white panel on the surface grey with the transfer's facts (amount last, above a hairline) and a full-width "Send $…" button. After sending, the panel says "Transfer sent" and focus lands on it.
 
 ### Details and lists
 

@@ -1,0 +1,96 @@
+<header class="bar">
+  <span class="bar__name">{{ bank }}</span>
+  <span class="bar__tag">Simulation</span>
+</header>
+
+<main class="bank" id="main-content">
+  <p class="bank__note">
+    A simulated bank for the Marlow demo shop. No money moves, and nothing here is a real account.
+  </p>
+
+  @if (transfer.error()) {
+    <section class="panel" aria-labelledby="bank-title">
+      <h1 id="bank-title" class="panel__title">That payment link is not valid.</h1>
+      <p>Open the link in your Marlow order email again, or check that it was copied whole.</p>
+      <p><a hlmBtn variant="outline" routerLink="/">Go to the Marlow shop</a></p>
+    </section>
+  } @else if (transfer.value(); as details) {
+    <section class="panel" aria-labelledby="bank-title">
+      @switch (details.state) {
+        @case ('due') {
+          <h1 id="bank-title" class="panel__title">Send a transfer</h1>
+          <dl class="facts">
+            <div>
+              <dt>From</dt>
+              <dd>Your current account (simulated)</dd>
+            </div>
+            <div>
+              <dt>Pay to</dt>
+              <dd>{{ details.payee }}</dd>
+            </div>
+            <div>
+              <dt>IBAN</dt>
+              <dd class="facts__code">{{ details.iban }}</dd>
+            </div>
+            <div>
+              <dt>BIC</dt>
+              <dd class="facts__code">{{ details.bic }}</dd>
+            </div>
+            <div>
+              <dt>Reference</dt>
+              <dd>{{ details.reference }}</dd>
+            </div>
+            <div class="facts__amount">
+              <dt>Amount</dt>
+              <dd>{{ details.totalCents | money }}</dd>
+            </div>
+          </dl>
+          @if (sendError()) {
+            <p class="panel__error" role="alert">{{ sendError() }}</p>
+          }
+          <button
+            hlmBtn
+            type="button"
+            class="w-full"
+            [disabled]="sending()"
+            [attr.aria-busy]="sending()"
+            (click)="send(details)"
+          >
+            @if (sending()) {
+              <hlm-spinner aria-hidden="true" />
+              Sending
+            } @else {
+              Send {{ details.totalCents | money }}
+            }
+          </button>
+        }
+        @case ('paid') {
+          <h1 id="bank-title" #outcome class="panel__title" tabindex="-1">Transfer sent</h1>
+          <p>
+            {{ details.payee }} received {{ details.totalCents | money }} for order
+            {{ details.reference }}. The order is marked paid.
+          </p>
+          <p>
+            <a hlmBtn [routerLink]="['/order', details.reference]"
+              >Back to order {{ details.reference }}</a
+            >
+          </p>
+        }
+        @case ('cancelled') {
+          <h1 id="bank-title" class="panel__title">Nothing to pay</h1>
+          <p>Order {{ details.reference }} was cancelled, so there is nothing to pay.</p>
+          <p>
+            <a hlmBtn variant="outline" [routerLink]="['/order', details.reference]"
+              >See order {{ details.reference }}</a
+            >
+          </p>
+        }
+      }
+    </section>
+  } @else {
+    <p class="bank__loading" role="status">
+      <hlm-spinner aria-hidden="true" />
+      Opening the transfer.
+    </p>
+  }
+</main>

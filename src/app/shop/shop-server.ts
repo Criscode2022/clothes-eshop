@@ -1,7 +1,9 @@
 import type { Actor } from './access';
+import { MARLOW_ACCOUNT } from './bank-transfer';
+import type { TransferDetails } from './bank-transfer';
 import { ShopRuleError, StockLimitError } from './cart';
 import type { CartLine } from './cart';
-import type { ContactDetails, Fulfillment, ShippingDetails } from './checkout';
+import type { ContactDetails, Fulfillment, ShippingDetails, ShopOrder } from './checkout';
 import { FULFILLMENT_STATES } from './checkout';
 import {
   addVariant,
@@ -11,20 +13,25 @@ import {
   listOrders,
   moveFulfillment,
   orderByReference,
+  payTransfer,
   placeOrder,
   resetShop,
   setProductPrice,
   setVariantStock,
+  transferOrder,
 } from './order-book';
 import type { NewPiece, NewVariant } from './order-book';
 import { SessionSeal, sessionKeyFrom } from './session-seal';
+import { TransferCodes, transferKeyFrom } from './transfer-codes';
 
-/** Signs with a random key until the server hands it the secret every instance shares. */
+/** Signs with random keys until the server hands it the secret every process shares. */
 let seal = new SessionSeal(sessionKeyFrom(undefined));
+let transferCodes = new TransferCodes(transferKeyFrom(undefined));
 
-/** Sessions signed from the same secret are good on every server instance that has it. */
-export function signSessionsWith(secret: string | undefined): void {
+/** Sessions and transfer links signed from the same secret are good on every process that has it. */
+export function signWithSecret(secret: string | undefined): void {
   seal = new SessionSeal(sessionKeyFrom(secret));
+  transferCodes = new TransferCodes(transferKeyFrom(secret));
 }
 
 export interface ShopHttpResult {
@@ -91,6 +98,11 @@ function dispatch(
     return { status: 200, body: cancelOrder(actor, decode(cancelPath[1])) };
   }
 
+  const transferPath = path.match(/^\/api\/transfers\/([^/]+)\/([^/]+)$/);
+  if (transferPath && (method === 'GET' || method === 'POST')) {
+    return transfer(method, decode(transferPath[1]), decode(transferPath[2]));
+  }
+
   const orderPath = path.match(/^\/api\/orders\/([^/]+)$/);
   if (method === 'GET' && orderPath) {
     return { status: 200, body: orderByReference(decode(orderPath[1]), actor) };
@@ -116,6 +128,38 @@ function dispatch(
   }
 
   return { status: 404, body: { message: 'That shop route does not exist.' } };
+}
+
+/**
+ * Where the simulated bank pays a bank transfer order: `/bank/<reference>/<code>`, signed so that only
+ * the order's email carries it. Null for the methods paid in person.
+ */
+export function transferPathOf(order: ShopOrder): string | null {
+  if (order.paymentMethod !== 'bank-transfer') {
+    return null;
+  }
+  const reference = encodeURIComponent(order.reference);
+  return `/bank/${reference}/${transferCodes.codeFor(order.reference)}`;
+}
+
+/** The bank reads what to pay (GET) and sends the transfer (POST) at the link the email carried. */
+function transfer(method: string, reference: string, code: string): ShopHttpResult {
+  const order = transferOrder(reference);
+  if (!order || !transferCodes.matches(reference, code)) {
+    return { status: 404, body: { message: 'That payment link is not valid.' } };
+  }
+  return { status: 200, body: transferDetails(method === 'POST' ? payTransfer(reference) : order) };
+}
+
+function transferDetails(order: ShopOrder): TransferDetails {
+  return {
+    reference: order.reference,
+    totalCents: order.totalCents,
+    payee: MARLOW_ACCOUNT.name,
+    iban: MARLOW_ACCOUNT.iban,
+    bic: MARLOW_ACCOUNT.bic,
+    state: order.paidAt ? 'paid' : order.fulfillment === 'cancelled' ? 'cancelled' : 'due',
+  };
 }
 
 /**

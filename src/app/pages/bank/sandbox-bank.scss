@@ -1,0 +1,108 @@
+// The simulated bank stands apart from the shop: no Marlow header or footer, a plain bar that names it
+// and says it is a simulation, and one panel with the transfer.
+:host {
+  display: block;
+  min-height: 100dvh;
+  background: var(--color-surface);
+}
+
+.bar {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-canvas);
+
+  @media (min-width: 48rem) {
+    padding-inline: 2.5rem;
+  }
+}
+
+.bar__name {
+  font-size: var(--text-md);
+  font-weight: 600;
+}
+
+.bar__tag {
+  padding: 0.125rem 0.5rem;
+  border: 1px solid var(--color-field-border);
+  font-size: var(--text-sm);
+}
+
+.bank {
+  display: grid;
+  gap: 1.5rem;
+  width: min(30rem, 100%);
+  margin-inline: auto;
+  padding: 2.5rem 1rem 4rem;
+}
+
+.bank__note {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.bank__loading {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.panel {
+  display: grid;
+  gap: 1.25rem;
+  padding: 1.75rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-canvas);
+}
+
+.panel__title {
+  font-size: var(--text-lg);
+  font-weight: 500;
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.panel__error {
+  color: var(--color-danger);
+}
+
+.facts {
+  display: grid;
+  gap: 0.875rem;
+  margin: 0;
+
+  div {
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+  }
+
+  dt {
+    color: var(--color-text-muted);
+  }
+
+  dd {
+    margin: 0;
+    text-align: right;
+  }
+}
+
+.facts__code {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+.facts__amount {
+  padding-top: 0.875rem;
+  border-top: 1px solid var(--color-border);
+  font-size: var(--text-md);
+  font-weight: 500;
+
+  dt {
+    color: var(--color-text);
+  }
+}
