@@ -36,6 +36,20 @@ describe('sizes by color', () => {
     ]);
   });
 
+  it('leads with the cover color when the catalog lists another color first', () => {
+    const shirt = SEED_PRODUCTS.find((product) => product.id === 'oxford-shirt');
+    expect(shirt).toBeTruthy();
+    if (!shirt) {
+      return;
+    }
+    const inkFirst = {
+      ...shirt,
+      variants: [...shirt.variants].sort((a, b) => a.color.localeCompare(b.color)),
+    };
+
+    expect(variantsByColor(inkFirst).map((group) => group.color)).toEqual(['White', 'Ink']);
+  });
+
   it('calls a piece sold out only when no size is left', () => {
     const [shirt] = cloneProducts(SEED_PRODUCTS.filter((product) => product.id === 'oxford-shirt'));
     expect(shirt && isSoldOut(shirt)).toBe(false);

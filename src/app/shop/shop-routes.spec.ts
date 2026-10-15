@@ -244,7 +244,7 @@ describe('shop routes', () => {
   it('adds a size from the floor without leaving it', async () => {
     const { fixture } = await render('/');
     await clickButton(fixture, 'Quick add Oxford Cloth Shirt');
-    await clickLabelled(fixture, '#sizes-oxford-shirt', 'Add M to bag');
+    await clickLabelled(fixture, '#sizes-oxford-shirt', 'Add White M to bag');
 
     expect(TestBed.inject(Router).url).toBe('/');
     expect(TestBed.inject(Bag).items()).toEqual([
@@ -333,6 +333,19 @@ describe('shop routes', () => {
       'image/jpeg /garments/wool-overcoat-camel.jpg',
     ]);
     expect(photo()?.alt).toBe('Charcoal Wool Overcoat in Camel');
+  });
+
+  it('changes the photograph when another piece’s second color is chosen', async () => {
+    const { fixture } = await render('/product/oxford-shirt');
+    const photo = (): HTMLImageElement | null => document.querySelector('.pdp__media img');
+
+    expect(photo()?.getAttribute('src')).toBe('/garments/oxford-shirt.avif');
+    expect(photo()?.alt).toBe('Oxford Cloth Shirt in White');
+
+    await choose(fixture, 'input[name="color"][value="Ink"]');
+
+    expect(photo()?.getAttribute('src')).toBe('/garments/oxford-shirt-ink.avif');
+    expect(photo()?.alt).toBe('Oxford Cloth Shirt in Ink');
   });
 
   it('asks for a size instead of guessing one', async () => {

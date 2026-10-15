@@ -1,3 +1,5 @@
+import { coverColorOf } from './cloth';
+
 export const CATEGORIES = [
   { slug: 'outerwear', name: 'Outerwear' },
   { slug: 'knitwear', name: 'Knitwear' },
@@ -47,6 +49,8 @@ export const SEED_PRODUCTS: readonly Product[] = [
     variants: [
       { id: 'field-jacket-46-camel', size: '46', color: 'Camel', stock: 5 },
       { id: 'field-jacket-48-camel', size: '48', color: 'Camel', stock: 1 },
+      { id: 'field-jacket-46-charcoal', size: '46', color: 'Charcoal', stock: 5 },
+      { id: 'field-jacket-48-charcoal', size: '48', color: 'Charcoal', stock: 1 },
     ],
   },
   {
@@ -59,6 +63,9 @@ export const SEED_PRODUCTS: readonly Product[] = [
       { id: 'merino-crew-s-ink', size: 'S', color: 'Ink', stock: 6 },
       { id: 'merino-crew-m-ink', size: 'M', color: 'Ink', stock: 6 },
       { id: 'merino-crew-l-ink', size: 'L', color: 'Ink', stock: 0 },
+      { id: 'merino-crew-s-oat', size: 'S', color: 'Oat', stock: 6 },
+      { id: 'merino-crew-m-oat', size: 'M', color: 'Oat', stock: 6 },
+      { id: 'merino-crew-l-oat', size: 'L', color: 'Oat', stock: 4 },
     ],
   },
   {
@@ -71,6 +78,9 @@ export const SEED_PRODUCTS: readonly Product[] = [
       { id: 'ribbed-cardigan-s-oat', size: 'S', color: 'Oat', stock: 3 },
       { id: 'ribbed-cardigan-m-oat', size: 'M', color: 'Oat', stock: 3 },
       { id: 'ribbed-cardigan-l-oat', size: 'L', color: 'Oat', stock: 2 },
+      { id: 'ribbed-cardigan-s-ink', size: 'S', color: 'Ink', stock: 3 },
+      { id: 'ribbed-cardigan-m-ink', size: 'M', color: 'Ink', stock: 3 },
+      { id: 'ribbed-cardigan-l-ink', size: 'L', color: 'Ink', stock: 2 },
     ],
   },
   {
@@ -83,6 +93,9 @@ export const SEED_PRODUCTS: readonly Product[] = [
       { id: 'pleated-trouser-46-charcoal', size: '46', color: 'Charcoal', stock: 4 },
       { id: 'pleated-trouser-48-charcoal', size: '48', color: 'Charcoal', stock: 4 },
       { id: 'pleated-trouser-50-charcoal', size: '50', color: 'Charcoal', stock: 2 },
+      { id: 'pleated-trouser-46-camel', size: '46', color: 'Camel', stock: 4 },
+      { id: 'pleated-trouser-48-camel', size: '48', color: 'Camel', stock: 4 },
+      { id: 'pleated-trouser-50-camel', size: '50', color: 'Camel', stock: 2 },
     ],
   },
   {
@@ -94,6 +107,8 @@ export const SEED_PRODUCTS: readonly Product[] = [
     variants: [
       { id: 'wide-trouser-46-stone', size: '46', color: 'Stone', stock: 5 },
       { id: 'wide-trouser-48-stone', size: '48', color: 'Stone', stock: 5 },
+      { id: 'wide-trouser-46-ink', size: '46', color: 'Ink', stock: 5 },
+      { id: 'wide-trouser-48-ink', size: '48', color: 'Ink', stock: 5 },
     ],
   },
   {
@@ -106,6 +121,9 @@ export const SEED_PRODUCTS: readonly Product[] = [
       { id: 'oxford-shirt-s-white', size: 'S', color: 'White', stock: 2 },
       { id: 'oxford-shirt-m-white', size: 'M', color: 'White', stock: 8 },
       { id: 'oxford-shirt-l-white', size: 'L', color: 'White', stock: 4 },
+      { id: 'oxford-shirt-s-ink', size: 'S', color: 'Ink', stock: 2 },
+      { id: 'oxford-shirt-m-ink', size: 'M', color: 'Ink', stock: 8 },
+      { id: 'oxford-shirt-l-ink', size: 'L', color: 'Ink', stock: 4 },
     ],
   },
   {
@@ -117,6 +135,8 @@ export const SEED_PRODUCTS: readonly Product[] = [
     variants: [
       { id: 'silk-tunic-s-ivory', size: 'S', color: 'Ivory', stock: 3 },
       { id: 'silk-tunic-m-ivory', size: 'M', color: 'Ivory', stock: 3 },
+      { id: 'silk-tunic-s-camel', size: 'S', color: 'Camel', stock: 3 },
+      { id: 'silk-tunic-m-camel', size: 'M', color: 'Camel', stock: 3 },
     ],
   },
 ];
@@ -149,13 +169,21 @@ export interface ColorGroup {
   readonly variants: readonly Variant[];
 }
 
-/** A piece's sizes grouped under each color, in floor order. */
+/** A piece's sizes grouped under each color. The cover color leads, then the rest in catalog order. */
 export function variantsByColor(product: Product): ColorGroup[] {
   const groups = new Map<string, Variant[]>();
   for (const variant of product.variants) {
     groups.set(variant.color, [...(groups.get(variant.color) ?? []), variant]);
   }
-  return [...groups].map(([color, variants]) => ({ color, variants }));
+  const ordered = [...groups].map(([color, variants]) => ({ color, variants }));
+  const coverIndex = ordered.findIndex((group) => group.color === coverColorOf(product.id));
+  if (coverIndex > 0) {
+    const [cover] = ordered.splice(coverIndex, 1);
+    if (cover) {
+      ordered.unshift(cover);
+    }
+  }
+  return ordered;
 }
 
 export function isSoldOut(product: Product): boolean {

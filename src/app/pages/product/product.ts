@@ -20,7 +20,7 @@ import { categoryName, clothColor, variantsByColor } from '../../shop/catalog';
 import { BackLink } from '../../ui/back-link';
 import { Breadcrumb } from '../../ui/breadcrumb';
 import { CatalogStore } from '../../shop/catalog-store';
-import { careOf, compositionOf, fitNote, morePieces } from '../../shop/cloth';
+import { careOf, compositionOf, fitNote, morePieces, portraitOf } from '../../shop/cloth';
 import { FREE_SHIPPING_FROM_CENTS } from '../../shop/money';
 import { MoneyPipe } from '../../shop/money.pipe';
 import { stockNote, stockState } from '../../shop/stock';
@@ -70,11 +70,24 @@ export class ProductPage {
     const product = this.product();
     return product ? variantsByColor(product) : [];
   });
+  /** Opens on the cover color, the one the floor shows, when that color is still in stock. */
   protected readonly color = linkedSignal(() => {
     const groups = this.colorGroups();
+    const piece = this.product();
+    const cover = piece ? portraitOf(piece.id)?.avif : undefined;
+    const opening =
+      piece && cover
+        ? groups.find(
+            (group) =>
+              portraitOf(piece.id, group.color)?.avif === cover &&
+              group.variants.some((variant) => variant.stock > 0),
+          )
+        : undefined;
     return (
-      (groups.find((group) => group.variants.some((variant) => variant.stock > 0)) ?? groups[0])
-        ?.color ?? ''
+      (opening ??
+        groups.find((group) => group.variants.some((variant) => variant.stock > 0)) ??
+        groups[0]
+      )?.color ?? ''
     );
   });
   /** The photograph follows the chosen color, so its description names it. */

@@ -6,13 +6,13 @@ import type { CategorySlug, Product } from './catalog';
  */
 const PORTRAITS = new Map<string, readonly string[]>([
   ['wool-overcoat', ['Charcoal', 'Camel']],
-  ['field-jacket', ['Camel']],
-  ['merino-crew', ['Ink']],
-  ['ribbed-cardigan', ['Oat']],
-  ['pleated-trouser', ['Charcoal']],
-  ['wide-trouser', ['Stone']],
-  ['oxford-shirt', ['White']],
-  ['silk-tunic', ['Ivory']],
+  ['field-jacket', ['Camel', 'Charcoal']],
+  ['merino-crew', ['Ink', 'Oat']],
+  ['ribbed-cardigan', ['Oat', 'Ink']],
+  ['pleated-trouser', ['Charcoal', 'Camel']],
+  ['wide-trouser', ['Stone', 'Ink']],
+  ['oxford-shirt', ['White', 'Ink']],
+  ['silk-tunic', ['Ivory', 'Camel']],
 ]);
 
 const NOTES: Record<string, { readonly composition: string; readonly care: string }> = {
@@ -70,6 +70,11 @@ const FIT: Record<CategorySlug, string> = {
 export interface Portrait {
   readonly avif: string;
   readonly jpeg: string;
+}
+
+/** The color of a seeded piece's cover photograph, the one the floor shows. */
+export function coverColorOf(id: string): string | undefined {
+  return PORTRAITS.get(id)?.[0];
 }
 
 /**
