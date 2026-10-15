@@ -232,7 +232,7 @@ Every control is a Spartan part: Brain for behavior and accessibility, Helm (`ly
 - **Primary** (`hlmBtn`): Ink Black fill, white label at 500 weight. Hover mixes 25% of the ground into the black; a press nudges it down 1px.
 - **Secondary** (`variant="outline"`): 1px Ink Black outline on the ground; hover fills it Ink Black with a white label.
 - **Text button** (`variant="link"`): an underlined caption-size action (Remove, Cancel, Keep, Copy reference) for secondary actions that sit inline; the underline thickens on hover.
-- **Destructive** (`variant="destructive"`): Oxblood Error text on a 10% Oxblood wash; hover fills it Oxblood with a white label. Used only for what cannot be undone, on the button that asks and on the one that confirms: "Delete account", and "Cancel this order" at the top right of an order's page, beside its number, each opening a confirm dialog.
+- **Destructive** (`variant="destructive"`): Oxblood Error text on a 10% Oxblood wash; hover fills it Oxblood with a white label. Used only for what cannot be undone, on the button that asks and on the one that confirms: "Delete account", and "Cancel" at the top right of an order's page, beside its number, each opening a confirm dialog.
 - **Disabled:** Chalk Grey fill with Graphite text, out of the tab order. Busy buttons carry aria-busy, show Spartan's spinner, and change their label ("Placing order").
 
 ### Chips

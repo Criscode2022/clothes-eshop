@@ -28,8 +28,14 @@
         <h1 class="title">Order {{ placed.reference }}</h1>
         @if (canCancel(placed)) {
           <hlm-alert-dialog (stateChanged)="$event === 'closed' && forgetCancelError()">
-            <button hlmAlertDialogTrigger hlmBtn variant="destructive" type="button">
-              Cancel this order
+            <button
+              hlmAlertDialogTrigger
+              hlmBtn
+              variant="destructive"
+              type="button"
+              [attr.aria-label]="'Cancel order ' + placed.reference"
+            >
+              Cancel
             </button>
             <hlm-alert-dialog-content *hlmAlertDialogPortal="let ctx">
               <hlm-alert-dialog-header>

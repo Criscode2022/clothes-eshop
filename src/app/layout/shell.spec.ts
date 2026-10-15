@@ -82,6 +82,7 @@ describe('Shell', () => {
     const terms = document.querySelector('aside[aria-label="Shipping and payment"]');
 
     expect(terms?.textContent).toContain('Free shipping from $200.');
+    expect(terms?.textContent).toContain('by bank transfer through a secure platform');
   });
 
   it('marks the current page in the main navigation', () => {

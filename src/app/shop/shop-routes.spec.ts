@@ -297,25 +297,30 @@ describe('shop routes', () => {
     const before = shirtsLeft()!;
     await go(fixture, '/order/MR-1001');
 
-    const ask = findButton('Cancel this order')!;
+    const ask = cancelButton('MR-1001')!;
+    expect(ask.textContent?.trim()).toBe('Cancel');
     expect(ask.closest('.head__top')?.querySelector('h1')?.textContent).toContain('Order MR-1001');
     expect(ask.className).toContain('text-destructive');
 
-    await clickButton(fixture, 'Cancel this order');
+    // As from the keyboard: focus is on the button when it opens the dialog, so it comes back there.
+    ask.focus();
+    ask.click();
+    await settle(fixture);
     expect(document.querySelector('[role="alertdialog"]')?.textContent).toContain(
       'Cancel order MR-1001?',
     );
     expect(document.activeElement?.textContent).toContain('Keep the order');
     await clickButton(fixture, 'Keep the order');
     expect(document.querySelector('[role="alertdialog"]')).toBeNull();
-    expect(document.activeElement?.textContent).toContain('Cancel this order');
+    expect(document.activeElement).toBe(cancelButton('MR-1001'));
 
-    await clickButton(fixture, 'Cancel this order');
+    cancelButton('MR-1001')!.click();
+    await settle(fixture);
     await clickButton(fixture, 'Yes, cancel the order');
 
     expect(document.body.textContent).toContain('This order was cancelled.');
     expect(document.activeElement?.textContent).toContain('Order MR-1001 is cancelled');
-    expect(findButton('Cancel this order')).toBeUndefined();
+    expect(cancelButton('MR-1001')).toBeNull();
     expect(shirtsLeft()).toBe(before + 1);
   });
 
@@ -335,7 +340,7 @@ describe('shop routes', () => {
     await render('/order/MR-1001');
 
     expect(document.body.textContent).toContain('Order MR-1001');
-    expect(findButton('Cancel this order')).toBeUndefined();
+    expect(cancelButton('MR-1001')).toBeNull();
     expect(document.body.textContent).toContain('give the shop the reference');
   });
 
@@ -590,6 +595,11 @@ async function checkoutWithAShirt(): Promise<{ fixture: ComponentFixture<App> }>
   await clickButton(rendered.fixture, 'Add to bag');
   await go(rendered.fixture, '/checkout');
   return rendered;
+}
+
+/** The order page's Cancel button: its name says which order, after the word it shows. */
+function cancelButton(reference: string): HTMLButtonElement | null {
+  return document.querySelector(`button[aria-label="Cancel order ${reference}"]`);
 }
 
 /** The references the client's order list shows, top to bottom. */
