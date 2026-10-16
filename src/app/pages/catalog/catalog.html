@@ -52,9 +52,9 @@
     <ul hlmEmptyContent class="missing__list" role="list">
       @for (item of categories; track item.slug) {
         <li>
-          <a class="chip" [routerLink]="['/category', item.slug]"
-            >{{ item.name | t }} <span class="chip__count">{{ countIn(item.slug) }}</span></a>
-          >
+          <a class="chip" [routerLink]="['/category', item.slug]">
+            {{ item.name | t }} <span class="chip__count">{{ countIn(item.slug) }}</span>
+          </a>
         </li>
       }
     </ul>
@@ -81,8 +81,8 @@
             [routerLink]="['/category', item.slug]"
             routerLinkActive="is-current"
             ariaCurrentWhenActive="page"
-            >{{ item.name | t }} <span class="chip__count">{{ countIn(item.slug) }}</span></a>
-          >
+            >{{ item.name | t }} <span class="chip__count">{{ countIn(item.slug) }}</span>
+          </a>
         </li>
       }
     </ul>

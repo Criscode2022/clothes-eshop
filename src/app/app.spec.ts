@@ -62,6 +62,10 @@ describe('App', () => {
     expect(element.querySelector('main h1')?.textContent).toContain('Knitwear');
     expect(element.querySelectorAll('main app-product-card')).toHaveLength(2);
     expect(element.querySelector('main')?.textContent).toContain('The merino sits close.');
+    const categories = [...element.querySelectorAll('nav.filters li')].map((item) =>
+      item.textContent?.replace(/\s+/g, ' ').trim(),
+    );
+    expect(categories).toEqual(['All 8', 'Outerwear 2', 'Knitwear 2', 'Trousers 2', 'Shirts 2']);
   });
 
   it('sends unknown URLs to the home page', async () => {
