@@ -60,6 +60,8 @@ import { ShopButtonImports } from '../../ui/shop-button';
 })
 export class ProductPage {
   readonly id = input.required<string>();
+  /** The color a card was showing, carried on `?color=`. Absent, the page opens on the cover. */
+  readonly openingColor = input<string | undefined>(undefined, { alias: 'color' });
   private readonly catalog = inject(CatalogStore);
   private readonly language = inject(Language);
   private readonly drawer = inject(BagDrawer);
@@ -82,9 +84,13 @@ export class ProductPage {
     const product = this.product();
     return product ? variantsByColor(product) : [];
   });
-  /** Opens on the cover color, the one the floor shows, when that color is still in stock. */
+  /** Opens on the color the address asks for, or the cover when that color is still in stock. */
   protected readonly color = linkedSignal(() => {
     const groups = this.colorGroups();
+    const asked = groups.find((group) => group.color === this.openingColor());
+    if (asked) {
+      return asked.color;
+    }
     const piece = this.product();
     const cover = piece ? portraitOf(piece.id)?.avif : undefined;
     const opening =

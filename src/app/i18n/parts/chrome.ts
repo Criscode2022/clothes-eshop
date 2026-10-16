@@ -18,7 +18,6 @@ export const CHROME: Record<string, string> = {
   'Quick add {name}': 'Añadir rápido {name}',
   'Sizes of {name}': 'Tallas de {name}',
   'Add a size': 'Añade una talla',
-  '{count} colors': '{count} colores',
   'Add {color} {size} to bag': 'Añadir {color} {size} a la bolsa',
   'Add {color} {size} to bag, sold out': 'Añadir {color} {size} a la bolsa, agotado',
   'Add {size} to bag': 'Añadir {size} a la bolsa',

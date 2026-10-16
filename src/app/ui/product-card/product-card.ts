@@ -1,4 +1,13 @@
-import { Component, ElementRef, computed, inject, input, signal, viewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  computed,
+  inject,
+  input,
+  linkedSignal,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucidePlus } from '@ng-icons/lucide';
@@ -12,7 +21,10 @@ import type { Product, Variant } from '../../shop/catalog';
 import { MoneyPipe } from '../../shop/money.pipe';
 import { PiecePhoto } from '../piece-photo';
 
-/** A piece on the floor. Its sizes open over the photograph, so a size goes into the bag without leaving the page. */
+/**
+ * A piece on the floor. Choosing a color swaps its photograph, and its sizes open over that
+ * photograph, so a size goes into the bag without leaving the page.
+ */
 @Component({
   selector: 'app-product-card',
   imports: [HlmBadge, MoneyPipe, NgIcon, PiecePhoto, RouterLink, TranslatePipe],
@@ -35,7 +47,23 @@ export class ProductCard {
   protected readonly panelId = computed(() => `sizes-${this.product().id}`);
   protected readonly colorGroups = computed(() => variantsByColor(this.product()));
   protected readonly colors = computed(() => this.colorGroups().map((group) => group.color));
+  /** Opens on the cover. Choosing another color swaps the photograph in place. */
+  protected readonly color = linkedSignal(() => this.colors()[0] ?? '');
+  /** Quick add lists the sizes of the color the card is showing. */
+  protected readonly shown = computed(
+    () => this.colorGroups().find((group) => group.color === this.color()) ?? null,
+  );
+  /** The piece opens on this color when the card is showing one other than its cover. */
+  protected readonly colorQuery = computed((): { color: string } | null => {
+    const chosen = this.color();
+    const cover = this.colors()[0];
+    return chosen && chosen !== cover ? { color: chosen } : null;
+  });
   protected readonly soldOut = computed(() => isSoldOut(this.product()));
+
+  protected chooseColor(color: string): void {
+    this.color.set(color);
+  }
 
   protected toggleSizes(): void {
     this.sizesOpen.update((open) => !open);

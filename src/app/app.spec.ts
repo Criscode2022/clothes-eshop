@@ -29,6 +29,33 @@ describe('App', () => {
     expect(document.title).toBe('Shop | Marlow');
   });
 
+  it('loads the opening three photographs with the page and leaves the rest until they are near', async () => {
+    const element = await renderAt('/');
+    const spread = [...element.querySelectorAll('.spread img')];
+    const cards = [...element.querySelectorAll('app-product-card img')];
+    const below = [...element.querySelectorAll('.note img, .room img')];
+
+    expect(spread).toHaveLength(3);
+    expect(spread[0]?.getAttribute('fetchpriority')).toBe('high');
+    expect(spread.map((img) => img.getAttribute('loading'))).toEqual(['eager', 'eager', 'eager']);
+    expect(cards.length).toBeGreaterThan(0);
+    expect(cards.every((img) => img.getAttribute('loading') === 'lazy')).toBe(true);
+    expect(cards.every((img) => img.getAttribute('fetchpriority') !== 'high')).toBe(true);
+    expect(below.length).toBeGreaterThan(0);
+    expect(below.every((img) => img.getAttribute('loading') === 'lazy')).toBe(true);
+  });
+
+  it('loads the first two photographs of a category with the page', async () => {
+    const element = await renderAt('/category/outerwear');
+    const cards = [...element.querySelectorAll('app-product-card img')];
+
+    expect(cards.length).toBeGreaterThan(0);
+    for (const [index, img] of cards.entries()) {
+      expect(img.getAttribute('loading')).toBe(index < 2 ? 'eager' : 'lazy');
+      expect(img.getAttribute('fetchpriority')).toBe(index < 2 ? 'high' : null);
+    }
+  });
+
   it('shows one category with its fit note', async () => {
     const element = await renderAt('/category/knitwear');
 

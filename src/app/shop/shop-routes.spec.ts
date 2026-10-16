@@ -324,6 +324,58 @@ describe('shop routes', () => {
     );
   });
 
+  it('changes a piece’s color on the floor, and opens the piece in that color', async () => {
+    const { fixture } = await render('/');
+    const card = (): HTMLElement => {
+      const found = [...document.querySelectorAll('app-product-card')].find((item) =>
+        item.querySelector('a[href^="/product/wool-overcoat"]'),
+      );
+      if (!found) {
+        throw new Error('No card for the overcoat.');
+      }
+      return found as HTMLElement;
+    };
+    const photo = (): HTMLImageElement | null => card().querySelector('img');
+
+    expect(photo()?.getAttribute('src')).toBe('/garments/wool-overcoat.avif');
+    expect(card().querySelector('a.sweep')?.getAttribute('href')).toBe('/product/wool-overcoat');
+    expect(
+      card().querySelector<HTMLInputElement>('input[value="Charcoal"]')?.checked,
+    ).toBe(true);
+
+    await clickButton(fixture, 'Quick add Charcoal Wool Overcoat');
+    expect(card().querySelector('button[aria-label="Add Charcoal 46 to bag"]')).not.toBeNull();
+    expect(card().querySelector('button[aria-label="Add Camel 50 to bag"]')).toBeNull();
+
+    await choose(fixture, 'input[name="color-wool-overcoat"][value="Camel"]');
+
+    expect(TestBed.inject(Router).url).toBe('/');
+    expect(photo()?.getAttribute('src')).toBe('/garments/wool-overcoat-camel.avif');
+    expect(card().querySelector('a.sweep')?.getAttribute('href')).toBe(
+      '/product/wool-overcoat?color=Camel',
+    );
+    expect(card().querySelector('button[aria-label="Add Charcoal 46 to bag"]')).toBeNull();
+    expect(card().querySelector('.sizes__hint')?.textContent?.trim()).toBe('Camel');
+
+    await clickLabelled(fixture, '#sizes-wool-overcoat', 'Add Camel 50 to bag');
+    expect(TestBed.inject(Bag).items()).toEqual([
+      { productId: 'wool-overcoat', variantId: 'wool-overcoat-50-camel', quantity: 1 },
+    ]);
+
+    await go(fixture, '/product/wool-overcoat?color=Camel');
+    expect(document.querySelector('.pdp__media img')?.getAttribute('src')).toBe(
+      '/garments/wool-overcoat-camel.avif',
+    );
+    expect(document.querySelector('.pdp__media img')?.getAttribute('alt')).toBe(
+      'Charcoal Wool Overcoat in Camel',
+    );
+
+    await go(fixture, '/product/wool-overcoat?color=Nope');
+    expect(document.querySelector('.pdp__media img')?.getAttribute('src')).toBe(
+      '/garments/wool-overcoat.avif',
+    );
+  });
+
   it('adds a size from the floor without leaving it', async () => {
     const { fixture } = await render('/');
     await clickButton(fixture, 'Quick add Oxford Cloth Shirt');

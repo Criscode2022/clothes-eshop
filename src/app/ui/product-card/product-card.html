@@ -1,9 +1,15 @@
 <div class="media">
-  <a class="media__link" [routerLink]="['/product', product().id]" tabindex="-1" aria-hidden="true">
+  <a
+    class="media__link"
+    [routerLink]="['/product', product().id]"
+    [queryParams]="colorQuery()"
+    tabindex="-1"
+    aria-hidden="true"
+  >
     <app-piece-photo
       class="media__photo"
       [pieceId]="product().id"
-      [color]="colors()[0] ?? ''"
+      [color]="color()"
       [priority]="priority()"
       [transitionName]="'piece-' + product().id"
     />
@@ -30,14 +36,11 @@
       role="group"
       [attr.aria-label]="'Sizes of {name}' | t: { name: (product().name | t) }"
     >
-      @if (colors().length === 1) {
-        <p class="sizes__hint" aria-hidden="true">{{ 'Add a size' | t }}</p>
-      }
-      @for (group of colorGroups(); track group.color) {
+      @if (shown(); as group) {
+        <p class="sizes__hint" aria-hidden="true">
+          {{ (colors().length > 1 ? group.color : 'Add a size') | t }}
+        </p>
         <div class="sizes__row">
-          @if (colors().length > 1) {
-            <span class="sizes__color">{{ group.color | t }}</span>
-          }
           @for (variant of group.variants; track variant.id; let index = $index) {
             <button
               type="button"
@@ -58,17 +61,27 @@
 
 <div class="info">
   <h3 class="info__name">
-    <a class="sweep" [routerLink]="['/product', product().id]">{{ product().name | t }}</a>
+    <a class="sweep" [routerLink]="['/product', product().id]" [queryParams]="colorQuery()">{{
+      product().name | t
+    }}</a>
   </h3>
   <p class="info__price">{{ product().priceCents | money }}</p>
   @if (colors().length > 1) {
-    <ul class="info__colors" role="list" [attr.aria-label]="'{count} colors' | t: { count: colors().length }">
-      @for (color of colors(); track color) {
-        <li>
-          <span class="swatch" [style.background]="clothColor(color)"></span>
-          <span class="sr-only">{{ color | t }}</span>
-        </li>
+    <fieldset class="info__colors">
+      <legend class="sr-only">{{ 'Color' | t }}</legend>
+      @for (cloth of colors(); track cloth) {
+        <label class="swatch-option">
+          <input
+            type="radio"
+            [name]="'color-' + product().id"
+            [value]="cloth"
+            [checked]="cloth === color()"
+            [attr.aria-label]="cloth | t"
+            (change)="chooseColor(cloth)"
+          />
+          <span class="swatch" [style.background]="clothColor(cloth)"></span>
+        </label>
       }
-    </ul>
+    </fieldset>
   }
 </div>
