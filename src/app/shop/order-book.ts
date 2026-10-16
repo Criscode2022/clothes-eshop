@@ -8,6 +8,7 @@ import {
   ordersVisibleTo,
 } from './access';
 import type { Actor } from './access';
+import { asLocale } from '../i18n/locale';
 import { assertDeliverable, normalizedShipping } from './address-rules';
 import { ShopRuleError } from './cart';
 import { cloneProducts, isCategorySlug, SEED_PRODUCTS } from './catalog';
@@ -123,6 +124,7 @@ export function placeOrder(
     fulfillment: 'placed',
     paidAt: null,
     placedAt: new Date().toISOString(),
+    locale: asLocale(draft.locale),
   };
   writeState({
     ...current,

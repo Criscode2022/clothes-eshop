@@ -15,6 +15,9 @@ import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideBanknote, lucideStore, lucideTruck } from '@ng-icons/lucide';
 import { HlmAccordionImports } from '@spartan-ng/helm/accordion';
 import { HlmEmptyImports } from '@spartan-ng/helm/empty';
+import { Language } from '../../i18n/language';
+import { TranslatePipe } from '../../i18n/translate.pipe';
+import { translate } from '../../i18n/translate';
 import { BagDrawer } from '../../shop/bag-drawer';
 import { categoryName, clothColor, variantsByColor } from '../../shop/catalog';
 import { BackLink } from '../../ui/back-link';
@@ -45,6 +48,7 @@ import { ShopButtonImports } from '../../ui/shop-button';
     Reveal,
     RouterLink,
     ShopButtonImports,
+    TranslatePipe,
   ],
   providers: [provideIcons({ lucideBanknote, lucideStore, lucideTruck })],
   templateUrl: './product.html',
@@ -53,6 +57,7 @@ import { ShopButtonImports } from '../../ui/shop-button';
 export class ProductPage {
   readonly id = input.required<string>();
   private readonly catalog = inject(CatalogStore);
+  private readonly language = inject(Language);
   private readonly drawer = inject(BagDrawer);
   private readonly sizeGroup = viewChild<ElementRef<HTMLElement>>('sizeGroup');
   private readonly buyButton = viewChild<ElementRef<HTMLElement>>('buyButton');
@@ -92,8 +97,12 @@ export class ProductPage {
   });
   /** The photograph follows the chosen color, so its description names it. */
   protected readonly photoAlt = computed(() => {
-    const name = this.product()?.name ?? '';
-    return this.color() ? `${name} in ${this.color()}` : name;
+    const locale = this.language.locale();
+    const name = translate(locale, this.product()?.name ?? '');
+    const color = this.color();
+    return color
+      ? translate(locale, '{name} in {color}', { name, color: translate(locale, color) })
+      : name;
   });
   protected readonly sizes = computed(
     () => this.colorGroups().find((group) => group.color === this.color())?.variants ?? [],

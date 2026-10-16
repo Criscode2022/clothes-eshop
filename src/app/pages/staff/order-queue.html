@@ -1,20 +1,20 @@
 <section class="queue" aria-labelledby="queue-title">
   <div class="queue__head">
-    <h2 id="queue-title" class="queue__title">{{ heading() }}</h2>
+    <h2 id="queue-title" class="queue__title">{{ heading() | t }}</h2>
     <div hlmInputGroup class="search search-frame">
       <div hlmInputGroupAddon><ng-icon name="lucideSearch" /></div>
       <input
         hlmInputGroupInput
         type="search"
-        placeholder="Reference or name"
-        aria-label="Find an order by reference or client name"
+        [placeholder]="'Reference or name' | t"
+        [attr.aria-label]="'Find an order by reference or client name' | t"
         (input)="search($event)"
       />
     </div>
   </div>
 
   <fieldset class="views">
-    <legend class="sr-only">Show orders</legend>
+    <legend class="sr-only">{{ 'Show orders' | t }}</legend>
     @for (option of views; track option.id) {
       <label class="chip">
         <input
@@ -24,7 +24,7 @@
           [checked]="view() === option.id"
           (change)="chooseView(option.id)"
         />
-        {{ option.label }}
+        {{ option.label | t }}
         <span class="chip__count">{{ counts()[option.id] }}</span>
       </label>
     }
@@ -33,10 +33,10 @@
   @if (actionError()) {
     <div hlmAlert variant="destructive">
       <ng-icon name="lucideCircleAlert" />
-      <p hlmAlertDescription>{{ actionError() }}</p>
+      <p hlmAlertDescription>{{ actionError() | t }}</p>
     </div>
   }
-  <p class="sr-only" role="status">{{ lastChange() }}</p>
+  <p class="sr-only" role="status">{{ lastChange() | t }}</p>
 
   @if (loading()) {
     <div class="skeletons" aria-hidden="true">
@@ -44,48 +44,50 @@
         <hlm-skeleton class="skeletons__row" />
       }
     </div>
-    <p class="sr-only" role="status">Loading orders.</p>
+    <p class="sr-only" role="status">{{ 'Loading orders.' | t }}</p>
   } @else if (loadError()) {
     <div class="queue__state">
       <div hlmAlert variant="destructive">
         <ng-icon name="lucideCircleAlert" />
-        <p hlmAlertDescription>{{ loadError() }}</p>
+        <p hlmAlertDescription>{{ loadError() | t }}</p>
       </div>
-      <button hlmBtn variant="outline" type="button" (click)="load()">Try again</button>
+      <button hlmBtn variant="outline" type="button" (click)="load()">{{ 'Try again' | t }}</button>
     </div>
   } @else if (!hasOrders()) {
     <div hlmEmpty class="queue__empty">
       <div hlmEmptyHeader>
         <div hlmEmptyMedia variant="icon"><ng-icon name="lucideInbox" /></div>
-        <p hlmEmptyTitle>No orders yet</p>
-        <p hlmEmptyDescription>They appear here the moment a shopper places one.</p>
+        <p hlmEmptyTitle>{{ 'No orders yet' | t }}</p>
+        <p hlmEmptyDescription>{{ 'They appear here the moment a shopper places one.' | t }}</p>
       </div>
     </div>
   } @else if (visible().length === 0) {
     <div hlmEmpty class="queue__empty">
       <div hlmEmptyHeader>
         @if (query()) {
-          <p hlmEmptyTitle>Nothing matches “{{ query() }}” here</p>
-          <p hlmEmptyDescription>Search by an order reference, like MR-1001, or a client's name.</p>
+          <p hlmEmptyTitle>{{ 'Nothing matches “{query}” here' | t: { query: query() } }}</p>
+          <p hlmEmptyDescription>
+            {{ "Search by an order reference, like MR-1001, or a client's name." | t }}
+          </p>
         } @else {
-          <p hlmEmptyTitle>No orders in this view</p>
-          <p hlmEmptyDescription>Choose another state above to see its orders.</p>
+          <p hlmEmptyTitle>{{ 'No orders in this view' | t }}</p>
+          <p hlmEmptyDescription>{{ 'Choose another state above to see its orders.' | t }}</p>
         }
       </div>
     </div>
   } @else {
-    <div hlmTableContainer role="region" aria-label="Order table" tabindex="0">
+    <div hlmTableContainer role="region" [attr.aria-label]="'Order table' | t" tabindex="0">
       <table hlmTable class="data-table">
         <thead hlmTHead>
           <tr hlmTr>
-            <th hlmTh scope="col">Order</th>
-            <th hlmTh scope="col">Client</th>
-            <th hlmTh scope="col">Delivery</th>
-            <th hlmTh scope="col" class="numeric">Pieces</th>
-            <th hlmTh scope="col" class="numeric">Total</th>
-            <th hlmTh scope="col">Payment</th>
-            <th hlmTh scope="col">State</th>
-            <th hlmTh scope="col"><span class="sr-only">Actions</span></th>
+            <th hlmTh scope="col">{{ 'Order' | t }}</th>
+            <th hlmTh scope="col">{{ 'Client' | t }}</th>
+            <th hlmTh scope="col">{{ 'Delivery' | t }}</th>
+            <th hlmTh scope="col" class="numeric">{{ 'Pieces' | t }}</th>
+            <th hlmTh scope="col" class="numeric">{{ 'Total' | t }}</th>
+            <th hlmTh scope="col">{{ 'Payment' | t }}</th>
+            <th hlmTh scope="col">{{ 'State' | t }}</th>
+            <th hlmTh scope="col"><span class="sr-only">{{ 'Actions' | t }}</span></th>
           </tr>
         </thead>
         <tbody hlmTBody>
@@ -106,29 +108,29 @@
               <td hlmTd>
                 <span class="client">{{ order.contact.name }}</span>
                 @if (order.clientId) {
-                  <span class="muted">Account</span>
+                  <span class="muted">{{ 'Account' | t }}</span>
                 } @else {
-                  <span class="muted">Guest</span>
+                  <span class="muted">{{ 'Guest' | t }}</span>
                 }
               </td>
               <td hlmTd>
-                <span class="client">{{ deliveryName(order.delivery) }}</span>
+                <span class="client">{{ deliveryName(order.delivery) | t }}</span>
                 @if (order.shipping; as shipping) {
-                  <span class="muted">{{ shipping.city }}, {{ shipping.country }}</span>
+                  <span class="muted">{{ shipping.city }}, {{ shipping.country | t }}</span>
                 } @else {
-                  <span class="muted">At the counter</span>
+                  <span class="muted">{{ 'At the counter' | t }}</span>
                 }
               </td>
               <td hlmTd class="numeric">{{ pieceCount(order) }}</td>
               <td hlmTd class="numeric">{{ order.totalCents | money }}</td>
               <td hlmTd>
-                <span class="client">{{ paymentLabel(order.paymentMethod) }}</span>
+                <span class="client">{{ paymentLabel(order.paymentMethod) | t }}</span>
                 @switch (paymentStateOf(order)) {
                   @case ('pending') {
-                    <span class="muted">Payment pending</span>
+                    <span class="muted">{{ 'Payment pending' | t }}</span>
                   }
                   @case ('paid') {
-                    <span class="muted">Paid</span>
+                    <span class="muted">{{ 'Paid' | t }}</span>
                   }
                 }
               </td>
@@ -136,7 +138,9 @@
               <td hlmTd>
                 <div class="actions">
                   @if (confirmingCancel() === order.reference) {
-                    <span class="actions__ask">Cancel {{ order.reference }}?</span>
+                    <span class="actions__ask">{{
+                      'Cancel {reference}?' | t: { reference: order.reference }
+                    }}</span>
                     <button
                       hlmBtn
                       variant="outline"
@@ -145,7 +149,7 @@
                       [disabled]="moving() === order.reference"
                       (click)="move(order, 'cancelled')"
                     >
-                      Cancel order
+                      {{ 'Cancel order' | t }}
                     </button>
                     <button
                       hlmBtn
@@ -154,7 +158,7 @@
                       type="button"
                       (click)="confirmingCancel.set(null)"
                     >
-                      Keep
+                      {{ 'Keep' | t }}
                     </button>
                   } @else {
                     @if (nextStep(order); as step) {
@@ -169,7 +173,7 @@
                         @if (moving() === order.reference) {
                           <hlm-spinner aria-hidden="true" />
                         }
-                        {{ step.label }}<span class="sr-only"> {{ order.reference }}</span>
+                        {{ step.label | t }}<span class="sr-only"> {{ order.reference }}</span>
                       </button>
                     }
                     @if (canCancel(order)) {
@@ -181,7 +185,7 @@
                         [disabled]="moving() === order.reference"
                         (click)="confirmingCancel.set(order.reference)"
                       >
-                        Cancel<span class="sr-only"> {{ order.reference }}</span>
+                        {{ 'Cancel' | t }}<span class="sr-only"> {{ order.reference }}</span>
                       </button>
                     }
                   }
@@ -193,43 +197,53 @@
                 <td hlmTd colspan="8">
                   <div class="details__grid">
                     <div>
-                      <h3 class="details__title">To prepare</h3>
+                      <h3 class="details__title">{{ 'To prepare' | t }}</h3>
                       <ul class="details__lines" role="list">
                         @for (line of order.lines; track line.variantId) {
                           <li>
                             <span class="details__quantity">{{ line.quantity }} ×</span>
-                            {{ line.name }}, {{ line.color }} {{ line.size }}
+                            {{
+                              '{name}, {color} {size}'
+                                | t
+                                  : {
+                                      name: (line.name | t),
+                                      color: (line.color | t),
+                                      size: line.size,
+                                    }
+                            }}
                           </li>
                         }
                       </ul>
                     </div>
                     @if (order.shipping; as shipping) {
                       <div>
-                        <h3 class="details__title">Ship to</h3>
+                        <h3 class="details__title">{{ 'Ship to' | t }}</h3>
                         <p>
                           {{ order.contact.name }}
                           @for (line of addressLines(shipping); track $index) {
-                            <br />{{ line }}
+                            <br />{{ line | t }}
                           }
                         </p>
                       </div>
                     } @else {
                       <div>
-                        <h3 class="details__title">Pick up</h3>
+                        <h3 class="details__title">{{ 'Pick up' | t }}</h3>
                         <p>
-                          {{ order.contact.name }} picks it up at the counter, giving the reference
-                          {{ order.reference }}.
+                          {{
+                            '{name} picks it up at the counter, giving the reference {reference}.'
+                              | t: { name: order.contact.name, reference: order.reference }
+                          }}
                         </p>
                       </div>
                     }
                     <div>
-                      <h3 class="details__title">Contact</h3>
+                      <h3 class="details__title">{{ 'Contact' | t }}</h3>
                       <p>
                         {{ order.contact.email }}<br />
                         {{ order.contact.phone }}
                       </p>
                       <p class="details__link">
-                        <a [routerLink]="['/order', order.reference]">Open the order page</a>
+                        <a [routerLink]="['/order', order.reference]">{{ 'Open the order page' | t }}</a>
                       </p>
                     </div>
                   </div>

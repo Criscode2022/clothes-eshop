@@ -1,33 +1,33 @@
 <div class="account page">
   <header class="head">
     <app-breadcrumb [trail]="[{ label: 'Your account', link: '/account' }, { label: 'Orders' }]" />
-    <h1 class="title">Your orders</h1>
+    <h1 class="title">{{ 'Your orders' | t }}</h1>
   </header>
 
   @if (orders.error()) {
     <div class="state">
       <div hlmAlert variant="destructive">
         <ng-icon name="lucideCircleAlert" />
-        <p hlmAlertDescription>{{ orders.error()?.message }}</p>
+        <p hlmAlertDescription>{{ orders.error()?.message | t }}</p>
       </div>
-      <a hlmBtn routerLink="/sign-in">Sign in again</a>
+      <a hlmBtn routerLink="/sign-in">{{ 'Sign in again' | t }}</a>
     </div>
   } @else if (orders.hasValue()) {
     @if (!hasOrders()) {
       <section hlmEmpty class="empty" aria-labelledby="no-orders-title">
         <div hlmEmptyHeader>
           <div hlmEmptyMedia variant="icon"><ng-icon name="lucideReceipt" /></div>
-          <h2 id="no-orders-title" hlmEmptyTitle>No orders under this name yet</h2>
-          <p hlmEmptyDescription>Orders you place while signed in appear here.</p>
+          <h2 id="no-orders-title" hlmEmptyTitle>{{ 'No orders under this name yet' | t }}</h2>
+          <p hlmEmptyDescription>{{ 'Orders you place while signed in appear here.' | t }}</p>
         </div>
         <div hlmEmptyContent>
-          <a hlmBtn routerLink="/">Shop the floor</a>
+          <a hlmBtn routerLink="/">{{ 'Shop the floor' | t }}</a>
         </div>
       </section>
     } @else {
-      <div class="filters" role="search" aria-label="Find and sort your orders">
+      <div class="filters" role="search" [attr.aria-label]="'Find and sort your orders' | t">
         <div class="filters__field">
-          <label class="field__label" for="orders-reference">Order reference</label>
+          <label class="field__label" for="orders-reference">{{ 'Order reference' | t }}</label>
           <div hlmInputGroup class="filters__search search-frame">
             <div hlmInputGroupAddon><ng-icon name="lucideSearch" /></div>
             <input
@@ -43,11 +43,11 @@
           </div>
         </div>
         <div class="filters__field">
-          <label class="field__label" for="orders-sort">Sort</label>
+          <label class="field__label" for="orders-sort">{{ 'Sort' | t }}</label>
           <select id="orders-sort" class="input filters__sort" (change)="sortBy($event)">
             @for (option of sorts; track option.id) {
               <option [value]="option.id" [selected]="option.id === sortId()">
-                {{ option.label }}
+                {{ option.label | t }}
               </option>
             }
           </select>
@@ -60,14 +60,16 @@
             class="filters__clear"
             (click)="clearFilters()"
           >
-            Clear filters
+            {{ 'Clear filters' | t }}
           </button>
         }
       </div>
       <p class="filters__count" role="status">{{ count() }}</p>
 
       @if (listed().length === 0) {
-        <p class="filters__none">No order matches “{{ view().reference.trim() }}”.</p>
+        <p class="filters__none">
+          {{ 'No order matches “{reference}”.' | t: { reference: view().reference.trim() } }}
+        </p>
       }
       <ul class="orders" role="list">
         @for (order of listed(); track order.reference; let index = $index) {
@@ -99,6 +101,6 @@
         <hlm-skeleton class="order-skeleton" />
       }
     </div>
-    <p class="sr-only" role="status">Loading your orders.</p>
+    <p class="sr-only" role="status">{{ 'Loading your orders.' | t }}</p>
   }
 </div>

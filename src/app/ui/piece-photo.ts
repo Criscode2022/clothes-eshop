@@ -1,12 +1,13 @@
 import { NgOptimizedImage } from '@angular/common';
 import { Component, computed, input } from '@angular/core';
+import { TranslatePipe } from '../i18n/translate.pipe';
 import { clothColor } from '../shop/catalog';
 import { portraitOf } from '../shop/cloth';
 
 /** A piece's photograph in its cloth color, or a quiet stand-in in that color when there is no photograph of it yet. */
 @Component({
   selector: 'app-piece-photo',
-  imports: [NgOptimizedImage],
+  imports: [NgOptimizedImage, TranslatePipe],
   template: `
     @if (portrait(); as photo) {
       <picture>
@@ -17,14 +18,14 @@ import { portraitOf } from '../shop/cloth';
           width="800"
           height="1200"
           [priority]="priority()"
-          [alt]="alt()"
+          [alt]="alt() | t"
           [style.view-transition-name]="transitionName() || null"
         />
       </picture>
     } @else {
       <div class="stand-in" [style.view-transition-name]="transitionName() || null">
         <span class="swatch" [style.background]="swatch()"></span>
-        <span class="stand-in__note">No photograph yet</span>
+        <span class="stand-in__note">{{ 'No photograph yet' | t }}</span>
       </div>
     }
   `,

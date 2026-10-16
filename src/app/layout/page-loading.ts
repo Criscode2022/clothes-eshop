@@ -11,6 +11,7 @@ import {
 import type { Event as RouterEvent } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideLoader2 } from '@ng-icons/lucide';
+import { TranslatePipe } from '../i18n/translate.pipe';
 
 /** How long a page change runs before it shows as loading, so quick ones never flash. */
 export const LOADING_DELAY_MS = 150;
@@ -34,10 +35,10 @@ export function pageChangeUnderWay(event: RouterEvent): boolean | null {
  */
 @Component({
   selector: 'app-page-loading',
-  imports: [NgIcon],
+  imports: [NgIcon, TranslatePipe],
   providers: [provideIcons({ lucideLoader2 })],
   template: `
-    <p class="sr-only" role="status">{{ shown() ? 'Loading the page' : '' }}</p>
+    <p class="sr-only" role="status">{{ shown() ? ('Loading the page' | t) : '' }}</p>
     @if (shown()) {
       <div class="veil">
         <ng-icon name="lucideLoader2" class="veil__spinner" aria-hidden="true" />

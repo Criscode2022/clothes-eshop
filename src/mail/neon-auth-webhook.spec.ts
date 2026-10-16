@@ -106,8 +106,17 @@ describe('Neon Auth events', () => {
         to: 'ada@example.com',
         link: 'https://auth.example/reset-password/abc?callbackURL=https%3A%2F%2Fmarlow.shop%2Freset-password',
         expiresAt: Date.parse('2026-10-11T10:15:00Z'),
+        locale: 'en',
       },
     ]);
+  });
+
+  it('sends the reset link in the language remembered for that email', async () => {
+    const { mail, links } = recordingMail();
+
+    await handleNeonAuthEvent(JSON.parse(RESET), mail, async () => 'es');
+
+    expect(links[0]).toMatchObject({ to: 'ada@example.com', locale: 'es' });
   });
 
   it('delivers a one-time code', async () => {
@@ -132,6 +141,7 @@ describe('Neon Auth events', () => {
         to: 'ada@example.com',
         code: '482913',
         expiresAt: Date.parse('2026-10-11T10:10:00Z'),
+        locale: 'en',
       },
     ]);
   });

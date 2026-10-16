@@ -1,11 +1,12 @@
 <article class="atelier">
   <header class="lead page">
     <div class="lead__text">
-      <h1 class="lead__title">Atelier</h1>
+      <h1 class="lead__title">{{ 'Atelier' | t }}</h1>
       <p class="lead__intro">
-        Marlow cuts a small ready-to-wear floor: coats that clear a knit, trousers with a real
-        thigh, and shirts you can press at home. The pieces on the floor are the collection. There
-        is no separate drop and no waiting list.
+        {{
+          'Marlow cuts a small ready-to-wear floor: coats that clear a knit, trousers with a real thigh, and shirts you can press at home. The pieces on the floor are the collection. There is no separate drop and no waiting list.'
+            | t
+        }}
       </p>
     </div>
     <div class="lead__photo">
@@ -18,7 +19,7 @@
             width="800"
             height="1200"
             priority
-            alt="Charcoal Wool Overcoat"
+            [alt]="'Charcoal Wool Overcoat' | t"
           />
         </picture>
       }
@@ -27,65 +28,84 @@
 
   <div class="body page">
     <section class="block" aria-labelledby="cloth-title" appReveal>
-      <h2 id="cloth-title" class="block__title">Cloth and care</h2>
+      <h2 id="cloth-title" class="block__title">{{ 'Cloth and care' | t }}</h2>
       <div class="block__text">
         <p>
-          Cloth is named on each piece, with the care it actually needs. Wool is brushed and aired.
-          Cotton is washed. Silk is cleaned, not guessed at.
+          {{
+            'Cloth is named on each piece, with the care it actually needs. Wool is brushed and aired. Cotton is washed. Silk is cleaned, not guessed at.'
+              | t
+          }}
         </p>
         <p>
-          Fit notes describe the cut. They are not a lab chart, and they are not a promise that two
-          bodies wear one size the same way.
+          {{
+            'Fit notes describe the cut. They are not a lab chart, and they are not a promise that two bodies wear one size the same way.'
+              | t
+          }}
         </p>
       </div>
     </section>
 
     <section id="shipping" class="block" aria-labelledby="shipping-title" appReveal>
-      <h2 id="shipping-title" class="block__title">Shipping and payment</h2>
+      <h2 id="shipping-title" class="block__title">{{ 'Shipping and payment' | t }}</h2>
       <div class="block__text">
         <p>
-          Shipping is $8.00, and free when the pieces total at least $200.00. Picking the order up
-          at the shop is always free: {{ pickupPoint.name }}, {{ pickupPoint.lines[0] }},
-          {{ pickupPoint.lines[1] }}, {{ pickupPoint.hours }}. You can check out as a guest; an
-          account only keeps the order under your name.
+          {{
+            'Shipping is $8.00, and free when the pieces total at least $200.00. Picking the order up at the shop is always free: {place}, {line1}, {line2}, {hours}. You can check out as a guest; an account only keeps the order under your name.'
+              | t
+                : {
+                    place: pickupPoint.name,
+                    line1: pickupPoint.lines[0],
+                    line2: pickupPoint.lines[1],
+                    hours: (pickupPoint.hours | t),
+                  }
+          }}
         </p>
-        <p>You choose how to pay, and Marlow records the method. It never takes a card number.</p>
+        <p>
+          {{
+            'You choose how to pay, and Marlow records the method. It never takes a card number.' | t
+          }}
+        </p>
         <ul class="methods" role="list">
           @for (method of paymentMethods; track method.id) {
-            <li>{{ method.text }}</li>
+            <li>
+              {{ method.label | t }}@if (method.fit) {
+                , {{ method.fit | t }}
+              }
+            </li>
           }
         </ul>
       </div>
     </section>
 
     <section id="orders" class="block" aria-labelledby="orders-title" appReveal>
-      <h2 id="orders-title" class="block__title">How an order leaves</h2>
+      <h2 id="orders-title" class="block__title">{{ 'How an order leaves' | t }}</h2>
       <div class="block__text">
         <ol class="steps" role="list">
           @for (step of orderSteps; track step.name; let index = $index) {
             <li class="steps__item">
               <span class="steps__number" aria-hidden="true">{{ index + 1 }}</span>
               <div>
-                <h3 class="steps__name">{{ step.name }}</h3>
-                <p>{{ step.detail }}</p>
+                <h3 class="steps__name">{{ step.name | t }}</h3>
+                <p>{{ step.detail | t }}</p>
               </div>
             </li>
           }
         </ol>
         <p>
-          You can cancel an order until it leaves the shop, or, when you pick it up, until you do:
-          signed in, from the order's page, and for an order placed without an account, by giving
-          the shop its reference. Its pieces go back on the floor.
+          {{
+            "You can cancel an order until it leaves the shop, or, when you pick it up, until you do: signed in, from the order's page, and for an order placed without an account, by giving the shop its reference. Its pieces go back on the floor."
+              | t
+          }}
         </p>
       </div>
     </section>
 
     <nav class="block" aria-labelledby="floor-title" appReveal>
-      <h2 id="floor-title" class="block__title">The floor</h2>
+      <h2 id="floor-title" class="block__title">{{ 'The floor' | t }}</h2>
       <ul class="floor-links" role="list">
         @for (category of categories; track category.slug) {
           <li>
-            <a class="sweep" [routerLink]="['/category', category.slug]">{{ category.name }}</a>
+            <a class="sweep" [routerLink]="['/category', category.slug]">{{ category.name | t }}</a>
           </li>
         }
       </ul>

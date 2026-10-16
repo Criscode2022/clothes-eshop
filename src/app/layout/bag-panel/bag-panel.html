@@ -10,9 +10,9 @@
   >
     <hlm-sheet-header class="bag__head">
       <h2 hlmSheetTitle class="bag__title">
-        Bag <span class="bag__count">{{ bag.count() }}</span>
+        {{ 'Bag' | t }} <span class="bag__count">{{ bag.count() }}</span>
       </h2>
-      <button hlmSheetClose hlmBtn variant="ghost" size="icon" aria-label="Close bag">
+      <button hlmSheetClose hlmBtn variant="ghost" size="icon" [attr.aria-label]="'Close bag' | t">
         <ng-icon name="lucideX" />
       </button>
     </hlm-sheet-header>
@@ -21,19 +21,21 @@
       <div hlmEmpty class="bag__empty">
         <div hlmEmptyHeader>
           <div hlmEmptyMedia variant="icon"><ng-icon name="lucideShoppingBag" /></div>
-          <h3 hlmEmptyTitle>Your bag is empty</h3>
+          <h3 hlmEmptyTitle>{{ 'Your bag is empty' | t }}</h3>
           <p hlmEmptyDescription>
-            Choose a size on any piece and it waits here until you check out.
+            {{ 'Choose a size on any piece and it waits here until you check out.' | t }}
           </p>
         </div>
         <div hlmEmptyContent>
           <button hlmSheetClose hlmBtn variant="link" size="sm" class="self-center">
-            Keep shopping
+            {{ 'Keep shopping' | t }}
           </button>
           <ul class="bag__rooms" role="list">
             @for (category of categories; track category.slug) {
               <li>
-                <a class="sweep" [routerLink]="['/category', category.slug]">{{ category.name }}</a>
+                <a class="sweep" [routerLink]="['/category', category.slug]">{{
+                  category.name | t
+                }}</a>
               </li>
             }
           </ul>
@@ -43,7 +45,10 @@
       @if (addedLine(); as line) {
         <p hlmSheetDescription class="bag__added">
           <ng-icon name="lucideCheck" class="bag__added-icon" />
-          <span>Added {{ line.name }}, {{ line.color }} {{ line.size }}.</span>
+          <span>{{
+            'Added {name}, {color} {size}.'
+              | t: { name: (line.name | t), color: (line.color | t), size: line.size }
+          }}</span>
         </p>
       }
 
@@ -64,13 +69,16 @@
             [shippingCents]="quote.shippingCents"
             [totalCents]="quote.totalCents"
           />
-          <a hlmBtn routerLink="/checkout" class="w-full">Check out</a>
+          <a hlmBtn routerLink="/checkout" class="w-full">{{ 'Check out' | t }}</a>
           <button hlmSheetClose hlmBtn variant="link" size="sm" class="self-center">
-            Keep shopping
+            {{ 'Keep shopping' | t }}
           </button>
         } @else {
           <p class="bag__problem" role="alert">
-            A size in your bag changed on the floor. Lower its quantity or remove it to check out.
+            {{
+              'A size in your bag changed on the floor. Lower its quantity or remove it to check out.'
+                | t
+            }}
           </p>
         }
       </hlm-sheet-footer>

@@ -1,3 +1,10 @@
+import { SPANISH } from '../app/i18n/es';
+import { asLocale } from '../app/i18n/locale';
+import type { Locale } from '../app/i18n/locale';
+import { translate, useSpanish } from '../app/i18n/translate';
+import type { CopyParams } from '../app/i18n/translate';
+
+useSpanish(SPANISH);
 import { MARLOW_ACCOUNT, SANDBOX_BANK } from '../app/shop/bank-transfer';
 import { addressLines, paymentLabel } from '../app/shop/checkout';
 import type { ShopOrder } from '../app/shop/checkout';
@@ -5,6 +12,12 @@ import { fulfillmentNote } from '../app/shop/fulfillment';
 import type { Fulfillment } from '../app/shop/fulfillment';
 import { formatMoney } from '../app/shop/money';
 import { PICKUP_POINT } from '../app/shop/pickup-point';
+
+type Say = (english: string, params?: CopyParams) => string;
+
+function say(locale: Locale): Say {
+  return (english, params) => translate(locale, english, params);
+}
 
 /** One message, ready for any mailer: the HTML part and the plain-text part say the same thing. */
 export interface Email {
@@ -22,6 +35,8 @@ export interface AuthLink {
   readonly to: string;
   readonly link: string;
   readonly minutes: number;
+  /** The language the person was using when they asked. Absent is English. */
+  readonly locale?: Locale;
 }
 
 export interface AuthCode {
@@ -29,6 +44,8 @@ export interface AuthCode {
   readonly to: string;
   readonly code: string;
   readonly minutes: number;
+  /** The language the person was using when they asked. Absent is English. */
+  readonly locale?: Locale;
 }
 
 /**
@@ -40,37 +57,47 @@ export function orderPlacedEmail(
   shopUrl: string,
   transferPath: string | null,
 ): Email {
+  const locale = asLocale(order.locale);
+  const t = say(locale);
   const orderUrl = `${shopUrl}/order/${encodeURIComponent(order.reference)}`;
-  const shipping = order.shippingCents === 0 ? 'Free' : formatMoney(order.shippingCents);
-  const transfer = transferPath ? transferInstructions(order, `${shopUrl}${transferPath}`) : null;
+  const shipping = order.shippingCents === 0 ? t('Free') : formatMoney(order.shippingCents);
+  const transfer = transferPath ? transferInstructions(order, `${shopUrl}${transferPath}`, t) : null;
+  const method = t(paymentLabel(order.paymentMethod));
   const payment = transfer
-    ? `${paymentLabel(order.paymentMethod)}, pending until the transfer arrives. No card was taken.`
-    : `${paymentLabel(order.paymentMethod)}. No card was taken.`;
-  const place = handoverOf(order);
-  const placeNote = order.delivery === 'pickup' ? `${place.note} ${READY_EMAIL_NOTE}` : '';
+    ? t('{method}, pending until the transfer arrives. No card was taken.', { method })
+    : t('{method}. No card was taken.', { method });
+  const place = handoverOf(order, t);
+  const placeNote = order.delivery === 'pickup' ? `${place.note} ${t(READY_EMAIL_NOTE)}` : '';
   const lines = order.lines.map((line) => ({
-    name: line.name,
-    detail: `${line.color}, size ${line.size}, ${line.quantity} × ${formatMoney(line.unitPriceCents)}`,
+    name: t(line.name),
+    detail: t('{color}, size {size}, {quantity} × {price}', {
+      color: t(line.color),
+      size: line.size,
+      quantity: line.quantity,
+      price: formatMoney(line.unitPriceCents),
+    }),
     price: formatMoney(line.lineCents),
   }));
+  const thanks = t('Thank you, {name}. Your order is placed.', { name: order.contact.name });
+  const reference = t('Order {reference}', { reference: order.reference });
 
   const text = [
-    `Thank you, ${order.contact.name}. Your order is placed.`,
+    thanks,
     '',
-    `Order ${order.reference}`,
+    reference,
     ...lines.map((line) => `${line.name}: ${line.detail}, ${line.price}`),
     '',
-    `Subtotal: ${formatMoney(order.subtotalCents)}`,
-    `${shippingRowOf(order)}: ${shipping}`,
-    `Total: ${formatMoney(order.totalCents)}`,
+    t('{label}: {value}', { label: t('Subtotal'), value: formatMoney(order.subtotalCents) }),
+    t('{label}: {value}', { label: t(shippingRowOf(order)), value: shipping }),
+    t('{label}: {value}', { label: t('Total'), value: formatMoney(order.totalCents) }),
     '',
-    `Payment: ${payment}`,
+    t('{label}: {value}', { label: t('Payment'), value: payment }),
     ...(transfer ? ['', ...transfer.text, ''] : []),
     `${place.heading}: ${place.lines.join(', ')}`,
     ...(placeNote ? [placeNote] : []),
     '',
-    'Keep the reference: it is how the shop finds your order.',
-    `See your order: ${orderUrl}`,
+    t('Keep the reference: it is how the shop finds your order.'),
+    t('See your order: {url}', { url: orderUrl }),
   ].join('\n');
 
   const rows = lines
@@ -83,12 +110,12 @@ export function orderPlacedEmail(
     )
     .join('');
   const totals = [
-    ['Subtotal', formatMoney(order.subtotalCents)],
-    [shippingRowOf(order), shipping],
+    [t('Subtotal'), formatMoney(order.subtotalCents)],
+    [t(shippingRowOf(order)), shipping],
   ]
     .map(
       ([label, value]) => `<tr>
-        <td style="padding:4px 0;color:${MUTED}">${label}</td>
+        <td style="padding:4px 0;color:${MUTED}">${escape(label)}</td>
         <td style="padding:4px 0;text-align:right">${escape(value)}</td>
       </tr>`,
     )
@@ -96,28 +123,32 @@ export function orderPlacedEmail(
 
   return {
     to: order.contact.email,
-    subject: `Your Marlow order ${order.reference}`,
+    subject: t('Your Marlow order {reference}', { reference: order.reference }),
     text,
     html: layout({
-      preheader: `Order ${order.reference} is placed. Total ${formatMoney(order.totalCents)}.`,
-      heading: `Thank you, ${order.contact.name}. Your order is placed.`,
+      locale,
+      preheader: t('Order {reference} is placed. Total {total}.', {
+        reference: order.reference,
+        total: formatMoney(order.totalCents),
+      }),
+      heading: thanks,
       body: `
-        <p style="${P}">Order <strong style="font-weight:500">${escape(order.reference)}</strong></p>
+        <p style="${P}">${escape(t('Order'))} <strong style="font-weight:500">${escape(order.reference)}</strong></p>
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:8px 0 16px">
           ${rows}
         </table>
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse">
           ${totals}
           <tr>
-            <td style="padding:12px 0 0;border-top:1px solid ${HAIRLINE};font-weight:500">Total</td>
+            <td style="padding:12px 0 0;border-top:1px solid ${HAIRLINE};font-weight:500">${escape(t('Total'))}</td>
             <td style="padding:12px 0 0;border-top:1px solid ${HAIRLINE};text-align:right;font-weight:500">${escape(formatMoney(order.totalCents))}</td>
           </tr>
         </table>
-        <p style="${P}margin-top:24px"><strong style="font-weight:500">Payment</strong><br>${escape(payment)}</p>
+        <p style="${P}margin-top:24px"><strong style="font-weight:500">${escape(t('Payment'))}</strong><br>${escape(payment)}</p>
         ${transfer?.html ?? ''}
         ${handoverHtml(place, placeNote)}`,
-      action: { label: 'See your order', href: orderUrl },
-      footnote: 'Keep the reference: it is how the shop finds your order.',
+      action: { label: t('See your order'), href: orderUrl },
+      footnote: t('Keep the reference: it is how the shop finds your order.'),
     }),
   };
 }
@@ -134,14 +165,16 @@ export function orderProgressEmail(order: ShopOrder, shopUrl: string): Email | n
   if (!news) {
     return null;
   }
+  const locale = asLocale(order.locale);
+  const t = say(locale);
   const orderUrl = `${shopUrl}/order/${encodeURIComponent(order.reference)}`;
-  const heading = `Your order ${news}`;
-  const note = fulfillmentNote(order);
-  const place = handoverOf(order);
-  const payment = paymentDueOf(order);
+  const heading = t(`Your order ${news}`);
+  const note = fulfillmentNote(order, locale);
+  const place = handoverOf(order, t);
+  const payment = paymentDueOf(order, t);
   return {
     to: order.contact.email,
-    subject: `Your Marlow order ${order.reference} ${news}`,
+    subject: t(`Your Marlow order {reference} ${news}`, { reference: order.reference }),
     text: [
       `${heading}.`,
       '',
@@ -152,17 +185,18 @@ export function orderProgressEmail(order: ShopOrder, shopUrl: string): Email | n
       '',
       payment,
       '',
-      `See your order: ${orderUrl}`,
+      t('See your order: {url}', { url: orderUrl }),
     ].join('\n'),
     html: layout({
+      locale,
       preheader: note,
       heading: `${heading}.`,
       body: `
         <p style="${P}">${escape(note)}</p>
         ${handoverHtml(place, place.note)}
-        <p style="${P}"><strong style="font-weight:500">Payment</strong><br>${escape(payment)}</p>`,
-      action: { label: 'See your order', href: orderUrl },
-      footnote: 'Keep the reference: it is how the shop finds your order.',
+        <p style="${P}"><strong style="font-weight:500">${escape(t('Payment'))}</strong><br>${escape(payment)}</p>`,
+      action: { label: t('See your order'), href: orderUrl },
+      footnote: t('Keep the reference: it is how the shop finds your order.'),
     }),
   };
 }
@@ -170,35 +204,33 @@ export function orderProgressEmail(order: ShopOrder, shopUrl: string): Email | n
 export function accountCreatedEmail(
   person: { name: string; email: string },
   shopUrl: string,
+  locale: Locale = 'en',
 ): Email {
+  const t = say(locale);
   const accountUrl = `${shopUrl}/account`;
-  const greeting = person.name ? `Hello ${person.name},` : 'Hello,';
-  const opened = `Your Marlow account for ${person.email} is open.`;
-  const kept = 'Orders you place while signed in are kept under your name.';
-  const manage = 'You can change your name or password, or delete the account, on Your account.';
+  const greeting = person.name ? t('Hello {name},', { name: person.name }) : t('Hello,');
+  const opened = t('Your Marlow account for {email} is open.', { email: person.email });
+  const kept = t('Orders you place while signed in are kept under your name.');
+  const manage = t(
+    'You can change your name or password, or delete the account, on Your account.',
+  );
+  const notYou = t(NOT_YOU_ACCOUNT);
   return {
     to: person.email,
-    subject: 'Your Marlow account is open',
-    text: [
-      greeting,
-      '',
-      opened,
-      kept,
-      manage,
-      '',
-      `Your account: ${accountUrl}`,
-      '',
-      NOT_YOU_ACCOUNT,
-    ].join('\n'),
+    subject: t('Your Marlow account is open'),
+    text: [greeting, '', opened, kept, manage, '', t('Your account: {url}', { url: accountUrl }), '', notYou].join(
+      '\n',
+    ),
     html: layout({
+      locale,
       preheader: opened,
-      heading: 'Your account is open',
+      heading: t('Your account is open'),
       body: `
         <p style="${P}">${escape(greeting)}</p>
-        <p style="${P}">${escape(opened)} ${kept}</p>
-        <p style="${P}">${manage}</p>`,
-      action: { label: 'Go to your account', href: accountUrl },
-      footnote: NOT_YOU_ACCOUNT,
+        <p style="${P}">${escape(opened)} ${escape(kept)}</p>
+        <p style="${P}">${escape(manage)}</p>`,
+      action: { label: t('Go to your account'), href: accountUrl },
+      footnote: notYou,
     }),
   };
 }
@@ -231,19 +263,22 @@ const LINK_WORDING: Record<
 };
 
 export function authLinkEmail(request: AuthLink): Email {
+  const t = say(asLocale(request.locale));
   const link = webAddress(request.link);
   const wording = LINK_WORDING[request.kind];
-  const lasts = `The link works for ${request.minutes} minutes.`;
+  const lasts = t('The link works for {minutes} minutes.', { minutes: request.minutes });
+  const lede = t(wording.lede);
   return {
     to: request.to,
-    subject: wording.subject,
-    text: [wording.lede, lasts, '', link, '', wording.notYou].join('\n'),
+    subject: t(wording.subject),
+    text: [lede, lasts, '', link, '', t(wording.notYou)].join('\n'),
     html: layout({
-      preheader: `${wording.lede} ${lasts}`,
-      heading: wording.heading,
-      body: `<p style="${P}">${wording.lede} ${lasts}</p>`,
-      action: { label: wording.action, href: link },
-      footnote: wording.notYou,
+      locale: asLocale(request.locale),
+      preheader: `${lede} ${lasts}`,
+      heading: t(wording.heading),
+      body: `<p style="${P}">${escape(lede)} ${escape(lasts)}</p>`,
+      action: { label: t(wording.action), href: link },
+      footnote: t(wording.notYou),
     }),
   };
 }
@@ -255,20 +290,26 @@ const CODE_WORDING: Record<AuthPurpose, string> = {
 };
 
 export function authCodeEmail(request: AuthCode): Email {
-  const lede = CODE_WORDING[request.kind];
-  const lasts = `It works for ${request.minutes} minutes.`;
-  const notYou = 'If you did not ask for it, ignore this email.';
+  const locale = asLocale(request.locale);
+  const t = say(locale);
+  const lede = t(CODE_WORDING[request.kind]);
+  const lasts = t('It works for {minutes} minutes.', { minutes: request.minutes });
+  const notYou = t('If you did not ask for it, ignore this email.');
   return {
     to: request.to,
-    subject: `Your Marlow code: ${request.code}`,
+    subject: t('Your Marlow code: {code}', { code: request.code }),
     text: [lede, '', request.code, '', lasts, notYou].join('\n'),
     html: layout({
-      preheader: `${request.code}. ${lasts}`,
-      heading: 'Your code',
+      locale,
+      preheader: t('{code}. It works for {minutes} minutes.', {
+        code: request.code,
+        minutes: request.minutes,
+      }),
+      heading: t('Your code'),
       body: `
-        <p style="${P}">${lede}</p>
+        <p style="${P}">${escape(lede)}</p>
         <p style="margin:0 0 16px;font-size:28px;letter-spacing:0.2em;font-variant-numeric:tabular-nums">${escape(request.code)}</p>
-        <p style="${P}">${lasts}</p>`,
+        <p style="${P}">${escape(lasts)}</p>`,
       footnote: notYou,
     }),
   };
@@ -299,18 +340,18 @@ interface Handover {
 }
 
 /** Where the order goes: the client's address, or the shop's counter. */
-function handoverOf(order: ShopOrder): Handover {
+function handoverOf(order: ShopOrder, t: Say): Handover {
   if (order.shipping) {
     return {
-      heading: 'Ship to',
-      lines: [order.contact.name, ...addressLines(order.shipping)],
+      heading: t('Ship to'),
+      lines: [order.contact.name, ...addressLines(order.shipping).map((line) => t(line))],
       note: '',
     };
   }
   return {
-    heading: 'Pick up at',
-    lines: [PICKUP_POINT.name, ...PICKUP_POINT.lines],
-    note: `${PICKUP_POINT.hours}.`,
+    heading: t('Pick up at'),
+    lines: [PICKUP_POINT.name, ...PICKUP_POINT.lines.map((line) => t(line))],
+    note: t(`${PICKUP_POINT.hours}.`),
   };
 }
 
@@ -326,35 +367,42 @@ function shippingRowOf(order: ShopOrder): string {
 }
 
 /** What is left to pay when the order arrives or is picked up, and how. */
-function paymentDueOf(order: ShopOrder): string {
+function paymentDueOf(order: ShopOrder, t: Say): string {
   const total = formatMoney(order.totalCents);
   switch (order.paymentMethod) {
     case 'shop-floor':
-      return `Pay at the shop: ${total}, at the counter.`;
+      return t('Pay at the shop: {total}, at the counter.', { total });
     case 'cash-on-delivery':
-      return `Cash when it arrives: have ${total} ready for the carrier.`;
+      return t('Cash when it arrives: have {total} ready for the carrier.', { total });
     case 'bank-transfer':
       return order.paidAt
-        ? 'Bank transfer, paid.'
-        : 'Bank transfer, pending until the transfer arrives.';
+        ? t('Bank transfer, paid.')
+        : t('Bank transfer, pending until the transfer arrives.');
   }
 }
 
 /** Where to send the money, and the simulated bank that sends it. Both are fictional, and the email says so. */
-function transferInstructions(order: ShopOrder, url: string): { text: string[]; html: string } {
+function transferInstructions(
+  order: ShopOrder,
+  url: string,
+  t: Say,
+): { text: string[]; html: string } {
   const rows = [
-    ['Account name', MARLOW_ACCOUNT.name],
-    ['IBAN', MARLOW_ACCOUNT.iban],
-    ['BIC', MARLOW_ACCOUNT.bic],
-    ['Amount', formatMoney(order.totalCents)],
-    ['Reference to quote', order.reference],
+    [t('Account name'), MARLOW_ACCOUNT.name],
+    [t('IBAN'), MARLOW_ACCOUNT.iban],
+    [t('BIC'), MARLOW_ACCOUNT.bic],
+    [t('Amount'), formatMoney(order.totalCents)],
+    [t('Reference to quote'), order.reference],
   ];
-  const note = `This is a demo shop: the account is fictional, and the link opens ${SANDBOX_BANK}, a simulated bank where no money moves. Once the transfer is sent, the order is marked paid.`;
+  const note = t(
+    'This is a demo shop: the account is fictional, and the link opens {bank}, a simulated bank where no money moves. Once the transfer is sent, the order is marked paid.',
+    { bank: SANDBOX_BANK },
+  );
   return {
     text: [
-      'Pay by bank transfer to:',
-      ...rows.map(([label, value]) => `${label}: ${value}`),
-      `Pay with ${SANDBOX_BANK}: ${url}`,
+      t('Pay by bank transfer to:'),
+      ...rows.map(([label, value]) => t('{label}: {value}', { label, value })),
+      t('Pay with {bank}: {url}', { bank: SANDBOX_BANK, url }),
       note,
     ],
     html: `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:0 0 16px;background:${SURFACE}">
@@ -367,12 +415,13 @@ function transferInstructions(order: ShopOrder, url: string): { text: string[]; 
             )
             .join('')}
         </table>
-        ${button(`Pay with ${SANDBOX_BANK}`, url)}
+        ${button(t('Pay with {bank}', { bank: SANDBOX_BANK }), url)}
         <p style="${P}color:${MUTED};font-size:13px">${escape(note)}</p>`,
   };
 }
 
 function layout(parts: {
+  locale: Locale;
   preheader: string;
   heading: string;
   body: string;
@@ -381,7 +430,7 @@ function layout(parts: {
 }): string {
   const action = parts.action ? button(parts.action.label, parts.action.href) : '';
   return `<!doctype html>
-<html lang="en">
+<html lang="${parts.locale}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">

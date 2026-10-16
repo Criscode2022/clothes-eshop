@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { HlmSpinner } from '@spartan-ng/helm/spinner';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 import { SANDBOX_BANK } from '../../shop/bank-transfer';
 import type { TransferDetails } from '../../shop/bank-transfer';
 import { MoneyPipe } from '../../shop/money.pipe';
@@ -23,7 +24,7 @@ import { ShopButtonImports } from '../../ui/shop-button';
  */
 @Component({
   selector: 'app-sandbox-bank',
-  imports: [HlmSpinner, MoneyPipe, RouterLink, ShopButtonImports],
+  imports: [HlmSpinner, MoneyPipe, RouterLink, ShopButtonImports, TranslatePipe],
   templateUrl: './sandbox-bank.html',
   styleUrl: './sandbox-bank.scss',
 })

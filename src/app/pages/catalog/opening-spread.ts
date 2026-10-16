@@ -7,6 +7,7 @@ import type { Product } from '../../shop/catalog';
 import { CatalogStore } from '../../shop/catalog-store';
 import { portraitOf } from '../../shop/cloth';
 import type { Portrait } from '../../shop/cloth';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 import { MoneyPipe } from '../../shop/money.pipe';
 import { SlideShow } from '../../ui/slide-show';
 import { SlideTrack } from '../../ui/slide-track';
@@ -25,7 +26,7 @@ interface SpreadTile {
  */
 @Component({
   selector: 'app-opening-spread',
-  imports: [MoneyPipe, NgIcon, NgOptimizedImage, RouterLink, SlideShow, SlideTrack],
+  imports: [MoneyPipe, NgIcon, NgOptimizedImage, RouterLink, SlideShow, SlideTrack, TranslatePipe],
   providers: [provideIcons({ lucidePause, lucidePlay })],
   templateUrl: './opening-spread.html',
   styleUrl: './opening-spread.scss',

@@ -3,7 +3,7 @@
     <button
       type="button"
       class="icon-button menu-button"
-      aria-label="Menu"
+      [attr.aria-label]="'Menu' | t"
       aria-haspopup="dialog"
       [attr.aria-expanded]="menuOpen()"
       [attr.aria-controls]="menuOpen() ? 'site-menu' : null"
@@ -14,7 +14,7 @@
 
     <a class="wordmark bar__brand" routerLink="/">Marlow</a>
 
-    <nav class="bar__nav" aria-label="Main">
+    <nav class="bar__nav" [attr.aria-label]="'Main' | t">
       <ul role="list">
         <li>
           <a
@@ -23,7 +23,7 @@
             routerLinkActive="is-current"
             ariaCurrentWhenActive="page"
             [routerLinkActiveOptions]="{ exact: true }"
-            >Shop</a
+            >{{ 'Shop' | t }}</a
           >
         </li>
         @for (category of categories; track category.slug) {
@@ -33,7 +33,7 @@
               [routerLink]="['/category', category.slug]"
               routerLinkActive="is-current"
               ariaCurrentWhenActive="page"
-              >{{ category.name }}</a
+              >{{ category.name | t }}</a
             >
           </li>
         }
@@ -46,7 +46,7 @@
         routerLink="/atelier"
         routerLinkActive="is-current"
         ariaCurrentWhenActive="page"
-        >Atelier</a
+        >{{ 'Atelier' | t }}</a
       >
       @if (showDesk()) {
         <a
@@ -54,7 +54,7 @@
           routerLink="/desk"
           routerLinkActive="is-current"
           ariaCurrentWhenActive="page"
-          >Desk</a
+          >{{ 'Desk' | t }}</a
         >
       }
       @if (showOwner()) {
@@ -63,7 +63,7 @@
           routerLink="/owner"
           routerLinkActive="is-current"
           ariaCurrentWhenActive="page"
-          >Backoffice</a
+          >{{ 'Backoffice' | t }}</a
         >
       }
       @if (session.current(); as actor) {
@@ -74,7 +74,7 @@
             routerLinkActive="is-current"
             ariaCurrentWhenActive="page"
             [routerLinkActiveOptions]="{ exact: true }"
-            ><span class="sr-only">Your account: </span
+            ><span class="sr-only">{{ 'Your account: ' | t }}</span
             ><span class="account__name">{{ actor.name }}</span></a
           >
           @if (showOrders()) {
@@ -83,7 +83,7 @@
               routerLink="/account/orders"
               routerLinkActive="is-current"
               ariaCurrentWhenActive="page"
-              >Orders</a
+              >{{ 'Orders' | t }}</a
             >
           }
         </div>
@@ -94,9 +94,32 @@
           routerLink="/sign-in"
           routerLinkActive="is-current"
           ariaCurrentWhenActive="page"
-          >Sign in</a
+          >{{ 'Sign in' | t }}</a
         >
       }
+
+      <div class="lang" role="group" [attr.aria-label]="'Language' | t">
+        <button
+          type="button"
+          class="lang__choice sweep"
+          [class.is-current]="language.locale() === 'en'"
+          [attr.aria-pressed]="language.locale() === 'en'"
+          [attr.aria-label]="'English' | t"
+          (click)="language.choose('en')"
+        >
+          en
+        </button>
+        <button
+          type="button"
+          class="lang__choice sweep"
+          [class.is-current]="language.locale() === 'es'"
+          [attr.aria-pressed]="language.locale() === 'es'"
+          [attr.aria-label]="'Spanish' | t"
+          (click)="language.choose('es')"
+        >
+          es
+        </button>
+      </div>
 
       <button
         type="button"
@@ -106,14 +129,14 @@
         (click)="drawer.open()"
       >
         <ng-icon name="lucideShoppingBag" class="bag-button__icon" />
-        <span class="bag-button__label">Bag</span>
+        <span class="bag-button__label">{{ 'Bag' | t }}</span>
         @if (bag.count() > 0) {
           @for (count of [bag.count()]; track count) {
             <span class="bag-button__count" animate.enter="count-bump">{{ count }}</span>
           }
-          <span class="sr-only">{{ bag.count() === 1 ? 'item' : 'items' }}</span>
+          <span class="sr-only">{{ (bag.count() === 1 ? 'item' : 'items') | t }}</span>
         } @else {
-          <span class="sr-only">, empty</span>
+          <span class="sr-only">{{ ', empty' | t }}</span>
         }
       </button>
 
@@ -121,8 +144,8 @@
         <button
           type="button"
           class="icon-button sign-out"
-          aria-label="Sign out"
-          title="Sign out"
+          [attr.aria-label]="'Sign out' | t"
+          [attr.title]="'Sign out' | t"
           (click)="signOut()"
         >
           <ng-icon name="lucideLogOut" />

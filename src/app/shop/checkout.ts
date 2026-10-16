@@ -1,3 +1,4 @@
+import type { Locale } from '../i18n/locale';
 import { findProduct } from './catalog';
 import type { Product } from './catalog';
 import { ShopRuleError, StockLimitError } from './cart';
@@ -91,6 +92,8 @@ export interface ShopOrder {
   readonly paidAt: string | null;
   /** When the order was placed (ISO time). */
   readonly placedAt: string;
+  /** The language of the checkout that placed it. Orders from before this was stored are English. */
+  readonly locale?: Locale;
 }
 
 /** An order as the browser sends it: the server checks every field before trusting it. */
@@ -101,6 +104,8 @@ export interface CheckoutDraft {
   readonly shipping: ShippingDetails | null;
   readonly paymentMethod: string;
   readonly lines: readonly CartLine[];
+  /** The language the checkout was showing. Absent means English. */
+  readonly locale?: string;
 }
 
 const CARD_KEYS = ['cardnumber', 'card_number', 'pan', 'cvv', 'cvc', 'securitycode'];

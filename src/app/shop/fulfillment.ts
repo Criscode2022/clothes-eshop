@@ -1,3 +1,6 @@
+import type { Locale } from '../i18n/locale';
+import { translate } from '../i18n/translate';
+import type { CopyParams } from '../i18n/translate';
 import { ShopRuleError } from './cart';
 import type { DeliveryMethod, ShopOrder } from './checkout';
 
@@ -115,29 +118,41 @@ export function fulfillmentTrack(order: TrackedOrder): TrackStep[] {
   }));
 }
 
-/** Where the order is, in a sentence the client reads under the track. */
-export function fulfillmentNote(order: NotedOrder): string {
+/** Where the order is, in a sentence the client reads under the track. English when no language is given. */
+export function fulfillmentNote(order: NotedOrder, locale: Locale = 'en'): string {
+  const t = (english: string, params?: CopyParams): string => translate(locale, english, params);
   switch (order.fulfillment) {
     case 'placed':
-      return 'We have your order and will start preparing it soon.';
+      return t('We have your order and will start preparing it soon.');
     case 'preparing':
       return order.delivery === 'pickup'
-        ? 'We are gathering your pieces and setting them aside at the counter.'
-        : 'We are gathering your pieces and packing them in the workroom.';
+        ? t('We are gathering your pieces and setting them aside at the counter.')
+        : t('We are gathering your pieces and packing them in the workroom.');
     case 'shipped':
-      return `Your parcel has left the shop for ${order.shipping?.city ?? 'you'}.`;
+      return t('Your parcel has left the shop for {city}.', {
+        city: order.shipping?.city ?? t('you'),
+      });
     case 'delivered':
       return order.shipping
-        ? `Your parcel was delivered to ${order.shipping.line1}, ${order.shipping.city}.`
-        : 'Your parcel was delivered.';
+        ? t('Your parcel was delivered to {line1}, {city}.', {
+            line1: order.shipping.line1,
+            city: order.shipping.city,
+          })
+        : t('Your parcel was delivered.');
     case 'ready':
-      return `Your pieces are waiting at the counter. Give the reference ${order.reference} when you come${
-        order.paymentMethod === 'shop-floor' ? ', and pay there' : ''
-      }.`;
+      return order.paymentMethod === 'shop-floor'
+        ? t(
+            'Your pieces are waiting at the counter. Give the reference {reference} when you come, and pay there.',
+            { reference: order.reference },
+          )
+        : t(
+            'Your pieces are waiting at the counter. Give the reference {reference} when you come.',
+            { reference: order.reference },
+          );
     case 'picked-up':
-      return 'You picked up this order at the shop.';
+      return t('You picked up this order at the shop.');
     case 'cancelled':
-      return 'This order was cancelled, and its pieces went back on the floor.';
+      return t('This order was cancelled, and its pieces went back on the floor.');
   }
 }
 

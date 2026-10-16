@@ -1,31 +1,38 @@
 <header class="bar">
   <span class="bar__name">{{ bank }}</span>
-  <span class="bar__tag">Simulation</span>
+  <span class="bar__tag">{{ 'Simulation' | t }}</span>
 </header>
 
 <main class="bank" id="main-content">
   <p class="bank__note">
-    A simulated bank for the Marlow demo shop. No money moves, and nothing here is a real account.
+    {{
+      'A simulated bank for the Marlow demo shop. No money moves, and nothing here is a real account.'
+        | t
+    }}
   </p>
 
   @if (transfer.error()) {
     <section class="panel" aria-labelledby="bank-title">
-      <h1 id="bank-title" class="panel__title">That payment link is not valid.</h1>
-      <p>Open the link in your Marlow order email again, or check that it was copied whole.</p>
-      <p><a hlmBtn variant="outline" routerLink="/">Go to the Marlow shop</a></p>
+      <h1 id="bank-title" class="panel__title">{{ 'That payment link is not valid.' | t }}</h1>
+      <p>
+        {{
+          'Open the link in your Marlow order email again, or check that it was copied whole.' | t
+        }}
+      </p>
+      <p><a hlmBtn variant="outline" routerLink="/">{{ 'Go to the Marlow shop' | t }}</a></p>
     </section>
   } @else if (transfer.value(); as details) {
     <section class="panel" aria-labelledby="bank-title">
       @switch (details.state) {
         @case ('due') {
-          <h1 id="bank-title" class="panel__title">Send a transfer</h1>
+          <h1 id="bank-title" class="panel__title">{{ 'Send a transfer' | t }}</h1>
           <dl class="facts">
             <div>
-              <dt>From</dt>
-              <dd>Your current account (simulated)</dd>
+              <dt>{{ 'From' | t }}</dt>
+              <dd>{{ 'Your current account (simulated)' | t }}</dd>
             </div>
             <div>
-              <dt>Pay to</dt>
+              <dt>{{ 'Pay to' | t }}</dt>
               <dd>{{ details.payee }}</dd>
             </div>
             <div>
@@ -37,16 +44,16 @@
               <dd class="facts__code">{{ details.bic }}</dd>
             </div>
             <div>
-              <dt>Reference</dt>
+              <dt>{{ 'Reference' | t }}</dt>
               <dd>{{ details.reference }}</dd>
             </div>
             <div class="facts__amount">
-              <dt>Amount</dt>
+              <dt>{{ 'Amount' | t }}</dt>
               <dd>{{ details.totalCents | money }}</dd>
             </div>
           </dl>
           @if (sendError()) {
-            <p class="panel__error" role="alert">{{ sendError() }}</p>
+            <p class="panel__error" role="alert">{{ sendError() | t }}</p>
           }
           <button
             hlmBtn
@@ -58,31 +65,45 @@
           >
             @if (sending()) {
               <hlm-spinner aria-hidden="true" />
-              Sending
+              {{ 'Sending' | t }}
             } @else {
-              Send {{ details.totalCents | money }}
+              {{ 'Send {amount}' | t: { amount: (details.totalCents | money) } }}
             }
           </button>
         }
         @case ('paid') {
-          <h1 id="bank-title" #outcome class="panel__title" tabindex="-1">Transfer sent</h1>
+          <h1 id="bank-title" #outcome class="panel__title" tabindex="-1">
+            {{ 'Transfer sent' | t }}
+          </h1>
           <p>
-            {{ details.payee }} received {{ details.totalCents | money }} for order
-            {{ details.reference }}. The order is marked paid.
+            {{
+              '{payee} received {amount} for order {reference}. The order is marked paid.'
+                | t
+                  : {
+                      payee: details.payee,
+                      amount: (details.totalCents | money),
+                      reference: details.reference,
+                    }
+            }}
           </p>
           <p>
-            <a hlmBtn [routerLink]="['/order', details.reference]"
-              >Back to order {{ details.reference }}</a
-            >
+            <a hlmBtn [routerLink]="['/order', details.reference]">{{
+              'Back to order {reference}' | t: { reference: details.reference }
+            }}</a>
           </p>
         }
         @case ('cancelled') {
-          <h1 id="bank-title" class="panel__title">Nothing to pay</h1>
-          <p>Order {{ details.reference }} was cancelled, so there is nothing to pay.</p>
+          <h1 id="bank-title" class="panel__title">{{ 'Nothing to pay' | t }}</h1>
           <p>
-            <a hlmBtn variant="outline" [routerLink]="['/order', details.reference]"
-              >See order {{ details.reference }}</a
-            >
+            {{
+              'Order {reference} was cancelled, so there is nothing to pay.'
+                | t: { reference: details.reference }
+            }}
+          </p>
+          <p>
+            <a hlmBtn variant="outline" [routerLink]="['/order', details.reference]">{{
+              'See order {reference}' | t: { reference: details.reference }
+            }}</a>
           </p>
         }
       }
@@ -90,7 +111,7 @@
   } @else {
     <p class="bank__loading" role="status">
       <hlm-spinner aria-hidden="true" />
-      Opening the transfer.
+      {{ 'Opening the transfer.' | t }}
     </p>
   }
 </main>

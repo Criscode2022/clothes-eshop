@@ -1,11 +1,13 @@
-<a class="skip-link" href="#main-content" (click)="skipToMain($event)">Skip to main content</a>
+<a class="skip-link" href="#main-content" (click)="skipToMain($event)">{{
+  'Skip to main content' | t
+}}</a>
 
-<aside class="announcement" aria-label="Shipping and payment">
-  <span>Free shipping from $200.</span>
-  <span class="announcement__more"
-    >No card needed: pay at the shop, in cash on delivery, or by bank transfer through a secure
-    platform.</span
-  >
+<aside class="announcement" [attr.aria-label]="'Shipping and payment' | t">
+  <span>{{ 'Free shipping from $200.' | t }}</span>
+  <span class="announcement__more">{{
+    'No card needed: pay at the shop, in cash on delivery, or by bank transfer through a secure platform.'
+      | t
+  }}</span>
 </aside>
 
 <app-site-header />
@@ -25,10 +27,10 @@
 <div class="toast-region">
   @if (bag.noticeMessage(); as notice) {
     <p class="toast" role="status" animate.enter="line-enter" animate.leave="line-leave">
-      <span>{{ notice }}</span>
+      <span>{{ notice | t }}</span>
       <button type="button" class="toast__close" (click)="dismissNotice()">
         <ng-icon name="lucideX" />
-        <span class="sr-only">Dismiss</span>
+        <span class="sr-only">{{ 'Dismiss' | t }}</span>
       </button>
     </p>
   }
@@ -39,10 +41,10 @@
       animate.enter="line-enter"
       animate.leave="line-leave"
     >
-      <span>{{ note }}</span>
+      <span>{{ note | t }}</span>
       <button type="button" class="toast__close" (click)="dismissShopNotice()">
         <ng-icon name="lucideX" />
-        <span class="sr-only">Dismiss</span>
+        <span class="sr-only">{{ 'Dismiss' | t }}</span>
       </button>
     </p>
   }

@@ -5,6 +5,7 @@ import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideCheck, lucideCircleAlert } from '@ng-icons/lucide';
 import { HlmAlertImports } from '@spartan-ng/helm/alert';
 import { HlmSpinner } from '@spartan-ng/helm/spinner';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 import type { ShopRole } from '../../shop/access';
 import { ShopClient } from '../../shop/shop-client';
 import { ShopButtonImports } from '../../ui/shop-button';
@@ -19,7 +20,7 @@ const LANDING: Record<ShopRole, string> = {
 
 @Component({
   selector: 'app-sign-in',
-  imports: [HlmAlertImports, HlmSpinner, NgIcon, RouterLink, ShopButtonImports, TextField],
+  imports: [HlmAlertImports, HlmSpinner, NgIcon, RouterLink, ShopButtonImports, TextField, TranslatePipe],
   providers: [provideIcons({ lucideCheck, lucideCircleAlert })],
   templateUrl: './sign-in.html',
   styleUrl: './sign-in.scss',

@@ -10,6 +10,7 @@ import {
   withViewTransitions,
 } from '@angular/router';
 import { routes } from './app.routes';
+import { provideLanguage } from './i18n/language';
 import { reloadStaleBuild } from './stale-build';
 
 export const appConfig: ApplicationConfig = {
@@ -27,6 +28,7 @@ export const appConfig: ApplicationConfig = {
     ),
     provideHttpClient(withFetch()),
     provideClientHydration(),
+    provideLanguage(),
     // Lucide at the shop's own line weight, so Spartan's icons and ours read as one set.
     provideNgIconsConfig({ strokeWidth: 1.5 }),
   ],

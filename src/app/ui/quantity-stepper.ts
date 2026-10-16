@@ -1,19 +1,20 @@
 import { Component, input, output } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideMinus, lucidePlus } from '@ng-icons/lucide';
+import { TranslatePipe } from '../i18n/translate.pipe';
 
 /** One fewer, the count, one more. The parent decides what a change means. */
 @Component({
   selector: 'app-quantity-stepper',
-  imports: [NgIcon],
+  imports: [NgIcon, TranslatePipe],
   providers: [provideIcons({ lucideMinus, lucidePlus })],
   template: `
-    <div class="stepper" role="group" [attr.aria-label]="'Quantity of ' + label()">
+    <div class="stepper" role="group" [attr.aria-label]="'Quantity of {name}' | t: { name: (label() | t) }">
       <button
         type="button"
         class="stepper__step"
         [disabled]="value() <= min()"
-        [attr.aria-label]="'One fewer ' + label()"
+        [attr.aria-label]="'One fewer {name}' | t: { name: (label() | t) }"
         (click)="changed.emit(value() - 1)"
       >
         <ng-icon name="lucideMinus" />
@@ -23,7 +24,7 @@ import { lucideMinus, lucidePlus } from '@ng-icons/lucide';
         type="button"
         class="stepper__step"
         [disabled]="value() >= max()"
-        [attr.aria-label]="'One more ' + label()"
+        [attr.aria-label]="'One more {name}' | t: { name: (label() | t) }"
         (click)="changed.emit(value() + 1)"
       >
         <ng-icon name="lucidePlus" />

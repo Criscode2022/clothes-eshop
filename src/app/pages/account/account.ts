@@ -7,6 +7,7 @@ import { HlmAlertImports } from '@spartan-ng/helm/alert';
 import { HlmAlertDialogImports } from '@spartan-ng/helm/alert-dialog';
 import { HlmItemImports } from '@spartan-ng/helm/item';
 import { HlmSpinner } from '@spartan-ng/helm/spinner';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 import { ShopClient } from '../../shop/shop-client';
 import { ShopSession } from '../../shop/shop-session';
 import { ShopButtonImports } from '../../ui/shop-button';
@@ -27,6 +28,7 @@ const PASSWORD = { min: 8, max: 128 } as const;
     RouterLink,
     ShopButtonImports,
     TextField,
+    TranslatePipe,
   ],
   providers: [provideIcons({ lucideChevronRight, lucideCircleAlert, lucideReceipt })],
   templateUrl: './account.html',

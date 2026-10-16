@@ -1,60 +1,71 @@
 import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { TranslatePipe } from '../i18n/translate.pipe';
 import { BagDrawer } from '../shop/bag-drawer';
 import { CATEGORIES } from '../shop/catalog';
 import { ShopSession } from '../shop/shop-session';
 
 @Component({
   selector: 'app-site-footer',
-  imports: [RouterLink],
+  imports: [RouterLink, TranslatePipe],
   template: `
     <footer class="footer">
       <div class="page footer__top">
         <div class="footer__brand">
           <a class="wordmark" routerLink="/">Marlow</a>
-          <p>A small ready-to-wear floor. Prices in US dollars.</p>
+          <p>{{ 'A small ready-to-wear floor. Prices in US dollars.' | t }}</p>
         </div>
-        <nav class="footer__nav" aria-label="Footer">
+        <nav class="footer__nav" [attr.aria-label]="'Footer' | t">
           <div>
-            <h2 class="footer__heading">Shop</h2>
+            <h2 class="footer__heading">{{ 'Shop' | t }}</h2>
             <ul role="list">
-              <li><a class="sweep" routerLink="/">Shop all</a></li>
+              <li><a class="sweep" routerLink="/">{{ 'Shop all' | t }}</a></li>
               @for (category of categories; track category.slug) {
                 <li>
                   <a class="sweep" [routerLink]="['/category', category.slug]">{{
-                    category.name
+                    category.name | t
                   }}</a>
                 </li>
               }
             </ul>
           </div>
           <div>
-            <h2 class="footer__heading">Help</h2>
+            <h2 class="footer__heading">{{ 'Help' | t }}</h2>
             <ul role="list">
-              <li><a class="sweep" routerLink="/atelier">Atelier</a></li>
+              <li><a class="sweep" routerLink="/atelier">{{ 'Atelier' | t }}</a></li>
               <li>
-                <a class="sweep" routerLink="/atelier" fragment="shipping">Shipping and payment</a>
+                <a class="sweep" routerLink="/atelier" fragment="shipping">{{
+                  'Shipping and payment' | t
+                }}</a>
               </li>
               <li>
-                <a class="sweep" routerLink="/atelier" fragment="orders">How an order leaves</a>
+                <a class="sweep" routerLink="/atelier" fragment="orders">{{
+                  'How an order leaves' | t
+                }}</a>
               </li>
             </ul>
           </div>
           <div>
-            <h2 class="footer__heading">Account</h2>
+            <h2 class="footer__heading">{{ 'Account' | t }}</h2>
             <ul role="list">
               @if (session.current(); as person) {
-                <li><a class="sweep" routerLink="/account">Your account</a></li>
+                <li><a class="sweep" routerLink="/account">{{ 'Your account' | t }}</a></li>
                 @if (person.role === 'client') {
-                  <li><a class="sweep" routerLink="/account/orders">Your orders</a></li>
+                  <li>
+                    <a class="sweep" routerLink="/account/orders">{{ 'Your orders' | t }}</a>
+                  </li>
                 }
               } @else {
-                <li><a class="sweep" routerLink="/sign-in">Sign in</a></li>
-                <li><a class="sweep" routerLink="/forgot-password">Forgot your password</a></li>
+                <li><a class="sweep" routerLink="/sign-in">{{ 'Sign in' | t }}</a></li>
+                <li>
+                  <a class="sweep" routerLink="/forgot-password">{{
+                    'Forgot your password' | t
+                  }}</a>
+                </li>
               }
               <li>
                 <button type="button" class="sweep" aria-haspopup="dialog" (click)="drawer.open()">
-                  Bag
+                  {{ 'Bag' | t }}
                 </button>
               </li>
             </ul>
@@ -63,8 +74,10 @@ import { ShopSession } from '../shop/shop-session';
       </div>
       <div class="page footer__base">
         <p>
-          Shipping is $8.00, and free when the pieces total $200.00. Marlow never asks for a card
-          number.
+          {{
+            'Shipping is $8.00, and free when the pieces total $200.00. Marlow never asks for a card number.'
+              | t
+          }}
         </p>
       </div>
     </footer>

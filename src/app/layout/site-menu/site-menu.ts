@@ -6,6 +6,7 @@ import { lucideX } from '@ng-icons/lucide';
 import type { BrnDialogState } from '@spartan-ng/brain/dialog';
 import { HlmSheetImports } from '@spartan-ng/helm/sheet';
 import { filter } from 'rxjs';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 import { canOpenArea } from '../../shop/access';
 import { CATEGORIES, productsIn } from '../../shop/catalog';
 import { CatalogStore } from '../../shop/catalog-store';
@@ -15,7 +16,7 @@ import { ShopButtonImports } from '../../ui/shop-button';
 /** The phone menu: the floor's rooms first, then the shopper's own doors, sliding in from the left edge. */
 @Component({
   selector: 'app-site-menu',
-  imports: [HlmSheetImports, NgIcon, RouterLink, ShopButtonImports],
+  imports: [HlmSheetImports, NgIcon, RouterLink, ShopButtonImports, TranslatePipe],
   providers: [provideIcons({ lucideX })],
   templateUrl: './site-menu.html',
   styleUrl: './site-menu.scss',

@@ -1,9 +1,10 @@
 <div class="sign-in page">
   <header class="head">
-    <h1 class="head__title">Sign in or create an account</h1>
+    <h1 class="head__title">{{ 'Sign in or create an account' | t }}</h1>
     <p class="head__lede">
-      Signing in is optional. Guests can <a routerLink="/checkout">check out</a> without an account;
-      an account keeps your orders under your name.
+      {{ 'Signing in is optional. Guests can' | t }}
+      <a routerLink="/checkout">{{ 'check out' | t }}</a>
+      {{ 'without an account; an account keeps your orders under your name.' | t }}
     </p>
   </header>
 
@@ -11,19 +12,21 @@
     <div hlmAlert class="deleted">
       <ng-icon name="lucideCheck" />
       <p hlmAlertDescription>
-        Your account is deleted. Orders you placed stay with the shop without a link to you.
+        {{
+          'Your account is deleted. Orders you placed stay with the shop without a link to you.' | t
+        }}
       </p>
     </div>
   }
 
   <div class="panels">
     <section class="panel" aria-labelledby="sign-in-title">
-      <h2 id="sign-in-title" class="panel__title">Sign in</h2>
+      <h2 id="sign-in-title" class="panel__title">{{ 'Sign in' | t }}</h2>
       <form class="panel__form" novalidate (submit)="signIn(); $event.preventDefault()">
         @if (errorMessage()) {
           <div hlmAlert variant="destructive">
             <ng-icon name="lucideCircleAlert" />
-            <p hlmAlertDescription>{{ errorMessage() }}</p>
+            <p hlmAlertDescription>{{ errorMessage() | t }}</p>
           </div>
         }
         <app-text-field
@@ -40,7 +43,9 @@
           autocomplete="current-password"
           [field]="signInForm.password"
         />
-        <p class="panel__forgot"><a routerLink="/forgot-password">Forgot your password?</a></p>
+        <p class="panel__forgot">
+          <a routerLink="/forgot-password">{{ 'Forgot your password?' | t }}</a>
+        </p>
         <button
           hlmBtn
           type="submit"
@@ -50,24 +55,24 @@
         >
           @if (signingIn()) {
             <hlm-spinner aria-hidden="true" />
-            Signing in
+            {{ 'Signing in' | t }}
           } @else {
-            Sign in
+            {{ 'Sign in' | t }}
           }
         </button>
       </form>
     </section>
 
     <section class="panel" aria-labelledby="create-title">
-      <h2 id="create-title" class="panel__title">Create an account</h2>
+      <h2 id="create-title" class="panel__title">{{ 'Create an account' | t }}</h2>
       <p class="panel__note">
-        An account keeps later orders under your name. Neon Auth holds the password.
+        {{ 'An account keeps later orders under your name. Neon Auth holds the password.' | t }}
       </p>
       <form class="panel__form" novalidate (submit)="createAccount(); $event.preventDefault()">
         @if (accountMessage()) {
           <div hlmAlert variant="destructive">
             <ng-icon name="lucideCircleAlert" />
-            <p hlmAlertDescription>{{ accountMessage() }}</p>
+            <p hlmAlertDescription>{{ accountMessage() | t }}</p>
           </div>
         }
         <app-text-field
@@ -101,9 +106,9 @@
         >
           @if (creating()) {
             <hlm-spinner aria-hidden="true" />
-            Creating account
+            {{ 'Creating account' | t }}
           } @else {
-            Create account
+            {{ 'Create account' | t }}
           }
         </button>
       </form>

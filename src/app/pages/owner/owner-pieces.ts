@@ -6,6 +6,8 @@ import { lucideCircleAlert } from '@ng-icons/lucide';
 import { HlmAlertImports } from '@spartan-ng/helm/alert';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import { HlmTableImports } from '@spartan-ng/helm/table';
+import { Language } from '../../i18n/language';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 import { categoryName } from '../../shop/catalog';
 import type { Product } from '../../shop/catalog';
 import { CatalogStore } from '../../shop/catalog-store';
@@ -15,7 +17,7 @@ import { ShopClient } from '../../shop/shop-client';
 import { PiecePhoto } from '../../ui/piece-photo';
 import { ShopButtonImports } from '../../ui/shop-button';
 import { TextField } from '../../ui/text-field';
-import { StockField } from '../staff/stock-field';
+import { StockField, stockControlLabel } from '../staff/stock-field';
 
 /** Every piece on one side, the chosen one's price, sizes, and stock on the other. */
 @Component({
@@ -32,6 +34,7 @@ import { StockField } from '../staff/stock-field';
     ShopButtonImports,
     StockField,
     TextField,
+    TranslatePipe,
   ],
   providers: [provideIcons({ lucideCircleAlert })],
   templateUrl: './owner-pieces.html',
@@ -43,6 +46,7 @@ export class OwnerPieces {
 
   private readonly catalog = inject(CatalogStore);
   private readonly shop = inject(ShopClient);
+  private readonly language = inject(Language);
 
   protected readonly categoryName = categoryName;
   protected readonly pieces = this.catalog.pieces;
@@ -80,6 +84,10 @@ export class OwnerPieces {
 
   protected totalStock(product: Product): number {
     return product.variants.reduce((sum, variant) => sum + variant.stock, 0);
+  }
+
+  protected stockLabel(name: string, color: string, size: string): string {
+    return stockControlLabel(this.language.locale(), name, color, size);
   }
 
   protected async load(): Promise<void> {

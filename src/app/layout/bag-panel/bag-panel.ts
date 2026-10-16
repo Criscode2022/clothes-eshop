@@ -7,6 +7,7 @@ import type { BrnDialogState } from '@spartan-ng/brain/dialog';
 import { HlmEmptyImports } from '@spartan-ng/helm/empty';
 import { HlmSheetImports } from '@spartan-ng/helm/sheet';
 import { filter } from 'rxjs';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 import { Bag } from '../../shop/bag';
 import { BagDrawer } from '../../shop/bag-drawer';
 import { CATEGORIES } from '../../shop/catalog';
@@ -21,6 +22,7 @@ import { ShopButtonImports } from '../../ui/shop-button';
   imports: [
     BagLines,
     FreeShipping,
+    TranslatePipe,
     HlmEmptyImports,
     HlmSheetImports,
     NgIcon,

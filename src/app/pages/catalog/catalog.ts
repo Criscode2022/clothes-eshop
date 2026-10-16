@@ -4,6 +4,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideCheck } from '@ng-icons/lucide';
 import { HlmEmptyImports } from '@spartan-ng/helm/empty';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 import { CATEGORIES, productsIn } from '../../shop/catalog';
 import { CatalogStore } from '../../shop/catalog-store';
 import { fitNote } from '../../shop/cloth';
@@ -29,6 +30,7 @@ import { Breadcrumb } from '../../ui/breadcrumb';
     Reveal,
     RouterLink,
     RouterLinkActive,
+    TranslatePipe,
   ],
   providers: [provideIcons({ lucideCheck })],
   templateUrl: './catalog.html',

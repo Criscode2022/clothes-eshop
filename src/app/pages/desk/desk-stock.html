@@ -1,9 +1,9 @@
 <section class="stock" aria-labelledby="stock-title">
   <div class="stock__head">
-    <h2 id="stock-title" class="stock__title">Stock</h2>
+    <h2 id="stock-title" class="stock__title">{{ 'Stock' | t }}</h2>
     <label class="stock__filter">
       <input type="checkbox" [checked]="lowOnly()" (change)="showLowOnly($event)" />
-      Only the last few and sold out
+      {{ 'Only the last few and sold out' | t }}
       <span class="stock__count">{{ lowCount() }}</span>
     </label>
   </div>
@@ -14,33 +14,33 @@
         <hlm-skeleton class="skeletons__row" />
       }
     </div>
-    <p class="sr-only" role="status">Loading stock.</p>
+    <p class="sr-only" role="status">{{ 'Loading stock.' | t }}</p>
   } @else if (loadError()) {
     <div class="stock__state">
       <div hlmAlert variant="destructive">
         <ng-icon name="lucideCircleAlert" />
-        <p hlmAlertDescription>{{ loadError() }}</p>
+        <p hlmAlertDescription>{{ loadError() | t }}</p>
       </div>
-      <button hlmBtn variant="outline" type="button" (click)="load()">Try again</button>
+      <button hlmBtn variant="outline" type="button" (click)="load()">{{ 'Try again' | t }}</button>
     </div>
   } @else if (pieces().length === 0) {
     <div hlmEmpty class="stock__empty">
       <div hlmEmptyHeader>
         <div hlmEmptyMedia variant="icon"><ng-icon name="lucidePackageCheck" /></div>
-        <p hlmEmptyTitle>Nothing is running low</p>
-        <p hlmEmptyDescription>Every size has more than two on hand.</p>
+        <p hlmEmptyTitle>{{ 'Nothing is running low' | t }}</p>
+        <p hlmEmptyDescription>{{ 'Every size has more than two on hand.' | t }}</p>
       </div>
     </div>
   } @else {
-    <div hlmTableContainer role="region" aria-label="Stock table" tabindex="0">
+    <div hlmTableContainer role="region" [attr.aria-label]="'Stock table' | t" tabindex="0">
       <table hlmTable class="data-table">
         <thead hlmTHead>
           <tr hlmTr>
-            <th hlmTh scope="col">Piece</th>
-            <th hlmTh scope="col">Color</th>
-            <th hlmTh scope="col">Size</th>
-            <th hlmTh scope="col">On hand</th>
-            <th hlmTh scope="col">Floor shows</th>
+            <th hlmTh scope="col">{{ 'Piece' | t }}</th>
+            <th hlmTh scope="col">{{ 'Color' | t }}</th>
+            <th hlmTh scope="col">{{ 'Size' | t }}</th>
+            <th hlmTh scope="col">{{ 'On hand' | t }}</th>
+            <th hlmTh scope="col">{{ 'Floor shows' | t }}</th>
           </tr>
         </thead>
         @for (group of pieces(); track group.product.id) {
@@ -52,10 +52,10 @@
                     <span class="group__photo">
                       <app-piece-photo [pieceId]="group.product.id" [color]="variant.color" />
                     </span>
-                    {{ group.product.name }}
+                    {{ group.product.name | t }}
                   </th>
                 }
-                <td hlmTd>{{ variant.color }}</td>
+                <td hlmTd>{{ variant.color | t }}</td>
                 <td hlmTd>{{ variant.size }}</td>
                 <td hlmTd>
                   <app-stock-field [variant]="variant" [label]="label(group.product, variant)" />
@@ -65,7 +65,7 @@
                     class="note"
                     [class.note--low]="stockState(variant.stock) === 'low'"
                     [class.note--out]="stockState(variant.stock) === 'sold-out'"
-                    >{{ stockNote(variant.stock) }}</span
+                    >{{ stockNote(variant.stock) | t }}</span>
                   >
                 </td>
               </tr>

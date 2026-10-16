@@ -1,3 +1,4 @@
+import type { Locale } from '../app/i18n/locale';
 import type { ShopOrder } from '../app/shop/checkout';
 import type { NeonIdentity } from '../app/shop/neon-adopt';
 import type { Mailer } from './mailer';
@@ -18,6 +19,8 @@ export interface AuthDelivery {
   readonly to: string;
   /** When the link or code stops working, in milliseconds. */
   readonly expiresAt: number;
+  /** The language remembered for this address. Absent is English. */
+  readonly locale?: Locale;
 }
 
 /**
@@ -54,14 +57,20 @@ export class ShopMail {
   }
 
   /** "Your account is open": sent once, straight after a sign-up. It asks the person to confirm nothing. */
-  async accountCreated(identity: NeonIdentity, signedUp: boolean): Promise<void> {
+  async accountCreated(
+    identity: NeonIdentity,
+    signedUp: boolean,
+    locale: Locale = 'en',
+  ): Promise<void> {
     const { actor, createdAt } = identity;
     const justCreated = createdAt === null || this.now() - createdAt <= NEW_ACCOUNT_MS;
     if (!signedUp || !justCreated || this.welcomed.has(actor.id)) {
       return;
     }
     this.welcomed.add(actor.id);
-    await this.sendQuietly(() => this.mailer.send(accountCreatedEmail(actor, this.shopUrl)));
+    await this.sendQuietly(() =>
+      this.mailer.send(accountCreatedEmail(actor, this.shopUrl, locale)),
+    );
   }
 
   async authLink(delivery: AuthDelivery & { readonly link: string }): Promise<void> {

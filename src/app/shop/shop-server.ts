@@ -1,3 +1,4 @@
+import { asLocale } from '../i18n/locale';
 import type { Actor } from './access';
 import { MARLOW_ACCOUNT } from './bank-transfer';
 import type { TransferDetails } from './bank-transfer';
@@ -211,6 +212,7 @@ function parseDraft(body: unknown): CheckoutDraft {
     delivery,
     shipping: delivery === 'ship' ? parseShipping(record['shipping']) : null,
     paymentMethod: readString(record, 'paymentMethod'),
+    locale: asLocale(record['locale']),
     lines: lines.map((line) => {
       const item = asRecord(line);
       return {

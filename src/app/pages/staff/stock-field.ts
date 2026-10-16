@@ -1,24 +1,41 @@
 import { Component, computed, inject, input, linkedSignal, signal } from '@angular/core';
+import type { Locale } from '../../i18n/locale';
+import { translate } from '../../i18n/translate';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 import type { Variant } from '../../shop/catalog';
 import { ShopClient } from '../../shop/shop-client';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideMinus, lucidePlus } from '@ng-icons/lucide';
 import { ShopButtonImports } from '../../ui/shop-button';
 
+/** The name a stock control reads out: the piece, then its color and size. */
+export function stockControlLabel(
+  locale: Locale,
+  name: string,
+  color: string,
+  size: string,
+): string {
+  return translate(locale, '{name}, {color} {size}', {
+    name: translate(locale, name),
+    color: translate(locale, color),
+    size,
+  });
+}
+
 /** On-hand stock for one size and color: nudge or type a count, then save it. A save updates the floor everywhere. */
 @Component({
   selector: 'app-stock-field',
-  imports: [NgIcon, ShopButtonImports],
+  imports: [NgIcon, ShopButtonImports, TranslatePipe],
   providers: [provideIcons({ lucideMinus, lucidePlus })],
   template: `
-    <div class="stock" role="group" [attr.aria-label]="'On hand, ' + label()">
+    <div class="stock" role="group" [attr.aria-label]="'On hand, {item}' | t: { item: label() }">
       <button
         hlmBtn
         variant="ghost"
         size="icon-sm"
         type="button"
         [disabled]="draft() <= 0 || saving()"
-        [attr.aria-label]="'One fewer ' + label()"
+        [attr.aria-label]="'One fewer {name}' | t: { name: label() }"
         (click)="nudge(-1)"
       >
         <ng-icon name="lucideMinus" />
@@ -30,7 +47,7 @@ import { ShopButtonImports } from '../../ui/shop-button';
         min="0"
         step="1"
         [value]="draft()"
-        [attr.aria-label]="'On hand, ' + label()"
+        [attr.aria-label]="'On hand, {item}' | t: { item: label() }"
         [attr.aria-invalid]="invalid()"
         (input)="type($event)"
         (keydown.enter)="save()"
@@ -41,7 +58,7 @@ import { ShopButtonImports } from '../../ui/shop-button';
         size="icon-sm"
         type="button"
         [disabled]="saving()"
-        [attr.aria-label]="'One more ' + label()"
+        [attr.aria-label]="'One more {name}' | t: { name: label() }"
         (click)="nudge(1)"
       >
         <ng-icon name="lucidePlus" />
@@ -55,9 +72,9 @@ import { ShopButtonImports } from '../../ui/shop-button';
         [disabled]="!changed() || invalid() || saving()"
         (click)="save()"
       >
-        Save<span class="sr-only"> {{ label() }}</span>
+        {{ 'Save' | t }}<span class="sr-only"> {{ label() }}</span>
       </button>
-      <span class="stock__status" role="status">{{ status() }}</span>
+      <span class="stock__status" role="status">{{ status() | t }}</span>
     </div>
   `,
   styles: `

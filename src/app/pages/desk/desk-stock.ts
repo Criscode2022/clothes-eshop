@@ -5,13 +5,15 @@ import { HlmAlertImports } from '@spartan-ng/helm/alert';
 import { HlmEmptyImports } from '@spartan-ng/helm/empty';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import { HlmTableImports } from '@spartan-ng/helm/table';
+import { Language } from '../../i18n/language';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 import type { Product, Variant } from '../../shop/catalog';
 import { CatalogStore } from '../../shop/catalog-store';
 import { ShopClient } from '../../shop/shop-client';
 import { stockNote, stockState } from '../../shop/stock';
 import { PiecePhoto } from '../../ui/piece-photo';
 import { ShopButtonImports } from '../../ui/shop-button';
-import { StockField } from '../staff/stock-field';
+import { StockField, stockControlLabel } from '../staff/stock-field';
 
 /** Every size and color with its on-hand count, editable in place. */
 @Component({
@@ -25,6 +27,7 @@ import { StockField } from '../staff/stock-field';
     PiecePhoto,
     ShopButtonImports,
     StockField,
+    TranslatePipe,
   ],
   providers: [provideIcons({ lucideCircleAlert, lucidePackageCheck })],
   templateUrl: './desk-stock.html',
@@ -33,6 +36,7 @@ import { StockField } from '../staff/stock-field';
 export class DeskStock {
   private readonly catalog = inject(CatalogStore);
   private readonly shop = inject(ShopClient);
+  private readonly language = inject(Language);
 
   protected readonly loading = signal(true);
   protected readonly loadError = signal('');
@@ -74,7 +78,7 @@ export class DeskStock {
   }
 
   protected label(product: Product, variant: Variant): string {
-    return `${product.name}, ${variant.color} ${variant.size}`;
+    return stockControlLabel(this.language.locale(), product.name, variant.color, variant.size);
   }
 }
 

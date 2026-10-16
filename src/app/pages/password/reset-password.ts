@@ -6,6 +6,7 @@ import { lucideCircleAlert, lucideKeyRound, lucideLink2Off } from '@ng-icons/luc
 import { HlmAlertImports } from '@spartan-ng/helm/alert';
 import { HlmEmptyImports } from '@spartan-ng/helm/empty';
 import { HlmSpinner } from '@spartan-ng/helm/spinner';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 import { ShopClient } from '../../shop/shop-client';
 import { ShopButtonImports } from '../../ui/shop-button';
 import { TextField } from '../../ui/text-field';
@@ -24,6 +25,7 @@ import { TextField } from '../../ui/text-field';
     RouterLink,
     ShopButtonImports,
     TextField,
+    TranslatePipe,
   ],
   providers: [provideIcons({ lucideCircleAlert, lucideKeyRound, lucideLink2Off })],
   template: `
@@ -32,25 +34,27 @@ import { TextField } from '../../ui/text-field';
         <section hlmEmpty class="sent" aria-labelledby="done-title">
           <div hlmEmptyHeader>
             <div hlmEmptyMedia variant="icon"><ng-icon name="lucideKeyRound" /></div>
-            <h1 id="done-title" hlmEmptyTitle>Your password is changed</h1>
-            <p hlmEmptyDescription>Sign in with the new password.</p>
+            <h1 id="done-title" hlmEmptyTitle>{{ 'Your password is changed' | t }}</h1>
+            <p hlmEmptyDescription>{{ 'Sign in with the new password.' | t }}</p>
           </div>
           <div hlmEmptyContent>
-            <a hlmBtn routerLink="/sign-in">Sign in</a>
+            <a hlmBtn routerLink="/sign-in">{{ 'Sign in' | t }}</a>
           </div>
         </section>
       } @else if (linkUsable()) {
         <header class="head">
-          <h1 class="head__title">Choose a new password</h1>
-          <p class="head__lede">At least 8 characters. It replaces the old one straight away.</p>
+          <h1 class="head__title">{{ 'Choose a new password' | t }}</h1>
+          <p class="head__lede">
+            {{ 'At least 8 characters. It replaces the old one straight away.' | t }}
+          </p>
         </header>
         <form class="form" novalidate (submit)="save(); $event.preventDefault()">
           @if (errorMessage()) {
             <div hlmAlert variant="destructive" tabindex="-1">
               <ng-icon name="lucideCircleAlert" />
               <p hlmAlertDescription>
-                {{ errorMessage() }}
-                <a routerLink="/forgot-password">Send a new link</a>
+                {{ errorMessage() | t }}
+                <a routerLink="/forgot-password">{{ 'Send a new link' | t }}</a>
               </p>
             </div>
           }
@@ -77,9 +81,9 @@ import { TextField } from '../../ui/text-field';
           >
             @if (saving()) {
               <hlm-spinner aria-hidden="true" />
-              Saving the password
+              {{ 'Saving the password' | t }}
             } @else {
-              Save the new password
+              {{ 'Save the new password' | t }}
             }
           </button>
         </form>
@@ -87,11 +91,15 @@ import { TextField } from '../../ui/text-field';
         <section hlmEmpty class="sent" aria-labelledby="expired-title">
           <div hlmEmptyHeader>
             <div hlmEmptyMedia variant="icon"><ng-icon name="lucideLink2Off" /></div>
-            <h1 id="expired-title" hlmEmptyTitle>That link has expired or was already used</h1>
-            <p hlmEmptyDescription>A link works once, for 15 minutes. Ask for a new one.</p>
+            <h1 id="expired-title" hlmEmptyTitle>
+              {{ 'That link has expired or was already used' | t }}
+            </h1>
+            <p hlmEmptyDescription>
+              {{ 'A link works once, for 15 minutes. Ask for a new one.' | t }}
+            </p>
           </div>
           <div hlmEmptyContent>
-            <a hlmBtn routerLink="/forgot-password">Send a new link</a>
+            <a hlmBtn routerLink="/forgot-password">{{ 'Send a new link' | t }}</a>
           </div>
         </section>
       }

@@ -245,3 +245,32 @@ describe('sign-in emails from Neon Auth', () => {
     expect(email.text).toContain('10 minutes');
   });
 });
+
+describe('mail in the language of the order', () => {
+  const spanish = { ...ORDER, locale: 'es' as const };
+
+  it('writes the confirmation in Spanish when the order was placed in Spanish', () => {
+    const email = orderPlacedEmail(spanish, SHOP, BANK_LINK);
+
+    expect(email.subject).toBe('Tu pedido de Marlow MR-1001');
+    expect(email.html).toContain('lang="es"');
+    expect(email.text).toContain('Camisa de oxford');
+    expect(email.text).toContain('Blanco, talla M');
+    expect(email.text).toContain('Enviar a');
+  });
+
+  it('writes a progress note in Spanish, and stays English when no language is stored', () => {
+    const email = orderProgressEmail({ ...spanish, fulfillment: 'shipped' }, SHOP);
+
+    expect(email?.subject).toBe('Tu pedido de Marlow MR-1001 va de camino');
+    expect(email?.text).toContain('Tu paquete ha salido de la tienda hacia Providence.');
+    expect(orderPlacedEmail(ORDER, SHOP, BANK_LINK).subject).toBe('Your Marlow order MR-1001');
+  });
+
+  it('welcomes a new account in the language of that visit', () => {
+    const email = accountCreatedEmail({ name: 'Ada', email: 'ada@example.com' }, SHOP, 'es');
+
+    expect(email.html).toContain('lang="es"');
+    expect(email.subject).toBe('Tu cuenta de Marlow está abierta');
+  });
+});

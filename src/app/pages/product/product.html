@@ -23,16 +23,16 @@
         />
 
         <div class="pdp__heading">
-          <h1 class="pdp__name">{{ piece.name }}</h1>
+          <h1 class="pdp__name">{{ piece.name | t }}</h1>
           <p class="pdp__price">{{ piece.priceCents | money }}</p>
         </div>
-        <p class="pdp__summary">{{ piece.summary }}</p>
+        <p class="pdp__summary">{{ piece.summary | t }}</p>
 
         <form class="buy" (submit)="addToBag(); $event.preventDefault()">
           @if (colorGroups().length > 1) {
             <fieldset class="buy__group">
               <legend class="buy__legend">
-                Color <span class="buy__value">{{ color() }}</span>
+                {{ 'Color' | t }} <span class="buy__value">{{ color() | t }}</span>
               </legend>
               <div class="buy__options">
                 @for (group of colorGroups(); track group.color) {
@@ -45,14 +45,14 @@
                       (change)="chooseColor(group.color)"
                     />
                     <span class="swatch" [style.background]="clothColor(group.color)"></span>
-                    {{ group.color }}
+                    {{ group.color | t }}
                   </label>
                 }
               </div>
             </fieldset>
           } @else {
             <p class="buy__legend">
-              Color <span class="buy__value">{{ color() }}</span>
+              {{ 'Color' | t }} <span class="buy__value">{{ color() | t }}</span>
             </p>
           }
 
@@ -63,7 +63,7 @@
             tabindex="-1"
             [attr.aria-describedby]="sizeHintShown() ? 'size-hint' : null"
           >
-            <legend class="buy__legend">Size</legend>
+            <legend class="buy__legend">{{ 'Size' | t }}</legend>
             <div class="buy__options">
               @for (option of sizes(); track option.id) {
                 <label class="size-option">
@@ -77,65 +77,69 @@
                   />
                   {{ option.size }}
                   @if (option.stock < 1) {
-                    <span class="sr-only">, sold out</span>
+                    <span class="sr-only">{{ ', sold out' | t }}</span>
                   }
                 </label>
               }
             </div>
             <p class="buy__stock" aria-live="polite">
               @if (sizeHintShown()) {
-                <span id="size-hint" class="buy__hint">Choose a size to add it to your bag.</span>
+                <span id="size-hint" class="buy__hint">{{
+                  'Choose a size to add it to your bag.' | t
+                }}</span>
               } @else if (stock(); as current) {
-                <span [class.buy__stock--low]="current.state === 'low'">{{ current.note }}</span>
+                <span [class.buy__stock--low]="current.state === 'low'">{{ current.note | t }}</span>
               } @else {
-                Choose a size.
+                {{ 'Choose a size.' | t }}
               }
             </p>
           </fieldset>
 
-          <button #buyButton hlmBtn type="submit" class="w-full">Add to bag</button>
+          <button #buyButton hlmBtn type="submit" class="w-full">{{ 'Add to bag' | t }}</button>
         </form>
 
         <ul class="assurances" role="list">
           <li>
             <ng-icon name="lucideTruck" class="assurances__icon" />
             @if (shipsFree()) {
-              This piece ships free.
+              {{ 'This piece ships free.' | t }}
             } @else {
-              Shipping is $8.00, and free from $200.00.
+              {{ 'Shipping is $8.00, and free from $200.00.' | t }}
             }
           </li>
           <li>
             <ng-icon name="lucideStore" class="assurances__icon" />
-            Or pick it up at the shop, free.
+            {{ 'Or pick it up at the shop, free.' | t }}
           </li>
           <li>
             <ng-icon name="lucideBanknote" class="assurances__icon" />
-            No card needed: pay at the shop, in cash on delivery, or by bank transfer through a
-            secure platform.
+            {{
+              'No card needed: pay at the shop, in cash on delivery, or by bank transfer through a secure platform.'
+                | t
+            }}
           </li>
         </ul>
 
         <section class="details" aria-labelledby="details-title">
-          <h2 id="details-title" class="sr-only">About this piece</h2>
+          <h2 id="details-title" class="sr-only">{{ 'About this piece' | t }}</h2>
           <hlm-accordion type="multiple">
             @if (composition() || care()) {
               <hlm-accordion-item [isOpened]="true">
-                <hlm-accordion-trigger>Cloth and care</hlm-accordion-trigger>
+                <hlm-accordion-trigger>{{ 'Cloth and care' | t }}</hlm-accordion-trigger>
                 <hlm-accordion-content>
                   @if (composition()) {
-                    <p>{{ composition() }}</p>
+                    <p>{{ composition() | t }}</p>
                   }
                   @if (care()) {
-                    <p>{{ care() }}</p>
+                    <p>{{ care() | t }}</p>
                   }
                 </hlm-accordion-content>
               </hlm-accordion-item>
             }
             <hlm-accordion-item>
-              <hlm-accordion-trigger>Fit</hlm-accordion-trigger>
+              <hlm-accordion-trigger>{{ 'Fit' | t }}</hlm-accordion-trigger>
               <hlm-accordion-content>
-                <p>{{ fit() }}</p>
+                <p>{{ fit() | t }}</p>
               </hlm-accordion-content>
             </hlm-accordion-item>
           </hlm-accordion>
@@ -145,7 +149,7 @@
 
     @if (more().length > 0) {
       <section class="related" aria-labelledby="related-title">
-        <h2 id="related-title" class="related__title" appReveal>More from the floor</h2>
+        <h2 id="related-title" class="related__title" appReveal>{{ 'More from the floor' | t }}</h2>
         <ul class="related__grid" role="list">
           @for (other of more(); track other.id; let index = $index) {
             <li appReveal [revealOrder]="index"><app-product-card [product]="other" /></li>
@@ -158,22 +162,22 @@
   @if (buyBarShown()) {
     <div class="buy-bar">
       <p class="buy-bar__piece">
-        <span class="buy-bar__name">{{ piece.name }}</span>
+        <span class="buy-bar__name">{{ piece.name | t }}</span>
         <span>{{ piece.priceCents | money }}</span>
       </p>
       <button hlmBtn type="button" (click)="addToBag()">
-        {{ variant() ? 'Add to bag' : 'Choose a size' }}
+        {{ (variant() ? 'Add to bag' : 'Choose a size') | t }}
       </button>
     </div>
   }
 } @else {
   <section hlmEmpty class="missing page" aria-labelledby="missing-title">
     <div hlmEmptyHeader>
-      <h1 id="missing-title" hlmEmptyTitle>That piece is not on the floor</h1>
-      <p hlmEmptyDescription>It may have sold out or been taken off the floor.</p>
+      <h1 id="missing-title" hlmEmptyTitle>{{ 'That piece is not on the floor' | t }}</h1>
+      <p hlmEmptyDescription>{{ 'It may have sold out or been taken off the floor.' | t }}</p>
     </div>
     <div hlmEmptyContent>
-      <a hlmBtn routerLink="/">Return to the shop</a>
+      <a hlmBtn routerLink="/">{{ 'Return to the shop' | t }}</a>
     </div>
   </section>
 }

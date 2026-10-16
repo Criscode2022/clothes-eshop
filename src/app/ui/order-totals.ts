@@ -1,29 +1,30 @@
 import { Component, input } from '@angular/core';
 import type { DeliveryMethod } from '../shop/checkout';
+import { TranslatePipe } from '../i18n/translate.pipe';
 import { MoneyPipe } from '../shop/money.pipe';
 
 /** Subtotal, shipping, and total, in the same order everywhere an order is summed. */
 @Component({
   selector: 'app-order-totals',
-  imports: [MoneyPipe],
+  imports: [MoneyPipe, TranslatePipe],
   template: `
     <dl class="totals">
       <div>
-        <dt>Subtotal</dt>
+        <dt>{{ 'Subtotal' | t }}</dt>
         <dd>{{ subtotalCents() | money }}</dd>
       </div>
       <div>
-        <dt>{{ delivery() === 'pickup' ? 'Pick up' : 'Shipping' }}</dt>
+        <dt>{{ (delivery() === 'pickup' ? 'Pick up' : 'Shipping') | t }}</dt>
         <dd>
           @if (shippingCents() === 0) {
-            Free
+            {{ 'Free' | t }}
           } @else {
             {{ shippingCents() | money }}
           }
         </dd>
       </div>
       <div class="totals__total">
-        <dt>Total</dt>
+        <dt>{{ 'Total' | t }}</dt>
         <dd>{{ totalCents() | money }}</dd>
       </div>
     </dl>

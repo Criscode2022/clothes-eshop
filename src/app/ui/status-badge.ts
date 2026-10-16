@@ -1,4 +1,5 @@
 import { Component, input } from '@angular/core';
+import { TranslatePipe } from '../i18n/translate.pipe';
 import { HlmBadge } from '@spartan-ng/helm/badge';
 
 /** What a status dot says at a glance: muted, current, under way, done, or stopped. */
@@ -7,10 +8,10 @@ export type StatusTone = 'quiet' | 'current' | 'under-way' | 'done' | 'stopped';
 /** A status as a colored dot and its name. The name always carries the meaning; the dot only helps scanning. */
 @Component({
   selector: 'app-status-badge',
-  imports: [HlmBadge],
+  imports: [HlmBadge, TranslatePipe],
   host: { '[attr.data-tone]': 'tone()' },
   template: `<span hlmBadge variant="outline" class="status"
-    ><span class="status__dot" aria-hidden="true"></span>{{ label() }}</span
+    ><span class="status__dot" aria-hidden="true"></span>{{ label() | t }}</span
   >`,
   styles: `
     :host {

@@ -6,6 +6,7 @@ import { lucideCircleAlert, lucideMailCheck } from '@ng-icons/lucide';
 import { HlmAlertImports } from '@spartan-ng/helm/alert';
 import { HlmEmptyImports } from '@spartan-ng/helm/empty';
 import { HlmSpinner } from '@spartan-ng/helm/spinner';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 import { ShopClient } from '../../shop/shop-client';
 import { ShopButtonImports } from '../../ui/shop-button';
 import { TextField } from '../../ui/text-field';
@@ -24,6 +25,7 @@ import { TextField } from '../../ui/text-field';
     RouterLink,
     ShopButtonImports,
     TextField,
+    TranslatePipe,
   ],
   providers: [provideIcons({ lucideCircleAlert, lucideMailCheck })],
   template: `
@@ -32,32 +34,36 @@ import { TextField } from '../../ui/text-field';
         <section hlmEmpty class="sent" aria-labelledby="sent-title">
           <div hlmEmptyHeader>
             <div hlmEmptyMedia variant="icon"><ng-icon name="lucideMailCheck" /></div>
-            <h1 id="sent-title" hlmEmptyTitle tabindex="-1">Check your inbox</h1>
+            <h1 id="sent-title" hlmEmptyTitle tabindex="-1">{{ 'Check your inbox' | t }}</h1>
             <p hlmEmptyDescription>
-              If a Marlow account uses {{ address }}, a link to choose a new password is on its way.
-              It works for 15 minutes.
+              {{
+                'If a Marlow account uses {email}, a link to choose a new password is on its way. It works for 15 minutes.'
+                  | t: { email: address }
+              }}
             </p>
           </div>
           <div hlmEmptyContent class="sent__actions">
-            <a hlmBtn routerLink="/sign-in">Back to sign in</a>
+            <a hlmBtn routerLink="/sign-in">{{ 'Back to sign in' | t }}</a>
             <button hlmBtn variant="link" size="sm" type="button" (click)="sendAgain()">
-              Nothing arrived? Send it again
+              {{ 'Nothing arrived? Send it again' | t }}
             </button>
           </div>
         </section>
       } @else {
         <header class="head">
-          <h1 class="head__title">Forgot your password?</h1>
+          <h1 class="head__title">{{ 'Forgot your password?' | t }}</h1>
           <p class="head__lede">
-            Enter the email of your Marlow account and the shop sends a link to choose a new
-            password.
+            {{
+              'Enter the email of your Marlow account and the shop sends a link to choose a new password.'
+                | t
+            }}
           </p>
         </header>
         <form class="form" novalidate (submit)="send(); $event.preventDefault()">
           @if (errorMessage()) {
             <div hlmAlert variant="destructive" tabindex="-1">
               <ng-icon name="lucideCircleAlert" />
-              <p hlmAlertDescription>{{ errorMessage() }}</p>
+              <p hlmAlertDescription>{{ errorMessage() | t }}</p>
             </div>
           }
           <app-text-field
@@ -76,12 +82,12 @@ import { TextField } from '../../ui/text-field';
           >
             @if (sending()) {
               <hlm-spinner aria-hidden="true" />
-              Sending the link
+              {{ 'Sending the link' | t }}
             } @else {
-              Send the link
+              {{ 'Send the link' | t }}
             }
           </button>
-          <p class="note"><a routerLink="/sign-in">Back to sign in</a></p>
+          <p class="note"><a routerLink="/sign-in">{{ 'Back to sign in' | t }}</a></p>
         </form>
       }
     </div>

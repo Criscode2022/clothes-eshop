@@ -13,6 +13,8 @@ import {
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideLogOut, lucideMenu, lucideShoppingBag } from '@ng-icons/lucide';
+import { Language } from '../../i18n/language';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 import { canOpenArea } from '../../shop/access';
 import { Bag } from '../../shop/bag';
 import { BagDrawer } from '../../shop/bag-drawer';
@@ -24,7 +26,7 @@ import { nextHeaderScroll } from './header-tuck';
 
 @Component({
   selector: 'app-site-header',
-  imports: [NgIcon, RouterLink, RouterLinkActive, SiteMenu],
+  imports: [NgIcon, RouterLink, RouterLinkActive, SiteMenu, TranslatePipe],
   providers: [provideIcons({ lucideLogOut, lucideMenu, lucideShoppingBag })],
   templateUrl: './site-header.html',
   styleUrl: './site-header.scss',
@@ -38,6 +40,7 @@ export class SiteHeader {
   private readonly signInLink = viewChild<ElementRef<HTMLElement>>('signInLink');
 
   protected readonly bag = inject(Bag);
+  protected readonly language = inject(Language);
   protected readonly drawer = inject(BagDrawer);
   protected readonly session = inject(ShopSession);
   protected readonly categories = CATEGORIES;

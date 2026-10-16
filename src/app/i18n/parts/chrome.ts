@@ -1,0 +1,43 @@
+/** Header, footer, menu, bag, and the sentences around them. */
+export const CHROME: Record<string, string> = {
+  'Close menu': 'Cerrar menú',
+  'Close bag': 'Cerrar la bolsa',
+  'Your bag is empty': 'Tu bolsa está vacía',
+  'Choose a size on any piece and it waits here until you check out.':
+    'Elige una talla en cualquier prenda y espera aquí hasta que pases por caja.',
+  'Keep shopping': 'Seguir mirando',
+  'Check out': 'Pasar por caja',
+  'Added {name}, {color} {size}.': 'Añadido: {name}, {color} {size}.',
+  'A size in your bag changed on the floor. Lower its quantity or remove it to check out.':
+    'Una talla de tu bolsa cambió en la planta. Baja la cantidad o quítala para pasar por caja.',
+  '{color}, size {size}': '{color}, talla {size}',
+  '{price} each': '{price} cada una',
+  Remove: 'Quitar',
+  'That is all we have in this size.': 'Es todo lo que hay en esta talla.',
+  '{name}, {color} {size}': '{name}, {color} {size}',
+  'Quick add {name}': 'Añadir rápido {name}',
+  'Sizes of {name}': 'Tallas de {name}',
+  'Add a size': 'Añade una talla',
+  '{count} colors': '{count} colores',
+  'Add {color} {size} to bag': 'Añadir {color} {size} a la bolsa',
+  'Add {color} {size} to bag, sold out': 'Añadir {color} {size} a la bolsa, agotado',
+  'Add {size} to bag': 'Añadir {size} a la bolsa',
+  'Add {size} to bag, sold out': 'Añadir {size} a la bolsa, agotado',
+  'Free shipping from $200. No card needed: pay at the shop, in cash on delivery, or by bank transfer through a secure platform.':
+    'Envío gratis desde $200. Sin tarjeta: paga en la tienda, en efectivo al recibir o por transferencia en una plataforma segura.',
+  'Sign in again': 'Entra de nuevo',
+  'No orders under this name yet': 'Todavía no hay pedidos a este nombre',
+  'Orders you place while signed in appear here.':
+    'Los pedidos que hagas con la sesión abierta aparecen aquí.',
+  'Shop the floor': 'Recorre la planta',
+  'Order reference': 'Referencia del pedido',
+  'Find and sort your orders': 'Busca y ordena tus pedidos',
+  'No order matches “{reference}”.': 'Ningún pedido coincide con “{reference}”.',
+  'Loading your orders.': 'Cargando tus pedidos.',
+  order: 'pedido',
+  orders: 'pedidos',
+  '{shown} of {all} {noun}': '{shown} de {all} {noun}',
+  '{count} {noun}': '{count} {noun}',
+  '{count} {noun}, {method}': '{count} {noun}, {method}',
+  'No photograph yet': 'Todavía no hay fotografía',
+};

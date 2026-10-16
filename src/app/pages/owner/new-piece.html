@@ -4,28 +4,28 @@
   (submit)="create(); $event.preventDefault()"
   aria-labelledby="new-piece-title"
 >
-  <h2 id="new-piece-title" class="title">New piece</h2>
+  <h2 id="new-piece-title" class="title">{{ 'New piece' | t }}</h2>
 
   @if (errorMessage()) {
     <div hlmAlert variant="destructive">
       <ng-icon name="lucideCircleAlert" />
-      <p hlmAlertDescription>{{ errorMessage() }}</p>
+      <p hlmAlertDescription>{{ errorMessage() | t }}</p>
     </div>
   }
 
   <fieldset class="group">
-    <legend class="group__legend">The piece</legend>
+    <legend class="group__legend">{{ 'The piece' | t }}</legend>
     <app-text-field class="span-2" inputId="piece-name" label="Name" [field]="pieceForm.name" />
     <div class="field">
-      <label class="field__label" for="piece-category">Category</label>
+      <label class="field__label" for="piece-category">{{ 'Category' | t }}</label>
       <select id="piece-category" class="input" [formField]="pieceForm.category">
         @for (category of categories; track category.slug) {
-          <option [value]="category.slug">{{ category.name }}</option>
+          <option [value]="category.slug">{{ category.name | t }}</option>
         }
       </select>
     </div>
     <div class="field">
-      <label class="field__label" for="piece-dollars">Price in dollars</label>
+      <label class="field__label" for="piece-dollars">{{ 'Price in dollars' | t }}</label>
       <input
         id="piece-dollars"
         class="input"
@@ -38,7 +38,7 @@
       />
       @if (fieldError(pieceForm.dollars())) {
         <p id="piece-dollars-error" class="field__error">
-          {{ pieceForm.dollars().errors()[0]?.message }}
+          {{ pieceForm.dollars().errors()[0]?.message | t }}
         </p>
       }
     </div>
@@ -52,11 +52,11 @@
   </fieldset>
 
   <fieldset class="group">
-    <legend class="group__legend">First size and color</legend>
+    <legend class="group__legend">{{ 'First size and color' | t }}</legend>
     <app-text-field inputId="piece-size" label="Size" [field]="pieceForm.size" />
     <app-text-field inputId="piece-color" label="Color" [field]="pieceForm.color" />
     <div class="field">
-      <label class="field__label" for="piece-stock">On hand</label>
+      <label class="field__label" for="piece-stock">{{ 'On hand' | t }}</label>
       <input
         id="piece-stock"
         class="input"
@@ -68,7 +68,7 @@
       />
       @if (fieldError(pieceForm.stock())) {
         <p id="piece-stock-error" class="field__error">
-          {{ pieceForm.stock().errors()[0]?.message }}
+          {{ pieceForm.stock().errors()[0]?.message | t }}
         </p>
       }
     </div>
@@ -78,11 +78,11 @@
     <button hlmBtn type="submit" [disabled]="saving()" [attr.aria-busy]="saving()">
       @if (saving()) {
         <hlm-spinner aria-hidden="true" />
-        Adding piece
+        {{ 'Adding piece' | t }}
       } @else {
-        Add piece to the floor
+        {{ 'Add piece to the floor' | t }}
       }
     </button>
-    <p class="note">It shows on the floor right away. Pieces added here have no photograph.</p>
+    <p class="note">{{ 'It shows on the floor right away. Pieces added here have no photograph.' | t }}</p>
   </div>
 </form>

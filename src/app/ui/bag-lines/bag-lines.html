@@ -17,13 +17,17 @@
       <div class="line__body">
         <div class="line__head">
           <p class="line__name">
-            <a class="sweep" [routerLink]="['/product', line.productId]">{{ line.name }}</a>
+            <a class="sweep" [routerLink]="['/product', line.productId]">{{ line.name | t }}</a>
           </p>
           <p class="line__total">{{ line.lineCents | money }}</p>
         </div>
-        <p class="line__meta">{{ line.color }}, size {{ line.size }}</p>
+        <p class="line__meta">
+          {{ '{color}, size {size}' | t: { color: (line.color | t), size: line.size } }}
+        </p>
         @if (line.quantity > 1) {
-          <p class="line__meta">{{ line.unitPriceCents | money }} each</p>
+          <p class="line__meta">
+            {{ '{price} each' | t: { price: (line.unitPriceCents | money) } }}
+          </p>
         }
         <div class="line__actions">
           <app-quantity-stepper
@@ -33,11 +37,11 @@
             (changed)="setQuantity(line, $event)"
           />
           <button hlmBtn variant="link" size="sm" (click)="remove(line)">
-            Remove<span class="sr-only"> {{ describe(line) }}</span>
+            {{ 'Remove' | t }}<span class="sr-only"> {{ describe(line) }}</span>
           </button>
         </div>
         @if (line.quantity >= line.stock) {
-          <p class="line__meta">That is all we have in this size.</p>
+          <p class="line__meta">{{ 'That is all we have in this size.' | t }}</p>
         }
       </div>
     </li>

@@ -1,6 +1,7 @@
 import { Component, input } from '@angular/core';
 import { FormField } from '@angular/forms/signals';
 import type { Field } from '@angular/forms/signals';
+import { TranslatePipe } from '../i18n/translate.pipe';
 import { fieldMessages } from './field-messages';
 
 /**
@@ -9,10 +10,10 @@ import { fieldMessages } from './field-messages';
  */
 @Component({
   selector: 'app-select-field',
-  imports: [FormField],
+  imports: [FormField, TranslatePipe],
   host: { class: 'field' },
   template: `
-    <label class="field__label" [for]="inputId()">{{ label() }}</label>
+    <label class="field__label" [for]="inputId()">{{ label() | t }}</label>
     <select
       class="input"
       [id]="inputId()"
@@ -21,16 +22,16 @@ import { fieldMessages } from './field-messages';
       [attr.aria-invalid]="errorShown()"
       [attr.aria-describedby]="describedBy()"
     >
-      <option value="" disabled>{{ prompt() }}</option>
+      <option value="" disabled>{{ prompt() | t }}</option>
       @for (option of options(); track option) {
-        <option [value]="option">{{ option }}</option>
+        <option [value]="option">{{ option | t }}</option>
       }
     </select>
     @if (hint()) {
-      <p class="field__hint" [id]="inputId() + '-hint'">{{ hint() }}</p>
+      <p class="field__hint" [id]="inputId() + '-hint'">{{ hint() | t }}</p>
     }
     @if (errorShown()) {
-      <p class="field__error" [id]="inputId() + '-error'">{{ error() }}</p>
+      <p class="field__error" [id]="inputId() + '-error'">{{ error() | t }}</p>
     }
   `,
 })

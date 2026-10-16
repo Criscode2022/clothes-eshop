@@ -2,25 +2,25 @@
   <app-opening-spread />
 
   <section class="intro page" aria-labelledby="intro-title" appReveal>
-    <h1 id="intro-title" class="intro__title">
-      A small <span class="whitespace-nowrap">ready-to-wear</span> floor
-    </h1>
+    <h1 id="intro-title" class="intro__title">{{ 'A small ready-to-wear floor' | t }}</h1>
     <div class="intro__body">
       <p>
-        Coats that clear a knit, trousers with a real thigh, and shirts you can press at home. Every
-        piece names its cloth and how to care for it.
+        {{
+          'Coats that clear a knit, trousers with a real thigh, and shirts you can press at home. Every piece names its cloth and how to care for it.'
+            | t
+        }}
       </p>
       <ul class="terms" role="list">
-        <li><ng-icon name="lucideCheck" class="terms__icon" />Free shipping from $200</li>
-        <li><ng-icon name="lucideCheck" class="terms__icon" />No card needed</li>
-        <li><ng-icon name="lucideCheck" class="terms__icon" />Check out as a guest</li>
+        <li><ng-icon name="lucideCheck" class="terms__icon" />{{ 'Free shipping from $200' | t }}</li>
+        <li><ng-icon name="lucideCheck" class="terms__icon" />{{ 'No card needed' | t }}</li>
+        <li><ng-icon name="lucideCheck" class="terms__icon" />{{ 'Check out as a guest' | t }}</li>
       </ul>
     </div>
   </section>
 
   <section class="floor page" aria-labelledby="floor-title">
     <div class="floor__bar">
-      <h2 id="floor-title" class="floor__title">The floor</h2>
+      <h2 id="floor-title" class="floor__title">{{ 'The floor' | t }}</h2>
       <ng-container *ngTemplateOutlet="filters" />
     </div>
     <ng-container *ngTemplateOutlet="grid" />
@@ -32,26 +32,28 @@
   <div class="split page">
     <header class="category">
       <app-breadcrumb [trail]="[{ label: 'Shop', link: '/' }, { label: current.name }]" />
-      <h1 class="category__title">{{ current.name }}</h1>
-      <p class="category__fit">{{ fit() }}</p>
+      <h1 class="category__title">{{ current.name | t }}</h1>
+      <p class="category__fit">{{ fit() | t }}</p>
       <ng-container *ngTemplateOutlet="filters" />
     </header>
     <section class="split__pieces" aria-labelledby="floor-title">
-      <h2 id="floor-title" class="sr-only">Pieces in {{ current.name }}</h2>
+      <h2 id="floor-title" class="sr-only">
+        {{ 'Pieces in {name}' | t: { name: (current.name | t) } }}
+      </h2>
       <ng-container *ngTemplateOutlet="grid" />
     </section>
   </div>
 } @else {
   <section hlmEmpty class="missing page" aria-labelledby="missing-title">
     <div hlmEmptyHeader>
-      <h1 id="missing-title" hlmEmptyTitle>That category is not on the floor</h1>
-      <p hlmEmptyDescription>The floor has four.</p>
+      <h1 id="missing-title" hlmEmptyTitle>{{ 'That category is not on the floor' | t }}</h1>
+      <p hlmEmptyDescription>{{ 'The floor has four.' | t }}</p>
     </div>
     <ul hlmEmptyContent class="missing__list" role="list">
       @for (item of categories; track item.slug) {
         <li>
           <a class="chip" [routerLink]="['/category', item.slug]"
-            >{{ item.name }} <span class="chip__count">{{ countIn(item.slug) }}</span></a
+            >{{ item.name | t }} <span class="chip__count">{{ countIn(item.slug) }}</span></a>
           >
         </li>
       }
@@ -60,7 +62,7 @@
 }
 
 <ng-template #filters>
-  <nav class="filters" aria-label="Categories">
+  <nav class="filters" [attr.aria-label]="'Categories' | t">
     <ul role="list">
       <li>
         <a
@@ -69,7 +71,7 @@
           routerLinkActive="is-current"
           ariaCurrentWhenActive="page"
           [routerLinkActiveOptions]="{ exact: true }"
-          >All <span class="chip__count">{{ countIn(null) }}</span></a
+          >{{ 'All' | t }} <span class="chip__count">{{ countIn(null) }}</span></a
         >
       </li>
       @for (item of categories; track item.slug) {
@@ -79,7 +81,7 @@
             [routerLink]="['/category', item.slug]"
             routerLinkActive="is-current"
             ariaCurrentWhenActive="page"
-            >{{ item.name }} <span class="chip__count">{{ countIn(item.slug) }}</span></a
+            >{{ item.name | t }} <span class="chip__count">{{ countIn(item.slug) }}</span></a>
           >
         </li>
       }
@@ -89,7 +91,7 @@
 
 <ng-template #grid>
   @if (pieces().length === 0) {
-    <p class="floor__empty">Nothing is cut in this category yet.</p>
+    <p class="floor__empty">{{ 'Nothing is cut in this category yet.' | t }}</p>
   } @else {
     <ul class="grid" [class.grid--pair]="!isFloor()" role="list">
       @for (piece of pieces(); track piece.id; let index = $index) {

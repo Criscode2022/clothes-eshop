@@ -8,6 +8,7 @@ import { HlmInputGroupImports } from '@spartan-ng/helm/input-group';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import { HlmSpinner } from '@spartan-ng/helm/spinner';
 import { HlmTableImports } from '@spartan-ng/helm/table';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 import { paymentStateOf } from '../../shop/bank-transfer';
 import { DELIVERY_METHODS, addressLines, paymentLabel } from '../../shop/checkout';
 import type { DeliveryMethod, ShopOrder } from '../../shop/checkout';
@@ -35,6 +36,7 @@ import { ShopButtonImports } from '../../ui/shop-button';
     NgIcon,
     RouterLink,
     ShopButtonImports,
+    TranslatePipe,
   ],
   providers: [provideIcons({ lucideChevronRight, lucideCircleAlert, lucideInbox, lucideSearch })],
   templateUrl: './order-queue.html',

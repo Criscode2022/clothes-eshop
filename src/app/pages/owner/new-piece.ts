@@ -5,6 +5,7 @@ import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideCircleAlert } from '@ng-icons/lucide';
 import { HlmAlertImports } from '@spartan-ng/helm/alert';
 import { HlmSpinner } from '@spartan-ng/helm/spinner';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 import { CATEGORIES } from '../../shop/catalog';
 import { centsFromDollars } from '../../shop/money';
 import { ShopClient } from '../../shop/shop-client';
@@ -14,7 +15,7 @@ import { TextField } from '../../ui/text-field';
 /** A new piece goes on the floor with its first size and color; more sizes are added on its page. */
 @Component({
   selector: 'app-new-piece',
-  imports: [FormField, HlmAlertImports, HlmSpinner, NgIcon, ShopButtonImports, TextField],
+  imports: [FormField, HlmAlertImports, HlmSpinner, NgIcon, ShopButtonImports, TextField, TranslatePipe],
   providers: [provideIcons({ lucideCircleAlert })],
   templateUrl: './new-piece.html',
   styles: `

@@ -118,17 +118,22 @@ interface AuthMail {
 const PURPOSES: readonly AuthPurpose[] = ['forget-password', 'email-verification', 'sign-in'];
 
 /** Sends the email a verified Neon Auth event asks for. Events without an email are left alone. */
-export async function handleNeonAuthEvent(event: unknown, mail: AuthMail): Promise<void> {
+export async function handleNeonAuthEvent(
+  event: unknown,
+  mail: AuthMail,
+  localeOf: (email: string) => Promise<'en' | 'es'> = async () => 'en',
+): Promise<void> {
   const record = asRecord(event);
   const data = asRecord(record['event_data']);
   const to = text(asRecord(record['user'])['email']);
   const expiresAt = Date.parse(text(data['expires_at'])) || Date.now() + 15 * 60_000;
+  const locale = to ? await localeOf(to) : 'en';
   switch (record['event_type']) {
     case 'send.magic_link': {
       const kind = purpose(data['link_type']);
       const link = text(data['link_url']);
       if (to && kind && link) {
-        await mail.authLink({ kind, to, link, expiresAt });
+        await mail.authLink({ kind, to, link, expiresAt, locale });
       }
       return;
     }
@@ -136,7 +141,7 @@ export async function handleNeonAuthEvent(event: unknown, mail: AuthMail): Promi
       const kind = purpose(data['otp_type']);
       const code = text(data['otp_code']);
       if (to && kind && code) {
-        await mail.authCode({ kind, to, code, expiresAt });
+        await mail.authCode({ kind, to, code, expiresAt, locale });
       }
       return;
     }

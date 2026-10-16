@@ -3,6 +3,9 @@ import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucidePlus } from '@ng-icons/lucide';
 import { HlmBadge } from '@spartan-ng/helm/badge';
+import { Language } from '../../i18n/language';
+import { TranslatePipe } from '../../i18n/translate.pipe';
+import { translate } from '../../i18n/translate';
 import { BagDrawer } from '../../shop/bag-drawer';
 import { clothColor, isSoldOut, variantsByColor } from '../../shop/catalog';
 import type { Product, Variant } from '../../shop/catalog';
@@ -12,7 +15,7 @@ import { PiecePhoto } from '../piece-photo';
 /** A piece on the floor. Its sizes open over the photograph, so a size goes into the bag without leaving the page. */
 @Component({
   selector: 'app-product-card',
-  imports: [HlmBadge, MoneyPipe, NgIcon, PiecePhoto, RouterLink],
+  imports: [HlmBadge, MoneyPipe, NgIcon, PiecePhoto, RouterLink, TranslatePipe],
   providers: [provideIcons({ lucidePlus })],
   templateUrl: './product-card.html',
   styleUrl: './product-card.scss',
@@ -24,6 +27,7 @@ export class ProductCard {
   readonly priority = input(false);
 
   private readonly drawer = inject(BagDrawer);
+  private readonly language = inject(Language);
   private readonly quickAdd = viewChild<ElementRef<HTMLButtonElement>>('quickAdd');
 
   protected readonly clothColor = clothColor;
@@ -53,9 +57,19 @@ export class ProductCard {
   }
 
   protected sizeLabel(variant: Variant): string {
-    const color = this.colors().length > 1 ? `${variant.color} ` : '';
-    const state = variant.stock < 1 ? ', sold out' : '';
-    return `Add ${color}${variant.size} to bag${state}`;
+    const locale = this.language.locale();
+    const size = variant.size;
+    const soldOut = variant.stock < 1;
+    if (this.colors().length > 1) {
+      return translate(
+        locale,
+        soldOut ? 'Add {color} {size} to bag, sold out' : 'Add {color} {size} to bag',
+        { color: translate(locale, variant.color), size },
+      );
+    }
+    return translate(locale, soldOut ? 'Add {size} to bag, sold out' : 'Add {size} to bag', {
+      size,
+    });
   }
 
   private focusQuickAdd(): void {

@@ -1,5 +1,6 @@
 import { Component, input } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 
 export interface StaffSection {
   readonly label: string;
@@ -11,14 +12,14 @@ export interface StaffSection {
 /** The title of a staff area and the sections inside it, as tabs that are real links. */
 @Component({
   selector: 'app-staff-header',
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, TranslatePipe],
   template: `
     <header class="head page">
       <div class="head__text">
-        <h1 class="head__title">{{ title() }}</h1>
-        <p class="head__lede">{{ lede() }}</p>
+        <h1 class="head__title">{{ title() | t }}</h1>
+        <p class="head__lede">{{ lede() | t }}</p>
       </div>
-      <nav class="sections" [attr.aria-label]="title() + ' sections'">
+      <nav class="sections" [attr.aria-label]="'{title} sections' | t: { title: (title() | t) }">
         <ul role="list">
           @for (section of sections(); track section.path) {
             <li>
@@ -27,7 +28,7 @@ export interface StaffSection {
                 routerLinkActive="is-current"
                 ariaCurrentWhenActive="page"
                 [routerLinkActiveOptions]="{ exact: section.exact }"
-                >{{ section.label }}</a
+                >{{ section.label | t }}</a
               >
             </li>
           }

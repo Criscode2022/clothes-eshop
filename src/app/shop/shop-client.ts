@@ -2,6 +2,8 @@ import { DOCUMENT } from '@angular/common';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Service, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
+import { Language } from '../i18n/language';
+import type { Locale } from '../i18n/locale';
 import type { Actor } from './access';
 import type { TransferDetails } from './bank-transfer';
 import { ShopRuleError } from './cart';
@@ -22,6 +24,8 @@ export interface PlaceOrderBody {
   readonly shipping: ShippingDetails | null;
   readonly paymentMethod: string;
   readonly lines: readonly CartLine[];
+  /** The language of this checkout. The order's emails stay in it. */
+  readonly locale?: Locale;
 }
 
 interface SessionResponse {
@@ -38,6 +42,7 @@ export class ShopClient {
   private readonly saved = inject(SavedSession);
   private readonly notice = inject(ShopNotice);
   private readonly document = inject(DOCUMENT);
+  private readonly language = inject(Language);
   private resumed: Promise<void> | null = null;
 
   async signInWithNeon(email: string, password: string): Promise<Actor> {
@@ -90,10 +95,28 @@ export class ShopClient {
     await this.signOutOfNeon();
   }
 
-  /** The link in the email comes back to this shop's reset page. */
-  requestPasswordReset(email: string): Promise<void> {
+  /**
+   * The link in the email comes back to this shop's reset page. The language is stored first, so the
+   * email Neon asks for a moment later is in the language of this page.
+   */
+  async requestPasswordReset(email: string): Promise<void> {
+    await this.rememberLocale(this.language.locale(), email);
     const redirectTo = `${this.document.location.origin}/reset-password`;
     return this.neonCall(() => this.neon.requestPasswordReset(email, redirectTo));
+  }
+
+  /** Remembers a language for later emails. A failure leaves the cookie, which this browser already set. */
+  rememberLocale(locale: Locale, email?: string): Promise<void> {
+    const body = email ? { locale, email } : { locale };
+    return this.request<{ saved: boolean }>(
+      'POST',
+      '/api/language',
+      body,
+      this.session.isSignedIn(),
+    ).then(
+      () => undefined,
+      () => undefined,
+    );
   }
 
   resetPassword(token: string, newPassword: string): Promise<void> {
@@ -224,7 +247,12 @@ export class ShopClient {
 
   private async adoptNeon(token: string, signedUp = false): Promise<Actor> {
     return this.adopt(
-      await this.request<SessionResponse>('POST', '/api/session/neon', { token, signedUp }, false),
+      await this.request<SessionResponse>(
+        'POST',
+        '/api/session/neon',
+        { token, signedUp, locale: this.language.locale() },
+        false,
+      ),
     );
   }
 

@@ -1,15 +1,16 @@
 import { Component, input } from '@angular/core';
 import { FormField } from '@angular/forms/signals';
 import type { Field } from '@angular/forms/signals';
+import { TranslatePipe } from '../i18n/translate.pipe';
 import { fieldMessages } from './field-messages';
 
 /** A labelled input bound to a Signal Forms field, with its hint and, once touched, its first error. */
 @Component({
   selector: 'app-text-field',
-  imports: [FormField],
+  imports: [FormField, TranslatePipe],
   host: { class: 'field' },
   template: `
-    <label class="field__label" [for]="inputId()">{{ label() }}</label>
+    <label class="field__label" [for]="inputId()">{{ label() | t }}</label>
     <input
       class="input"
       [id]="inputId()"
@@ -21,10 +22,10 @@ import { fieldMessages } from './field-messages';
       [attr.aria-describedby]="describedBy()"
     />
     @if (hint()) {
-      <p class="field__hint" [id]="inputId() + '-hint'">{{ hint() }}</p>
+      <p class="field__hint" [id]="inputId() + '-hint'">{{ hint() | t }}</p>
     }
     @if (errorShown()) {
-      <p class="field__error" [id]="inputId() + '-error'">{{ error() }}</p>
+      <p class="field__error" [id]="inputId() + '-error'">{{ error() | t }}</p>
     }
   `,
 })

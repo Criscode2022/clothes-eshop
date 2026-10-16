@@ -14,9 +14,16 @@ import type { ShopOrder } from './app/shop/checkout';
 import { neonAccountDirectory } from './app/shop/neon-accounts';
 import { adoptNeonSession, verifyFreshNeonSignIn } from './app/shop/neon-adopt';
 import { relayNeonAuth } from './app/shop/neon-auth-relay';
-import { pullNeon, pushNeon, reportShopError, shopDatabaseConfigured } from './app/shop/neon-book';
+import {
+  localeForShopEmail,
+  pullNeon,
+  pushNeon,
+  rememberShopLocale,
+  reportShopError,
+  shopDatabaseConfigured,
+} from './app/shop/neon-book';
 import { NEON_AUTH_RELAY_PATH, NEON_AUTH_URL } from './app/shop/neon-public';
-import { handleShopHttp, signWithSecret, transferPathOf } from './app/shop/shop-server';
+import { actorOf, handleShopHttp, signWithSecret, transferPathOf } from './app/shop/shop-server';
 import { mailerFromEnv } from './mail/mailer';
 import {
   DeliveredEvents,
@@ -168,10 +175,15 @@ async function serveApi(
   }
   if (method.toUpperCase() === 'POST' && path === '/api/session/neon') {
     const adoption = await adoptNeonSession(body);
+    const locale = localeOf(body);
     if (adoption.identity) {
-      void shopMail.accountCreated(adoption.identity, adoption.signedUp);
+      void rememberShopLocale({ userId: adoption.identity.actor.id, locale }).catch(reportShopError);
+      void shopMail.accountCreated(adoption.identity, adoption.signedUp, locale);
     }
     return adoption.result;
+  }
+  if (method.toUpperCase() === 'POST' && path === '/api/language') {
+    return rememberLanguage(body, authorization);
   }
   const account = await handleAccountHttp(method, path, body, authorization, accounts);
   if (account) {
@@ -213,7 +225,7 @@ async function receiveNeonAuthWebhook(req: Request, res: Response): Promise<void
       res.status(200).end();
       return;
     }
-    await handleNeonAuthEvent(event, shopMail);
+    await handleNeonAuthEvent(event, shopMail, localeForShopEmail);
     if (id) {
       deliveredEvents.add(id);
     }
@@ -227,6 +239,34 @@ async function receiveNeonAuthWebhook(req: Request, res: Response): Promise<void
     // A 5xx makes Neon Auth retry, and the person is told the email could not be sent if every try fails.
     res.status(500).end();
   }
+}
+
+/** English unless the body names Spanish. Anything else stays English rather than failing the request. */
+function localeOf(body: unknown): 'en' | 'es' {
+  const locale =
+    body && typeof body === 'object' && !Array.isArray(body)
+      ? (body as Record<string, unknown>)['locale']
+      : null;
+  return locale === 'es' ? 'es' : 'en';
+}
+
+/** Stores the language for a later email. A bad language is refused; a guest with no email is not. */
+async function rememberLanguage(
+  body: unknown,
+  authorization: string | null,
+): Promise<{ status: number; body: unknown }> {
+  const record =
+    body && typeof body === 'object' && !Array.isArray(body)
+      ? (body as Record<string, unknown>)
+      : {};
+  const locale = record['locale'];
+  if (locale !== 'en' && locale !== 'es') {
+    return { status: 400, body: { message: 'Choose English or Spanish.' } };
+  }
+  const actor = actorOf(authorization);
+  const email = typeof record['email'] === 'string' ? record['email'] : null;
+  await rememberShopLocale({ locale, userId: actor?.id ?? null, email });
+  return { status: 200, body: { saved: true } };
 }
 
 function placesOrder(method: string, path: string, status: number): boolean {

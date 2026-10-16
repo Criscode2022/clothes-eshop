@@ -5,6 +5,7 @@ import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideChevronDown } from '@ng-icons/lucide';
 import { BrnComboboxImports } from '@spartan-ng/brain/combobox';
 import { HlmComboboxImports } from '@spartan-ng/helm/combobox';
+import { TranslatePipe } from '../i18n/translate.pipe';
 import { COUNTRIES, CONTINENTS, matchesCountry } from '../shop/countries';
 import { fieldMessages } from './field-messages';
 
@@ -18,11 +19,11 @@ const SEARCH_WAIT_MS = 160;
  */
 @Component({
   selector: 'app-country-field',
-  imports: [BrnComboboxImports, FormField, HlmComboboxImports, NgIcon],
+  imports: [BrnComboboxImports, FormField, HlmComboboxImports, NgIcon, TranslatePipe],
   providers: [provideIcons({ lucideChevronDown })],
   host: { class: 'field' },
   template: `
-    <label class="field__label" [for]="inputId()">{{ label() }}</label>
+    <label class="field__label" [for]="inputId()">{{ label() | t }}</label>
     <hlm-combobox
       [formField]="field()"
       [filter]="filter"
@@ -40,29 +41,29 @@ const SEARCH_WAIT_MS = 160;
           [aria-invalid]="errorShown()"
           [attr.aria-describedby]="describedBy()"
           #countryInput
-          placeholder="Type to search"
+          [attr.placeholder]="'Type to search' | t"
         />
         <button
           type="button"
           class="country__toggle"
           brnComboboxPopoverTrigger
           tabindex="-1"
-          aria-label="Show every country"
+          [attr.aria-label]="'Show every country' | t"
         >
           <ng-icon name="lucideChevronDown" />
         </button>
       </div>
       <!-- The list opens in a layer at the end of the page; as a named region it is not loose content. -->
-      <hlm-combobox-content *hlmComboboxPortal role="region" aria-label="Countries">
-        <hlm-combobox-empty
-          >No country by that name. Marlow ships to the ones listed.</hlm-combobox-empty
-        >
+      <hlm-combobox-content *hlmComboboxPortal role="region" [attr.aria-label]="'Countries' | t">
+        <hlm-combobox-empty>{{
+          'No country by that name. Marlow ships to the ones listed.' | t
+        }}</hlm-combobox-empty>
         <div hlmComboboxList>
           @for (group of groups; track group.continent) {
             <div hlmComboboxGroup>
-              <div hlmComboboxLabel>{{ group.continent }}</div>
+              <div hlmComboboxLabel>{{ group.continent | t }}</div>
               @for (country of group.countries; track country.code) {
-                <hlm-combobox-item [value]="country.name">{{ country.name }}</hlm-combobox-item>
+                <hlm-combobox-item [value]="country.name">{{ country.name | t }}</hlm-combobox-item>
               }
             </div>
           }
@@ -70,10 +71,10 @@ const SEARCH_WAIT_MS = 160;
       </hlm-combobox-content>
     </hlm-combobox>
     @if (hint()) {
-      <p class="field__hint" [id]="inputId() + '-hint'">{{ hint() }}</p>
+      <p class="field__hint" [id]="inputId() + '-hint'">{{ hint() | t }}</p>
     }
     @if (errorShown()) {
-      <p class="field__error" [id]="inputId() + '-error'">{{ error() }}</p>
+      <p class="field__error" [id]="inputId() + '-error'">{{ error() | t }}</p>
     }
   `,
   styles: `

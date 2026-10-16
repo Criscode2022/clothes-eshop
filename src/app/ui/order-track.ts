@@ -1,4 +1,6 @@
-import { Component, computed, input } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
+import { Language } from '../i18n/language';
+import { TranslatePipe } from '../i18n/translate.pipe';
 import { fulfillmentNote, fulfillmentTrack } from '../shop/fulfillment';
 import type { NotedOrder } from '../shop/fulfillment';
 
@@ -8,9 +10,10 @@ import type { NotedOrder } from '../shop/fulfillment';
  */
 @Component({
   selector: 'app-order-track',
+  imports: [TranslatePipe],
   template: `
     @if (steps().length > 0) {
-      <ol class="track" aria-label="Order progress">
+      <ol class="track" [attr.aria-label]="'Order progress' | t">
         @for (step of steps(); track step.state; let index = $index) {
           <li
             [style.--i]="index"
@@ -20,9 +23,9 @@ import type { NotedOrder } from '../shop/fulfillment';
             [attr.aria-current]="step.status === 'current' ? 'step' : null"
           >
             <span class="track__mark" aria-hidden="true"></span>
-            <span class="track__label">{{ step.label }}</span>
+            <span class="track__label">{{ step.label | t }}</span>
             @if (step.status === 'done') {
-              <span class="sr-only">, done</span>
+              <span class="sr-only">{{ ', done' | t }}</span>
             }
           </li>
         }
@@ -95,6 +98,8 @@ import type { NotedOrder } from '../shop/fulfillment';
 export class OrderTrack {
   readonly order = input.required<NotedOrder>();
 
+  private readonly language = inject(Language);
+
   protected readonly steps = computed(() => fulfillmentTrack(this.order()));
-  protected readonly note = computed(() => fulfillmentNote(this.order()));
+  protected readonly note = computed(() => fulfillmentNote(this.order(), this.language.locale()));
 }

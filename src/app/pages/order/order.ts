@@ -19,6 +19,7 @@ import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmEmptyImports } from '@spartan-ng/helm/empty';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import { HlmSpinner } from '@spartan-ng/helm/spinner';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 import { canCancelOrder } from '../../shop/access';
 import type { ShopRole } from '../../shop/access';
 import { paymentStateOf } from '../../shop/bank-transfer';
@@ -63,6 +64,7 @@ const BACK_TO: Record<ShopRole | 'guest', string> = {
     PiecePhoto,
     RouterLink,
     ShopButtonImports,
+    TranslatePipe,
   ],
   providers: [provideIcons({ lucideCheck, lucideCircleAlert, lucideCopy })],
   templateUrl: './order.html',

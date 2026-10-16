@@ -17,7 +17,7 @@
             />
           </picture>
           <span class="spread__caption">
-            <span class="spread__name">{{ tile.piece.name }}</span>
+            <span class="spread__name">{{ tile.piece.name | t }}</span>
             <span class="spread__price">{{ tile.piece.priceCents | money }}</span>
           </span>
         </a>
@@ -30,7 +30,7 @@
     <div
       class="spread__markers"
       role="group"
-      aria-label="Photographs"
+      [attr.aria-label]="'Photographs' | t"
       [attr.data-turns]="turns.state()"
       [style.--turn-length]="turns.intervalMs + 'ms'"
     >
@@ -41,7 +41,7 @@
           [attr.aria-current]="photos.current() === index ? 'true' : null"
           (click)="photos.show(index)"
         >
-          <span class="sr-only">Show {{ tile.piece.name }}</span>
+          <span class="sr-only">{{ 'Show {name}' | t: { name: (tile.piece.name | t) } }}</span>
         </button>
       }
     </div>
@@ -49,10 +49,10 @@
     <button type="button" class="spread__play" (click)="turns.toggle()">
       @if (turns.playing()) {
         <ng-icon name="lucidePause" aria-hidden="true" />
-        <span class="sr-only">Pause the photographs</span>
+        <span class="sr-only">{{ 'Pause the photographs' | t }}</span>
       } @else {
         <ng-icon name="lucidePlay" aria-hidden="true" />
-        <span class="sr-only">Play the photographs</span>
+        <span class="sr-only">{{ 'Play the photographs' | t }}</span>
       }
     </button>
   </div>

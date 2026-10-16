@@ -1,6 +1,7 @@
 import { NgOptimizedImage } from '@angular/common';
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 import { portraitOf } from '../../shop/cloth';
 import { Reveal } from '../../ui/reveal';
 import { ShopButtonImports } from '../../ui/shop-button';
@@ -11,7 +12,7 @@ const CLOTH_PHOTO = 'merino-crew';
 /** Under the floor: one photograph and the shop's own words on cloth and care, pointing to the atelier. */
 @Component({
   selector: 'app-cloth-note',
-  imports: [NgOptimizedImage, Reveal, RouterLink, ShopButtonImports],
+  imports: [NgOptimizedImage, Reveal, RouterLink, ShopButtonImports, TranslatePipe],
   template: `
     @if (portrait; as photo) {
       <section class="note page" aria-labelledby="cloth-title" appReveal>
@@ -23,19 +24,21 @@ const CLOTH_PHOTO = 'merino-crew';
               [ngSrc]="photo.avif"
               width="800"
               height="1200"
-              alt="Merino Crew Neck folded on linen"
+              [alt]="'Merino Crew Neck folded on linen' | t"
             />
           </picture>
         </div>
         <div class="note__text">
-          <h2 id="cloth-title" class="note__title">Cloth and care</h2>
+          <h2 id="cloth-title" class="note__title">{{ 'Cloth and care' | t }}</h2>
           <p class="note__lede">
-            Cloth is named on each piece, with the care it actually needs. Wool is brushed and
-            aired. Cotton is washed. Silk is cleaned, not guessed at.
+            {{
+              'Cloth is named on each piece, with the care it actually needs. Wool is brushed and aired. Cotton is washed. Silk is cleaned, not guessed at.'
+                | t
+            }}
           </p>
-          <a hlmBtn variant="outline" routerLink="/atelier" class="justify-self-start"
-            >Read about the atelier</a
-          >
+          <a hlmBtn variant="outline" routerLink="/atelier" class="justify-self-start">{{
+            'Read about the atelier' | t
+          }}</a>
         </div>
       </section>
     }

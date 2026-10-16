@@ -24,6 +24,9 @@ import { HlmEmptyImports } from '@spartan-ng/helm/empty';
 import { HlmInputGroupImports } from '@spartan-ng/helm/input-group';
 import { HlmItemImports } from '@spartan-ng/helm/item';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
+import { Language } from '../../i18n/language';
+import { TranslatePipe } from '../../i18n/translate.pipe';
+import { translate } from '../../i18n/translate';
 import { paymentStateOf } from '../../shop/bank-transfer';
 import { paymentLabel } from '../../shop/checkout';
 import type { ShopOrder } from '../../shop/checkout';
@@ -39,11 +42,11 @@ import { Reveal } from '../../ui/reveal';
 import { ShopButtonImports } from '../../ui/shop-button';
 
 /** The browser's own date format: Angular's DatePipe would bring its formatting into the first page. */
-const PLACED_ON = new Intl.DateTimeFormat('en-US', {
+const PLACED_ON: Intl.DateTimeFormatOptions = {
   day: 'numeric',
   month: 'short',
   year: 'numeric',
-});
+};
 
 @Component({
   selector: 'app-account-orders',
@@ -61,6 +64,7 @@ const PLACED_ON = new Intl.DateTimeFormat('en-US', {
     Reveal,
     RouterLink,
     ShopButtonImports,
+    TranslatePipe,
   ],
   providers: [provideIcons({ lucideChevronRight, lucideCircleAlert, lucideReceipt, lucideSearch })],
   templateUrl: './account-orders.html',
@@ -73,6 +77,7 @@ export class AccountOrders {
   readonly dir = input<string>();
 
   private readonly shop = inject(ShopClient);
+  private readonly language = inject(Language);
   private readonly session = inject(ShopSession);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
@@ -101,11 +106,12 @@ export class AccountOrders {
   );
   /** Said to screen readers as the list changes; a search shows how many of all match. */
   protected readonly count = computed(() => {
+    const locale = this.language.locale();
     const all = this.orders.value()?.length ?? 0;
-    const noun = all === 1 ? 'order' : 'orders';
+    const noun = translate(locale, all === 1 ? 'order' : 'orders');
     return this.view().reference.trim()
-      ? `${this.listed().length} of ${all} ${noun}`
-      : `${all} ${noun}`;
+      ? translate(locale, '{shown} of {all} {noun}', { shown: this.listed().length, all, noun })
+      : translate(locale, '{count} {noun}', { count: all, noun });
   });
 
   protected searchFor(event: Event): void {
@@ -140,11 +146,17 @@ export class AccountOrders {
   }
 
   protected placedOn(order: ShopOrder): string {
-    return PLACED_ON.format(new Date(order.placedAt));
+    const locale = this.language.locale() === 'es' ? 'es' : 'en-US';
+    return new Intl.DateTimeFormat(locale, PLACED_ON).format(new Date(order.placedAt));
   }
 
   protected summary(order: ShopOrder): string {
     const pieces = order.lines.reduce((sum, line) => sum + line.quantity, 0);
-    return `${pieces} ${pieces === 1 ? 'piece' : 'pieces'}, ${paymentLabel(order.paymentMethod).toLowerCase()}`;
+    const locale = this.language.locale();
+    const noun = translate(locale, pieces === 1 ? 'piece' : 'pieces');
+    const method = translate(locale, paymentLabel(order.paymentMethod)).toLocaleLowerCase(
+      locale === 'es' ? 'es' : 'en',
+    );
+    return translate(locale, '{count} {noun}, {method}', { count: pieces, noun, method });
   }
 }

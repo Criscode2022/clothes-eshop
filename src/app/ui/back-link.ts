@@ -3,6 +3,7 @@ import { Component, inject, input } from '@angular/core';
 import { Router } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideArrowLeft } from '@ng-icons/lucide';
+import { TranslatePipe } from '../i18n/translate.pipe';
 
 /**
  * Back to where the shopper was. After a page change inside the shop it walks the browser history, so
@@ -12,10 +13,10 @@ import { lucideArrowLeft } from '@ng-icons/lucide';
  */
 @Component({
   selector: 'app-back-link',
-  imports: [NgIcon],
+  imports: [NgIcon, TranslatePipe],
   providers: [provideIcons({ lucideArrowLeft })],
   template: `<a class="back" [attr.href]="fallback()" (click)="back($event)"
-    ><ng-icon name="lucideArrowLeft" class="back__icon" aria-hidden="true" />{{ label() }}</a
+    ><ng-icon name="lucideArrowLeft" class="back__icon" aria-hidden="true" />{{ label() | t }}</a
   >`,
   styles: `
     :host {

@@ -3,15 +3,18 @@
   @if (order.error()) {
     <section hlmEmpty class="state" aria-labelledby="order-error-title">
       <div hlmEmptyHeader>
-        <h1 id="order-error-title" hlmEmptyTitle>That order is not available</h1>
+        <h1 id="order-error-title" hlmEmptyTitle>{{ 'That order is not available' | t }}</h1>
         <p hlmEmptyDescription>
-          {{ order.error()?.message }} Check the reference. An order placed while signed in opens
-          only after you sign in again.
+          {{ order.error()?.message | t }}
+          {{
+            'Check the reference. An order placed while signed in opens only after you sign in again.'
+              | t
+          }}
         </p>
       </div>
       <div hlmEmptyContent class="state__actions">
-        <a hlmBtn routerLink="/sign-in">Sign in</a>
-        <a hlmBtn variant="outline" routerLink="/">Return to the shop</a>
+        <a hlmBtn routerLink="/sign-in">{{ 'Sign in' | t }}</a>
+        <a hlmBtn variant="outline" routerLink="/">{{ 'Return to the shop' | t }}</a>
       </div>
     </section>
   } @else if (order.value(); as placed) {
@@ -22,11 +25,13 @@
             <circle class="thanks__ring" cx="24" cy="24" r="22" />
             <path class="thanks__tick" d="M15 24.5l6.5 6.5L33.5 18" />
           </svg>
-          <p class="thanks__line">Thank you, {{ placed.contact.name }}. Your order is placed.</p>
+          <p class="thanks__line">
+            {{ 'Thank you, {name}. Your order is placed.' | t: { name: placed.contact.name } }}
+          </p>
         </div>
       }
       <div class="head__top">
-        <h1 class="title">Order {{ placed.reference }}</h1>
+        <h1 class="title">{{ 'Order {reference}' | t: { reference: placed.reference } }}</h1>
         @if (canCancel(placed)) {
           <hlm-alert-dialog (stateChanged)="$event === 'closed' && forgetCancelError()">
             <button
@@ -34,26 +39,30 @@
               hlmBtn
               variant="destructive"
               type="button"
-              [attr.aria-label]="'Cancel order ' + placed.reference"
+              [attr.aria-label]="'Cancel order {reference}' | t: { reference: placed.reference }"
             >
-              Cancel
+              {{ 'Cancel' | t }}
             </button>
             <hlm-alert-dialog-content *hlmAlertDialogPortal="let ctx">
               <hlm-alert-dialog-header>
-                <h2 hlmAlertDialogTitle>Cancel order {{ placed.reference }}?</h2>
+                <h2 hlmAlertDialogTitle>
+                  {{ 'Cancel order {reference}?' | t: { reference: placed.reference } }}
+                </h2>
                 <p hlmAlertDialogDescription>
-                  Its pieces go back on the floor, and the order cannot be placed again.
+                  {{
+                    'Its pieces go back on the floor, and the order cannot be placed again.' | t
+                  }}
                 </p>
               </hlm-alert-dialog-header>
               @if (cancelError()) {
                 <div hlmAlert variant="destructive">
                   <ng-icon name="lucideCircleAlert" />
-                  <p hlmAlertDescription>{{ cancelError() }}</p>
+                  <p hlmAlertDescription>{{ cancelError() | t }}</p>
                 </div>
               }
               <hlm-alert-dialog-footer>
                 <button hlmBtn variant="outline" type="button" (click)="ctx.close()">
-                  Keep the order
+                  {{ 'Keep the order' | t }}
                 </button>
                 <button
                   hlmBtn
@@ -65,9 +74,9 @@
                 >
                   @if (cancelling()) {
                     <hlm-spinner aria-hidden="true" />
-                    Cancelling
+                    {{ 'Cancelling' | t }}
                   } @else {
-                    Yes, cancel the order
+                    {{ 'Yes, cancel the order' | t }}
                   }
                 </button>
               </hlm-alert-dialog-footer>
@@ -89,30 +98,32 @@
           (click)="copyReference(placed.reference)"
         >
           <ng-icon [name]="copied() ? 'lucideCheck' : 'lucideCopy'" />
-          {{ copied() ? 'Reference copied' : 'Copy reference' }}
+          {{ (copied() ? 'Reference copied' : 'Copy reference') | t }}
         </button>
       </div>
-      <p class="head__keep">Keep the reference: it is how the shop finds your order.</p>
+      <p class="head__keep">{{ 'Keep the reference: it is how the shop finds your order.' | t }}</p>
       @if (paymentStateOf(placed) === 'pending') {
         <p class="head__transfer">
-          We emailed the bank details (account name and IBAN) to {{ placed.contact.email }}. The
-          order is pending until the transfer arrives.
+          {{
+            'We emailed the bank details (account name and IBAN) to {email}. The order is pending until the transfer arrives.'
+              | t: { email: placed.contact.email }
+          }}
         </p>
       }
       @if (cancelledNow()) {
         <p #cancelledNote class="head__cancelled" role="status" tabindex="-1">
-          Order {{ placed.reference }} is cancelled.
+          {{ 'Order {reference} is cancelled.' | t: { reference: placed.reference } }}
         </p>
       }
     </header>
 
-    <section class="track" aria-label="Progress">
+    <section class="track" [attr.aria-label]="'Progress' | t">
       <app-order-track [order]="placed" />
     </section>
 
     <div class="layout">
       <section aria-labelledby="pieces-title">
-        <h2 id="pieces-title" class="section-title">Pieces</h2>
+        <h2 id="pieces-title" class="section-title">{{ 'Pieces' | t }}</h2>
         <ul class="lines" role="list">
           @for (line of placed.lines; track line.variantId) {
             <li class="line">
@@ -125,11 +136,17 @@
                 <app-piece-photo [pieceId]="line.productId" [color]="line.color" />
               </a>
               <span class="line__piece">
-                <a class="sweep" [routerLink]="['/product', line.productId]">{{ line.name }}</a>
-                <span class="line__meta"
-                  >{{ line.color }}, size {{ line.size }}, {{ line.quantity }} ×
-                  {{ line.unitPriceCents | money }}</span
-                >
+                <a class="sweep" [routerLink]="['/product', line.productId]">{{ line.name | t }}</a>
+                <span class="line__meta">{{
+                  '{color}, size {size}, {quantity} × {price}'
+                    | t
+                      : {
+                          color: (line.color | t),
+                          size: line.size,
+                          quantity: line.quantity,
+                          price: (line.unitPriceCents | money),
+                        }
+                }}</span>
               </span>
               <span class="line__price">{{ line.lineCents | money }}</span>
             </li>
@@ -145,33 +162,33 @@
 
       <dl hlmCard class="facts">
         <div hlmCardContent>
-          <dt>Payment</dt>
-          <dd>{{ paymentLabel(placed.paymentMethod) }}</dd>
+          <dt>{{ 'Payment' | t }}</dt>
+          <dd>{{ paymentLabel(placed.paymentMethod) | t }}</dd>
         </div>
         @if (placed.shipping; as shipping) {
           <div hlmCardContent>
-            <dt>Ship to</dt>
+            <dt>{{ 'Ship to' | t }}</dt>
             <dd>
               {{ placed.contact.name }}
               @for (line of addressLines(shipping); track $index) {
-                <br />{{ line }}
+                <br />{{ line | t }}
               }
             </dd>
           </div>
         } @else {
           <div hlmCardContent>
-            <dt>Pick up at</dt>
+            <dt>{{ 'Pick up at' | t }}</dt>
             <dd>
               {{ pickupPoint.name }}
               @for (line of pickupPoint.lines; track $index) {
                 <br />{{ line }}
               }
-              <span class="facts__note">{{ pickupPoint.hours }}</span>
+              <span class="facts__note">{{ pickupPoint.hours | t }}</span>
             </dd>
           </div>
         }
         <div hlmCardContent>
-          <dt>Contact</dt>
+          <dt>{{ 'Contact' | t }}</dt>
           <dd>
             {{ placed.contact.email }}<br />
             {{ placed.contact.phone }}
@@ -182,12 +199,16 @@
 
     @if (guestMayAskToCancel(placed)) {
       <p class="guest-cancel">
-        Placed without an account: to cancel it, give the shop the reference
-        {{ placed.reference }}.
+        {{
+          'Placed without an account: to cancel it, give the shop the reference {reference}.'
+            | t: { reference: placed.reference }
+        }}
       </p>
     }
 
-    <p class="continue"><a hlmBtn variant="outline" routerLink="/">Continue shopping</a></p>
+    <p class="continue">
+      <a hlmBtn variant="outline" routerLink="/">{{ 'Continue shopping' | t }}</a>
+    </p>
   } @else {
     <div class="loading" aria-hidden="true">
       <hlm-skeleton class="loading__title" />
@@ -197,6 +218,6 @@
         <hlm-skeleton class="loading__row" />
       </div>
     </div>
-    <p class="sr-only" role="status">Finding the order.</p>
+    <p class="sr-only" role="status">{{ 'Finding the order.' | t }}</p>
   }
 </div>

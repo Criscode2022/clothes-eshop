@@ -1,18 +1,19 @@
 <div class="checkout page">
   @if (quote(); as quote) {
     <header class="head">
-      <h1 class="head__title">Checkout</h1>
+      <h1 class="head__title">{{ 'Checkout' | t }}</h1>
       <p class="head__lede">
-        An account is optional.
+        {{ 'An account is optional.' | t }}
         @if (!session.current()) {
-          <a routerLink="/sign-in">Sign in</a> only if you want this order kept under your name.
+          <a routerLink="/sign-in">{{ 'Sign in' | t }}</a>
+          {{ 'only if you want this order kept under your name.' | t }}
         }
       </p>
     </header>
 
     <details class="summary-toggle">
       <summary>
-        <span>Order summary</span>
+        <span>{{ 'Order summary' | t }}</span>
         <ng-icon name="lucideChevronDown" class="summary-toggle__icon" />
         <span class="summary-toggle__total">{{ quote.totalCents | money }}</span>
       </summary>
@@ -24,12 +25,12 @@
         @if (errorMessage()) {
           <div hlmAlert variant="destructive" tabindex="-1">
             <ng-icon name="lucideCircleAlert" />
-            <p hlmAlertDescription>{{ errorMessage() }}</p>
+            <p hlmAlertDescription>{{ errorMessage() | t }}</p>
           </div>
         }
 
         <section class="section" aria-labelledby="contact-title">
-          <h2 id="contact-title" class="section__title">Contact</h2>
+          <h2 id="contact-title" class="section__title">{{ 'Contact' | t }}</h2>
           <div class="section__fields">
             <app-text-field
               class="span-2"
@@ -58,9 +59,9 @@
         </section>
 
         <section class="section" aria-labelledby="delivery-title">
-          <h2 id="delivery-title" class="section__title">Delivery</h2>
+          <h2 id="delivery-title" class="section__title">{{ 'Delivery' | t }}</h2>
           <fieldset class="choices">
-            <legend class="sr-only">How the order reaches you</legend>
+            <legend class="sr-only">{{ 'How the order reaches you' | t }}</legend>
             @for (option of deliveries; track option.id) {
               <label class="choice">
                 <input
@@ -71,8 +72,8 @@
                   (change)="chooseDelivery(option.id)"
                 />
                 <ng-icon [name]="deliveryIcons[option.id]" class="choice__icon" />
-                <span class="choice__name">{{ option.label }}</span>
-                <span class="choice__cost">{{ deliveryCost(option.id) }}</span>
+                <span class="choice__name">{{ option.label | t }}</span>
+                <span class="choice__cost">{{ deliveryCost(option.id) | t }}</span>
               </label>
             }
           </fieldset>
@@ -113,7 +114,7 @@
                   inputId="ship-postal"
                   autocomplete="postal-code"
                   [label]="postal.label"
-                  [hint]="'Like ' + postal.example"
+                  [hint]="postalHint(postal.example)"
                   [inputMode]="postal.digits ? 'numeric' : ''"
                   [field]="checkoutForm.shipping.postalCode"
                   (focusout)="tidyPostalCode()"
@@ -129,15 +130,17 @@
                 }
               </p>
               <p class="section__note">
-                {{ pickupPoint.hours }}. We email you when the order is ready to pick up; give its
-                reference at the counter.
+                {{
+                  '{hours}. We email you when the order is ready to pick up; give its reference at the counter.'
+                    | t: { hours: (pickupPoint.hours | t) }
+                }}
               </p>
             </div>
           }
         </section>
 
         <section class="section" aria-labelledby="payment-title">
-          <h2 id="payment-title" class="section__title">Payment</h2>
+          <h2 id="payment-title" class="section__title">{{ 'Payment' | t }}</h2>
           <fieldset
             class="choices"
             [attr.aria-describedby]="
@@ -146,7 +149,7 @@
                 : 'payment-note'
             "
           >
-            <legend class="sr-only">How you will pay</legend>
+            <legend class="sr-only">{{ 'How you will pay' | t }}</legend>
             @for (method of methods(); track method.id) {
               <label class="choice">
                 <input
@@ -158,28 +161,29 @@
                   "
                 />
                 <ng-icon [name]="methodIcons[method.id]" class="choice__icon" />
-                <span>{{ method.label }}</span>
+                <span>{{ method.label | t }}</span>
               </label>
             }
           </fieldset>
           @if (checkoutForm.paymentMethod().touched() && checkoutForm.paymentMethod().invalid()) {
             <p id="payment-error" class="field__error">
-              {{ checkoutForm.paymentMethod().errors()[0]?.message }}
+              {{ checkoutForm.paymentMethod().errors()[0]?.message | t }}
             </p>
           }
           <p id="payment-note" class="section__note">
-            No card needed. Marlow records the method you choose and never asks for a card number.
-            For a bank transfer, the bank details come by email, and the order is pending until the
-            transfer arrives.
+            {{
+              'No card needed. Marlow records the method you choose and never asks for a card number. For a bank transfer, the bank details come by email, and the order is pending until the transfer arrives.'
+                | t
+            }}
             @if (shipping()) {
-              Paying at the shop is for orders you pick up.
+              {{ 'Paying at the shop is for orders you pick up.' | t }}
             }
           </p>
         </section>
 
         <div class="submit">
           <p class="submit__total">
-            <span>Total</span>
+            <span>{{ 'Total' | t }}</span>
             <span>{{ quote.totalCents | money }}</span>
           </p>
           <button
@@ -191,9 +195,9 @@
           >
             @if (placing()) {
               <hlm-spinner aria-hidden="true" />
-              Placing order
+              {{ 'Placing order' | t }}
             } @else {
-              Place order
+              {{ 'Place order' | t }}
             }
           </button>
         </div>
@@ -201,7 +205,7 @@
 
       <aside hlmCard class="summary" aria-labelledby="summary-title">
         <div hlmCardHeader>
-          <h2 id="summary-title" hlmCardTitle>Order summary</h2>
+          <h2 id="summary-title" hlmCardTitle>{{ 'Order summary' | t }}</h2>
         </div>
         <div hlmCardContent>
           <ng-container *ngTemplateOutlet="summary" />
@@ -221,10 +225,12 @@
                 }
               </span>
               <span class="summary__piece">
-                <span>{{ line.name }}</span>
-                <span class="summary__meta">{{ line.color }}, size {{ line.size }}</span>
+                <span>{{ line.name | t }}</span>
+                <span class="summary__meta">{{
+                  '{color}, size {size}' | t: { color: (line.color | t), size: line.size }
+                }}</span>
                 @if (line.quantity > 1) {
-                  <span class="sr-only">Quantity {{ line.quantity }}</span>
+                  <span class="sr-only">{{ 'Quantity {count}' | t: { count: line.quantity } }}</span>
                 }
               </span>
               <span class="summary__price">{{ line.lineCents | money }}</span>
@@ -247,7 +253,7 @@
             aria-haspopup="dialog"
             (click)="drawer.open()"
           >
-            Change the bag
+            {{ 'Change the bag' | t }}
           </button>
         </p>
       </div>
@@ -255,11 +261,11 @@
   } @else {
     <section hlmEmpty aria-labelledby="empty-title">
       <div hlmEmptyHeader>
-        <h1 id="empty-title" hlmEmptyTitle>Checkout</h1>
-        <p hlmEmptyDescription>Your bag is empty, so there is nothing to check out.</p>
+        <h1 id="empty-title" hlmEmptyTitle>{{ 'Checkout' | t }}</h1>
+        <p hlmEmptyDescription>{{ 'Your bag is empty, so there is nothing to check out.' | t }}</p>
       </div>
       <div hlmEmptyContent>
-        <a hlmBtn routerLink="/">Shop the floor</a>
+        <a hlmBtn routerLink="/">{{ 'Shop the floor' | t }}</a>
       </div>
     </section>
   }

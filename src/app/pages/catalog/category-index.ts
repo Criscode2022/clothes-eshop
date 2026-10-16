@@ -1,6 +1,7 @@
 import { NgOptimizedImage } from '@angular/common';
 import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { TranslatePipe } from '../../i18n/translate.pipe';
 import { CATEGORIES, productsIn } from '../../shop/catalog';
 import type { CategorySlug, Product } from '../../shop/catalog';
 import { CatalogStore } from '../../shop/catalog-store';
@@ -26,11 +27,11 @@ interface Cover {
 /** The four rooms of the floor, one photograph each, leading to the category pages and their fit notes. */
 @Component({
   selector: 'app-category-index',
-  imports: [NgOptimizedImage, Reveal, RouterLink],
+  imports: [NgOptimizedImage, Reveal, RouterLink, TranslatePipe],
   template: `
     @if (covers().length > 0) {
       <section class="rooms page" aria-labelledby="rooms-title">
-        <h2 id="rooms-title" class="rooms__title" appReveal>Shop by category</h2>
+        <h2 id="rooms-title" class="rooms__title" appReveal>{{ 'Shop by category' | t }}</h2>
         <ul class="rooms__grid" role="list">
           @for (cover of covers(); track cover.slug; let index = $index) {
             <li appReveal [revealOrder]="index">
@@ -42,9 +43,16 @@ interface Cover {
                     <img [ngSrc]="cover.photo.avif" width="800" height="1200" alt="" />
                   </picture>
                 </span>
-                <span class="room__name">{{ cover.name }}</span>
+                <span class="room__name">{{ cover.name | t }}</span>
                 <span class="room__count">
-                  {{ cover.count }} {{ cover.count === 1 ? 'piece' : 'pieces' }}
+                  {{
+                    '{count} {noun}'
+                      | t
+                        : {
+                            count: cover.count,
+                            noun: ((cover.count === 1 ? 'piece' : 'pieces') | t),
+                          }
+                  }}
                 </span>
               </a>
             </li>

@@ -1,21 +1,22 @@
 import { Component, computed, input } from '@angular/core';
 import { HlmProgressImports } from '@spartan-ng/helm/progress';
 import { centsUntilFreeShipping, freeShippingProgress } from '../shop/money';
+import { TranslatePipe } from '../i18n/translate.pipe';
 import { MoneyPipe } from '../shop/money.pipe';
 
 /** How close the pieces are to free shipping, in words and as a filling line. */
 @Component({
   selector: 'app-free-shipping',
-  imports: [HlmProgressImports, MoneyPipe],
+  imports: [HlmProgressImports, MoneyPipe, TranslatePipe],
   template: `
     <p class="note">
       @if (remaining() > 0) {
-        Add {{ remaining() | money }} more for free shipping.
+        {{ 'Add {amount} more for free shipping.' | t: { amount: (remaining() | money) } }}
       } @else {
-        Shipping is free on this order.
+        {{ 'Shipping is free on this order.' | t }}
       }
     </p>
-    <hlm-progress class="meter" [value]="percent()" aria-label="Toward free shipping">
+    <hlm-progress class="meter" [value]="percent()" [attr.aria-label]="'Toward free shipping' | t">
       <hlm-progress-indicator class="meter__fill" />
     </hlm-progress>
   `,

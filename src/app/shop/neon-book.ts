@@ -1,3 +1,5 @@
+import { asLocale } from '../i18n/locale';
+import type { Locale } from '../i18n/locale';
 import { isCategorySlug, SEED_PRODUCTS } from './catalog';
 import type { Product } from './catalog';
 import { DELIVERY_METHODS, PAYMENT_METHODS } from './checkout';
@@ -51,6 +53,8 @@ export interface OrderRecord {
   /** The driver returns a timestamp as a Date or as text, depending on how it parses types. */
   readonly paid_at: string | Date | null;
   readonly created_at: string | Date;
+  /** Absent on a row read before the column existed. Those orders are English. */
+  readonly locale?: string | null;
 }
 
 export interface LineRecord {
@@ -94,6 +98,62 @@ export function reportShopError(error: unknown): void {
       .replace(/npg_[A-Za-z0-9_-]+/g, '[secret]')
       .slice(0, 300),
   );
+}
+
+/** The language last asked for an address, for a process that has no database yet. */
+const localeByEmail = new Map<string, Locale>();
+
+/**
+ * Remembers a language for later emails. A signed-in person is stored by id. A password reset, which
+ * has no session, is stored by email. A guest with neither is left to the cookie.
+ */
+export async function rememberShopLocale(input: {
+  locale: Locale;
+  userId?: string | null;
+  email?: string | null;
+}): Promise<void> {
+  const email = input.email?.trim().toLowerCase() ?? '';
+  if (email) {
+    localeByEmail.set(email, input.locale);
+  }
+  const sql = await sqlClient();
+  if (!sql) {
+    return;
+  }
+  if (input.userId) {
+    await sql`update public.profiles set locale = ${input.locale} where id = ${input.userId}::uuid`;
+    return;
+  }
+  if (email) {
+    await sql`
+      update public.profiles
+      set locale = ${input.locale}
+      where id = (select id from neon_auth.user where lower(email) = ${email})
+    `;
+  }
+}
+
+/** The language to write to this address: the profile, then this process, then English. */
+export async function localeForShopEmail(email: string): Promise<Locale> {
+  const key = email.trim().toLowerCase();
+  const sql = await sqlClient();
+  if (sql && key) {
+    try {
+      const rows = await sql<{ locale: string | null }>`
+        select profiles.locale as locale
+        from public.profiles as profiles
+        join neon_auth.user as account on account.id = profiles.id
+        where lower(account.email) = ${key}
+      `;
+      const locale = rows[0]?.locale;
+      if (locale === 'en' || locale === 'es') {
+        return locale;
+      }
+    } catch (error) {
+      reportShopError(error);
+    }
+  }
+  return localeByEmail.get(key) ?? 'en';
 }
 
 /** Rebuilds the floor from slug rows. Seeded pieces stay in floor order so the index lead does not move. */
@@ -177,6 +237,7 @@ export function ordersFromRows(
       fulfillment,
       paidAt: row.paid_at === null ? null : new Date(row.paid_at).toISOString(),
       placedAt: new Date(row.created_at).toISOString(),
+      locale: asLocale(row.locale),
     });
   }
   return orders;
@@ -211,7 +272,8 @@ export function pullNeon(): Promise<void> {
     const orderRows = await sql<OrderRecord>`
       select id, reference, client_id, contact_name, contact_email, contact_phone, delivery,
              ship_line1, ship_city, ship_region, ship_postal_code, ship_country,
-             subtotal_cents, shipping_cents, total_cents, payment_method, fulfillment, paid_at, created_at
+             subtotal_cents, shipping_cents, total_cents, payment_method, fulfillment, paid_at,
+             created_at, locale
       from public.orders
     `;
     const lineRows = await sql<LineRecord>`
@@ -313,7 +375,8 @@ async function writeOrder(sql: Query, order: ShopOrder): Promise<void> {
     insert into public.orders (
       reference, client_id, contact_name, contact_email, contact_phone, delivery,
       ship_line1, ship_city, ship_region, ship_postal_code, ship_country,
-      subtotal_cents, shipping_cents, total_cents, payment_method, fulfillment, paid_at, created_at
+      subtotal_cents, shipping_cents, total_cents, payment_method, fulfillment, paid_at, created_at,
+      locale
     )
     values (
       ${order.reference},
@@ -333,7 +396,8 @@ async function writeOrder(sql: Query, order: ShopOrder): Promise<void> {
       ${order.paymentMethod},
       ${order.fulfillment},
       ${order.paidAt}::timestamptz,
-      ${order.placedAt}::timestamptz
+      ${order.placedAt}::timestamptz,
+      ${asLocale(order.locale)}
     )
     returning id
   `;

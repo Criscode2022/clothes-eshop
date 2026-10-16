@@ -23,6 +23,9 @@ import { HlmAlertImports } from '@spartan-ng/helm/alert';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmEmptyImports } from '@spartan-ng/helm/empty';
 import { HlmSpinner } from '@spartan-ng/helm/spinner';
+import { Language } from '../../i18n/language';
+import { TranslatePipe } from '../../i18n/translate.pipe';
+import { translate } from '../../i18n/translate';
 import {
   cityProblem,
   countryProblem,
@@ -90,6 +93,7 @@ function problem(message: string | null): { kind: 'rule'; message: string } | nu
     SelectField,
     ShopButtonImports,
     TextField,
+    TranslatePipe,
   ],
   providers: [
     provideIcons({
@@ -106,6 +110,7 @@ function problem(message: string | null): { kind: 'rule'; message: string } | nu
 })
 export class Checkout {
   private readonly shop = inject(ShopClient);
+  private readonly language = inject(Language);
   private readonly router = inject(Router);
   private readonly injector = inject(Injector);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
@@ -159,12 +164,24 @@ export class Checkout {
   /** The country picked so far, which decides the region field and the postal format. */
   protected readonly country = computed(() => countryNamed(this.model().shipping.country));
   protected readonly phoneHint = computed(() => {
+    const locale = this.language.locale();
     if (!this.shipping()) {
-      return 'So the shop can reach you about the order. Include the country code.';
+      return translate(
+        locale,
+        'So the shop can reach you about the order. Include the country code.',
+      );
     }
     const country = this.country();
-    return `For the carrier. Include the country code${country ? `, like ${country.dial}` : ''}.`;
+    return country
+      ? translate(locale, 'For the carrier. Include the country code, like {dial}.', {
+          dial: country.dial,
+        })
+      : translate(locale, 'For the carrier. Include the country code.');
   });
+
+  protected postalHint(example: string): string {
+    return translate(this.language.locale(), 'Like {example}', { example });
+  }
 
   /** What each way to receive the order costs, as its choice says: shipping, or nothing. */
   protected deliveryCost(delivery: DeliveryMethod): string {
@@ -230,6 +247,7 @@ export class Checkout {
         shipping: delivery === 'ship' ? shipping : null,
         paymentMethod,
         lines: this.bag.items(),
+        locale: this.language.locale(),
       });
       this.bag.clear();
       await this.router.navigate(['/order', order.reference], { state: { placed: true } });
