@@ -12,6 +12,7 @@ import { of, throwError } from 'rxjs';
 import { App } from '../app';
 import { routes } from '../app.routes';
 import { Bag } from './bag';
+import { CatalogStore } from './catalog-store';
 import { formatMoney } from './money';
 import { quoteOrder } from './checkout';
 import { SEED_PRODUCTS } from './catalog';
@@ -74,6 +75,23 @@ describe('shop routes', () => {
       unobserve(): void {}
       disconnect(): void {}
     };
+    // jsdom has the dialog element and not its methods. The piece page opens a photograph with them.
+    const dialog = HTMLDialogElement.prototype;
+    if (typeof dialog.showModal !== 'function') {
+      dialog.showModal = function showModal(this: HTMLDialogElement): void {
+        if (this.open) {
+          throw new DOMException('The dialog is already open.', 'InvalidStateError');
+        }
+        this.open = true;
+      };
+      dialog.close = function close(this: HTMLDialogElement): void {
+        if (!this.open) {
+          return;
+        }
+        this.open = false;
+        this.dispatchEvent(new Event('close'));
+      };
+    }
   });
 
   beforeEach(() => {
@@ -412,6 +430,85 @@ describe('shop routes', () => {
 
     expect(photo()?.getAttribute('src')).toBe('/garments/oxford-shirt-ink.avif');
     expect(photo()?.alt).toBe('Oxford Cloth Shirt in Ink');
+  });
+
+  it('opens the photograph full size, then puts it back', async () => {
+    const { fixture } = await render('/product/wool-overcoat');
+    const opener = (): HTMLButtonElement | null => document.querySelector('.pdp__open');
+    const viewer = (): HTMLDialogElement | null => document.querySelector('dialog.viewer');
+    const full = (): HTMLImageElement | null => viewer()?.querySelector('img') ?? null;
+
+    expect(opener()?.getAttribute('aria-haspopup')).toBe('dialog');
+    expect(opener()?.textContent).toContain('View full size');
+    expect(document.querySelectorAll('.pdp__media img')).toHaveLength(1);
+    expect(full()).toBeNull();
+
+    opener()!.click();
+    await settle(fixture);
+
+    expect(viewer()?.open).toBe(true);
+    expect(viewer()?.getAttribute('aria-label')).toBe('Charcoal Wool Overcoat in Charcoal');
+    expect(full()?.getAttribute('src')).toBe('/garments/wool-overcoat.avif');
+    expect(full()?.getAttribute('alt')).toBe('');
+    expect(full()?.classList).toContain('viewer__photo');
+    expect(document.querySelectorAll('.pdp__media img')).toHaveLength(1);
+    expect(document.activeElement).toBe(viewer()?.querySelector('.viewer__close'));
+
+    await clickButton(fixture, 'Close');
+
+    expect(viewer()?.open).toBe(false);
+    expect(full()).toBeNull();
+    expect(document.querySelectorAll('.pdp__media img')).toHaveLength(1);
+
+    opener()!.click();
+    await settle(fixture);
+    viewer()!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    await settle(fixture);
+
+    expect(viewer()?.open).toBe(false);
+    expect(full()).toBeNull();
+
+    opener()!.click();
+    await settle(fixture);
+    viewer()!.close();
+    await settle(fixture);
+
+    expect(viewer()?.open).toBe(false);
+    expect(full()).toBeNull();
+
+    await choose(fixture, 'input[name="color"][value="Camel"]');
+    opener()!.click();
+    await settle(fixture);
+
+    expect(full()?.getAttribute('src')).toBe('/garments/wool-overcoat-camel.avif');
+    expect(document.querySelector('.pdp__media img')?.getAttribute('src')).toBe(
+      '/garments/wool-overcoat-camel.avif',
+    );
+
+    await go(fixture, '/product/oxford-shirt');
+
+    expect(viewer()?.open).toBe(false);
+    expect(full()).toBeNull();
+    expect(document.querySelector('.pdp__media img')?.getAttribute('src')).toBe(
+      '/garments/oxford-shirt.avif',
+    );
+  });
+
+  it('leaves a piece with no photograph at page size', async () => {
+    const { fixture } = await render('/product/wool-overcoat');
+    TestBed.inject(CatalogStore).replace({
+      id: 'unpictured-coat',
+      name: 'Unpictured Coat',
+      category: 'outerwear',
+      priceCents: 10_000,
+      summary: 'No photograph.',
+      variants: [{ id: 'unpictured-coat-46', size: '46', color: 'Ink', stock: 1 }],
+    });
+    await go(fixture, '/product/unpictured-coat');
+
+    expect(document.querySelector('.pdp__open')).toBeNull();
+    expect(document.querySelector('.pdp__media')?.textContent).toContain('No photograph yet');
+    expect(document.querySelector('dialog.viewer img')).toBeNull();
   });
 
   it('asks for a size instead of guessing one', async () => {

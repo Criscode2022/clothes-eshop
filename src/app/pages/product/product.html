@@ -3,14 +3,24 @@
     <div class="pdp__grid">
       <app-back-link class="pdp__back" [fallback]="'/category/' + piece.category" />
       <div class="pdp__media" appPhotoLoupe>
-        <app-piece-photo
-          class="pdp__photo"
-          [pieceId]="piece.id"
-          [color]="color()"
-          [alt]="photoAlt()"
-          [priority]="true"
-          [transitionName]="'piece-' + piece.id"
-        />
+        <ng-template #shot>
+          <app-piece-photo
+            class="pdp__photo"
+            [pieceId]="piece.id"
+            [color]="color()"
+            [alt]="photoAlt()"
+            [priority]="true"
+            [transitionName]="'piece-' + piece.id"
+          />
+        </ng-template>
+        @if (portrait()) {
+          <button type="button" class="pdp__open" aria-haspopup="dialog" (click)="openPhoto($event)">
+            <ng-container [ngTemplateOutlet]="shot" />
+            <span class="sr-only">{{ 'View full size' | t }}</span>
+          </button>
+        } @else {
+          <ng-container [ngTemplateOutlet]="shot" />
+        }
       </div>
 
       <div class="pdp__panel">
@@ -158,6 +168,26 @@
       </section>
     }
   </article>
+
+  <dialog
+    #viewer
+    class="viewer"
+    [attr.aria-label]="photoOpen() ? photoAlt() : null"
+    (click)="closePhoto()"
+    (close)="photoDismissed()"
+  >
+    @if (photoOpen() && portrait(); as photo) {
+      <button type="button" class="viewer__close" autofocus>
+        <ng-icon name="lucideX" />
+        <span class="sr-only">{{ 'Close' | t }}</span>
+      </button>
+      <picture>
+        <source type="image/avif" [srcset]="photo.avif" />
+        <source type="image/jpeg" [srcset]="photo.jpeg" />
+        <img class="viewer__photo" [ngSrc]="photo.avif" width="800" height="1200" alt="" />
+      </picture>
+    }
+  </dialog>
 
   @if (buyBarShown()) {
     <div class="buy-bar">

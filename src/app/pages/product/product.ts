@@ -1,8 +1,10 @@
+import { NgOptimizedImage, NgTemplateOutlet } from '@angular/common';
 import {
   Component,
   DestroyRef,
   ElementRef,
   afterNextRender,
+  afterRenderEffect,
   computed,
   inject,
   input,
@@ -12,7 +14,7 @@ import {
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideBanknote, lucideStore, lucideTruck } from '@ng-icons/lucide';
+import { lucideBanknote, lucideStore, lucideTruck, lucideX } from '@ng-icons/lucide';
 import { HlmAccordionImports } from '@spartan-ng/helm/accordion';
 import { HlmEmptyImports } from '@spartan-ng/helm/empty';
 import { Language } from '../../i18n/language';
@@ -42,6 +44,8 @@ import { ShopButtonImports } from '../../ui/shop-button';
     HlmEmptyImports,
     MoneyPipe,
     NgIcon,
+    NgOptimizedImage,
+    NgTemplateOutlet,
     PhotoLoupe,
     PiecePhoto,
     ProductCard,
@@ -50,7 +54,7 @@ import { ShopButtonImports } from '../../ui/shop-button';
     ShopButtonImports,
     TranslatePipe,
   ],
-  providers: [provideIcons({ lucideBanknote, lucideStore, lucideTruck })],
+  providers: [provideIcons({ lucideBanknote, lucideStore, lucideTruck, lucideX })],
   templateUrl: './product.html',
   styleUrl: './product.scss',
 })
@@ -61,6 +65,9 @@ export class ProductPage {
   private readonly drawer = inject(BagDrawer);
   private readonly sizeGroup = viewChild<ElementRef<HTMLElement>>('sizeGroup');
   private readonly buyButton = viewChild<ElementRef<HTMLElement>>('buyButton');
+  private readonly viewer = viewChild<ElementRef<HTMLDialogElement>>('viewer');
+  private pageAlive = true;
+  private returnFocus: HTMLElement | null = null;
 
   protected readonly clothColor = clothColor;
   protected readonly product = computed(() => this.catalog.product(this.id()));
@@ -94,6 +101,16 @@ export class ProductPage {
         groups[0]
       )?.color ?? ''
     );
+  });
+  /** The photograph of the chosen color, when this piece has one. */
+  protected readonly portrait = computed(() => {
+    const piece = this.product();
+    return piece ? portraitOf(piece.id, this.color()) : null;
+  });
+  /** Another piece starts with the photograph at page size. */
+  protected readonly photoOpen = linkedSignal({
+    source: this.id,
+    computation: () => false,
   });
   /** The photograph follows the chosen color, so its description names it. */
   protected readonly photoAlt = computed(() => {
@@ -140,6 +157,39 @@ export class ProductPage {
 
   constructor() {
     const destroyRef = inject(DestroyRef);
+    destroyRef.onDestroy(() => {
+      this.pageAlive = false;
+      const dialog = this.viewer()?.nativeElement;
+      if (dialog?.open) {
+        dialog.close();
+      }
+    });
+    // The photograph is in the dialog before it opens, and a piece change closes it while it is still there.
+    afterRenderEffect({
+      earlyRead: () => {
+        const dialog = this.viewer()?.nativeElement ?? null;
+        return {
+          dialog,
+          open: dialog?.open ?? false,
+          connected: dialog?.isConnected ?? false,
+          closeButton: dialog?.querySelector<HTMLElement>('.viewer__close') ?? null,
+          show: this.photoOpen() && this.portrait() !== null,
+        };
+      },
+      write: (state) => {
+        const current = state();
+        const dialog = current.dialog;
+        if (!dialog || !current.connected) {
+          return;
+        }
+        if (current.show && !current.open) {
+          dialog.showModal();
+          current.closeButton?.focus({ preventScroll: true });
+        } else if (!current.show && current.open) {
+          dialog.close();
+        }
+      },
+    });
     afterNextRender(() => {
       const button = this.buyButton()?.nativeElement;
       if (!button || typeof IntersectionObserver === 'undefined') {
@@ -161,6 +211,42 @@ export class ProductPage {
   protected chooseSize(variantId: string): void {
     this.sizeId.set(variantId);
     this.sizeHintShown.set(false);
+  }
+
+  protected openPhoto(event: Event): void {
+    if (!this.portrait()) {
+      return;
+    }
+    const opener = event.currentTarget;
+    this.returnFocus = opener instanceof HTMLElement ? opener : null;
+    this.photoOpen.set(true);
+  }
+
+  /** Puts the photograph back at page size. */
+  protected closePhoto(): void {
+    const dialog = this.viewer()?.nativeElement;
+    if (dialog?.open) {
+      dialog.close();
+      return;
+    }
+    this.photoOpen.set(false);
+  }
+
+  protected photoDismissed(): void {
+    if (!this.pageAlive) {
+      return;
+    }
+    this.photoOpen.set(false);
+    const back = this.returnFocus;
+    this.returnFocus = null;
+    if (!back) {
+      return;
+    }
+    queueMicrotask(() => {
+      if (this.pageAlive && back.isConnected) {
+        back.focus({ preventScroll: true });
+      }
+    });
   }
 
   protected addToBag(): void {

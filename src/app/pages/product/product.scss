@@ -54,14 +54,93 @@
   transition: transform 520ms var(--ease-out);
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .pdp__media {
-    cursor: zoom-in;
-  }
+.pdp__open {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: zoom-in;
 
+  &:focus-visible {
+    outline-offset: -3px;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
   .pdp__media.is-looking .pdp__photo {
     transform: scale(1.6);
   }
+}
+
+// The photograph fills the window. The field around it, and the photograph itself, are the way back.
+.viewer {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #fff;
+
+  &[open] {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    overflow: hidden;
+    background: rgb(0 0 0 / 0.92);
+    cursor: zoom-out;
+  }
+
+  &::backdrop {
+    background: rgb(0 0 0 / 0.92);
+  }
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.viewer__close {
+  position: absolute;
+  z-index: 1;
+  top: max(0.75rem, env(safe-area-inset-top));
+  right: max(0.75rem, env(safe-area-inset-right));
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+
+  ng-icon {
+    font-size: 1.25rem;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 3px;
+  }
+}
+
+.viewer__photo {
+  max-width: calc(100vw - 2rem);
+  max-height: calc(100svh - 5rem);
+  width: auto;
+  height: auto;
+  object-fit: contain;
 }
 
 .pdp__panel {

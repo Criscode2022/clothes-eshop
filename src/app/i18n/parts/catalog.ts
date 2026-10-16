@@ -53,6 +53,8 @@ export const CATALOG: Record<string, string> = {
   'Shipping is $8.00, and free from $200.00.': 'El envío cuesta $8.00 y es gratis desde $200.00.',
   'Or pick it up at the shop, free.': 'O recógela en la tienda, gratis.',
   'About this piece': 'Sobre esta prenda',
+  'View full size': 'Ver a tamaño completo',
+  Close: 'Cerrar',
   Fit: 'Corte',
   'More from the floor': 'Más de la planta',
   'That piece is not on the floor': 'Esa prenda no está en la planta',
