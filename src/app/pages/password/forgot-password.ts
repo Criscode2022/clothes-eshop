@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { email, form, required, submit } from '@angular/forms/signals';
+import { form, required, submit } from '@angular/forms/signals';
 import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideCircleAlert, lucideMailCheck } from '@ng-icons/lucide';
@@ -10,6 +10,7 @@ import { TranslatePipe } from '../../i18n/translate.pipe';
 import { ShopClient } from '../../shop/shop-client';
 import { ShopButtonImports } from '../../ui/shop-button';
 import { TextField } from '../../ui/text-field';
+import { emailAddress } from '../../ui/form-rules';
 
 /**
  * Asks Neon Auth to email a link for choosing a new password. The page answers the same way whether or
@@ -100,7 +101,7 @@ export class ForgotPassword {
   protected readonly model = signal({ email: '' });
   protected readonly resetForm = form(this.model, (path) => {
     required(path.email, { message: 'Enter your email.' });
-    email(path.email, { message: 'Enter an email address, like name@example.com.' });
+    emailAddress(path.email);
   });
   protected readonly sending = signal(false);
   protected readonly errorMessage = signal('');

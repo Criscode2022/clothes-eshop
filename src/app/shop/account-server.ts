@@ -1,4 +1,5 @@
 import type { Actor } from './access';
+import { nameProblem } from './address-rules';
 import { unlinkClientOrders } from './order-book';
 import { actorOf, openSession } from './shop-server';
 import type { ShopHttpResult } from './shop-server';
@@ -22,7 +23,6 @@ export interface AccountServerDeps {
 
 /** A sign-in counts as fresh for deleting an account for this long. */
 const FRESH_SIGN_IN_MS = 5 * 60_000;
-const NAME_LIMITS = { min: 2, max: 80 } as const;
 
 /**
  * Changes and deletes the signed-in person's own account. Returns null for any route it does not own,
@@ -59,8 +59,9 @@ async function rename(
   }
   const { actor, directory } = gate;
   const name = readField(body, 'name').trim().replace(/\s+/g, ' ');
-  if (name.length < NAME_LIMITS.min || name.length > NAME_LIMITS.max) {
-    return problem(400, 'Enter your name, at least 2 letters.');
+  const nameRefused = nameProblem(name);
+  if (nameRefused) {
+    return problem(400, nameRefused);
   }
   await directory.rename(actor.id, name);
   // The session carries the name, so the browser gets one under the new name.

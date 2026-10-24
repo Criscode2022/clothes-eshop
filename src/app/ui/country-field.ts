@@ -1,11 +1,13 @@
-import { afterNextRender, Component, DestroyRef, ElementRef, inject, input, output, signal, viewChild } from '@angular/core';
+import { afterNextRender, Component, computed, DestroyRef, ElementRef, inject, input, output, signal, viewChild } from '@angular/core';
 import { FormField } from '@angular/forms/signals';
 import type { Field } from '@angular/forms/signals';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideChevronDown } from '@ng-icons/lucide';
 import { BrnComboboxImports } from '@spartan-ng/brain/combobox';
 import { HlmComboboxImports } from '@spartan-ng/helm/combobox';
+import { Language } from '../i18n/language';
 import { TranslatePipe } from '../i18n/translate.pipe';
+import { translate } from '../i18n/translate';
 import { COUNTRIES, CONTINENTS, matchesCountry } from '../shop/countries';
 import { fieldMessages } from './field-messages';
 
@@ -27,6 +29,7 @@ const SEARCH_WAIT_MS = 160;
     <hlm-combobox
       [formField]="field()"
       [filter]="filter"
+      [itemToString]="itemToString()"
       autoHighlight
       (searchChange)="onSearch($event)"
       (valueChange)="chosen.emit()"
@@ -110,6 +113,13 @@ export class CountryField {
   /** A different country was picked: the fields that depend on it change. */
   readonly chosen = output();
 
+  private readonly language = inject(Language);
+
+  protected readonly itemToString = computed(() => {
+    const locale = this.language.locale();
+    return (name: string): string => translate(locale, name);
+  });
+
   /**
    * The letters the list is using. The field shows each letter at once; this follows a moment
    * later, so a quick run of letters narrows the list once. An empty field shows every country
@@ -168,7 +178,7 @@ export class CountryField {
 
   private chosenName(): string {
     const value = this.field()().value();
-    return typeof value === 'string' ? value : '';
+    return typeof value === 'string' && value ? this.itemToString()(value) : '';
   }
 
   protected onSearch(next: string): void {

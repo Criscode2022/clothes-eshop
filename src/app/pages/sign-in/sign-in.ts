@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { email, form, minLength, required, submit } from '@angular/forms/signals';
+import { form, minLength, required, submit } from '@angular/forms/signals';
 import { Router, RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideCheck, lucideCircleAlert } from '@ng-icons/lucide';
@@ -10,6 +10,7 @@ import type { ShopRole } from '../../shop/access';
 import { ShopClient } from '../../shop/shop-client';
 import { ShopButtonImports } from '../../ui/shop-button';
 import { TextField } from '../../ui/text-field';
+import { emailAddress, personName } from '../../ui/form-rules';
 
 /** Where a person lands once they are in: their own orders. */
 const LANDING: Record<ShopRole, string> = {
@@ -40,15 +41,14 @@ export class SignIn {
   protected readonly accountModel = signal({ name: '', email: '', password: '' });
   protected readonly signInForm = form(this.model, (path) => {
     required(path.email, { message: 'Enter your email.' });
-    email(path.email, { message: 'Enter an email address, like name@example.com.' });
+    emailAddress(path.email);
     required(path.password, { message: 'Enter your password.' });
     minLength(path.password, 8, { message: 'Passwords have at least 8 characters.' });
   });
   protected readonly accountForm = form(this.accountModel, (path) => {
-    required(path.name, { message: 'Enter your name.' });
-    minLength(path.name, 2, { message: 'Enter your name.' });
+    personName(path.name);
     required(path.email, { message: 'Enter your email.' });
-    email(path.email, { message: 'Enter an email address, like name@example.com.' });
+    emailAddress(path.email);
     required(path.password, { message: 'Choose a password of at least 8 characters.' });
     minLength(path.password, 8, { message: 'Choose a password of at least 8 characters.' });
   });

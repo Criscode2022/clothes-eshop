@@ -11,6 +11,7 @@ import { centsFromDollars } from '../../shop/money';
 import { ShopClient } from '../../shop/shop-client';
 import { ShopButtonImports } from '../../ui/shop-button';
 import { TextField } from '../../ui/text-field';
+import { wholeStock } from '../../ui/form-rules';
 
 /** A new piece goes on the floor with its first size and color; more sizes are added on its page. */
 @Component({
@@ -94,7 +95,7 @@ export class NewPiece {
     required(path.summary, { message: 'Write one line about the piece.' });
     required(path.size, { message: 'Enter the first size, like 48 or M.' });
     required(path.color, { message: 'Enter its color, like Charcoal.' });
-    min(path.stock, 0, { message: 'Stock is a whole number, 0 or more.' });
+    wholeStock(path.stock);
   });
 
   protected fieldError(state: { touched(): boolean; invalid(): boolean }): boolean {

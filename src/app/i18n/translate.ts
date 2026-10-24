@@ -152,6 +152,10 @@ function patterned(english: string): string | null {
   if (stuck) {
     return `${stuck[1]} no se pudo mover.`;
   }
+  const cancelledFail = /^(\S+) could not be cancelled\.$/.exec(english);
+  if (cancelledFail) {
+    return `${cancelledFail[1]} no se pudo cancelar.`;
+  }
   return null;
 }
 

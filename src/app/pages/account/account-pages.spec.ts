@@ -337,6 +337,63 @@ describe('account pages', () => {
     );
     expect(header?.textContent).not.toContain('Sign in');
   });
+
+  describe('checks names and emails the way checkout does', () => {
+    const EMAIL_SHAPE = 'Enter an email address, like name@example.com.';
+
+    it('keeps a blank name from reaching the server', async () => {
+      const fixture = await render('/account', 'neon');
+      shopCalls.length = 0;
+
+      await typeInto(fixture, 'account-name', '   ');
+      await click(fixture, 'Save name');
+
+      expect(document.getElementById('account-name-error')?.textContent?.trim()).toBe(
+        'Enter your full name.',
+      );
+      expect(shopCalls).not.toContain('PATCH /api/account');
+    });
+
+    it('wants a dot in the domain before signing in', async () => {
+      const fixture = await render('/sign-in');
+
+      await typeInto(fixture, 'sign-in-email', 'ada@localhost');
+      await typeInto(fixture, 'sign-in-password', 'my-password');
+      await click(fixture, 'Sign in');
+
+      expect(document.getElementById('sign-in-email-error')?.textContent?.trim()).toBe(
+        EMAIL_SHAPE,
+      );
+      expect(neon.calls).toEqual([]);
+    });
+
+    it('wants a name of letters and a whole email before creating an account', async () => {
+      const fixture = await render('/sign-in');
+
+      await typeInto(fixture, 'account-name', '12');
+      await typeInto(fixture, 'account-email', 'ada@localhost');
+      await typeInto(fixture, 'account-password', 'my-password');
+      await click(fixture, 'Create account');
+
+      expect(document.getElementById('account-name-error')?.textContent?.trim()).toBe(
+        'Use letters for the name.',
+      );
+      expect(document.getElementById('account-email-error')?.textContent?.trim()).toBe(
+        EMAIL_SHAPE,
+      );
+      expect(neon.calls).toEqual([]);
+    });
+
+    it('wants a whole email before sending a reset link', async () => {
+      const fixture = await render('/forgot-password');
+
+      await typeInto(fixture, 'reset-email', 'ada@localhost');
+      await click(fixture, 'Send the link');
+
+      expect(document.getElementById('reset-email-error')?.textContent?.trim()).toBe(EMAIL_SHAPE);
+      expect(neon.calls).toEqual([]);
+    });
+  });
 });
 
 function buttonNamed(name: string): HTMLButtonElement | undefined {

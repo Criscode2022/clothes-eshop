@@ -100,18 +100,17 @@ describe('account requests', () => {
     );
   });
 
-  it('asks for a real name', async () => {
-    const result = await handleAccountHttp(
-      'PATCH',
-      '/api/account',
-      { name: ' A ' },
-      neonSession(),
-      deps(),
-    );
+  it('asks for a real name, by the same rule as checkout', async () => {
+    const rename = (name: string) =>
+      handleAccountHttp('PATCH', '/api/account', { name }, neonSession(), deps());
 
-    expect(result).toEqual({
+    expect(await rename(' A ')).toEqual({
       status: 400,
-      body: { message: 'Enter your name, at least 2 letters.' },
+      body: { message: 'Enter your full name.' },
+    });
+    expect(await rename('12')).toEqual({
+      status: 400,
+      body: { message: 'Use letters for the name.' },
     });
   });
 

@@ -5,8 +5,10 @@ import {
   Injector,
   afterNextRender,
   computed,
+  effect,
   inject,
   signal,
+  untracked,
 } from '@angular/core';
 import { FormField, applyWhen, form, required, submit, validate } from '@angular/forms/signals';
 import { Router, RouterLink } from '@angular/router';
@@ -54,6 +56,8 @@ import { PiecePhoto } from '../../ui/piece-photo';
 import { SelectField } from '../../ui/select-field';
 import { ShopButtonImports } from '../../ui/shop-button';
 import { TextField } from '../../ui/text-field';
+import { ruleError } from '../../ui/form-rules';
+import type { Actor } from '../../shop/access';
 
 /** The mark beside each way to pay. */
 const METHOD_ICONS: Record<PaymentMethodId, string> = {
@@ -67,11 +71,6 @@ const DELIVERY_ICONS: Record<DeliveryMethod, string> = {
   ship: 'lucideTruck',
   pickup: 'lucideStore',
 };
-
-/** A rule's message as a form error; no message, no error. */
-function problem(message: string | null): { kind: 'rule'; message: string } | null {
-  return message ? { kind: 'rule', message } : null;
-}
 
 /** One page: contact, delivery, and how to pay, with the order's cost in view the whole time. */
 @Component({
@@ -125,33 +124,29 @@ export class Checkout {
   protected readonly errorMessage = signal('');
   protected readonly placing = signal(false);
   protected readonly model = signal({
-    contact: {
-      name: this.session.current()?.name ?? '',
-      email: this.session.current()?.email ?? '',
-      phone: '',
-    },
+    contact: { name: '', email: '', phone: '' },
     delivery: 'ship' as DeliveryMethod,
     shipping: { country: 'United States', line1: '', city: '', region: '', postalCode: '' },
     paymentMethod: '',
   });
   /** The rules the server applies too (address-rules), shown as each field is left. */
   protected readonly checkoutForm = form(this.model, (path) => {
-    validate(path.contact.name, ({ value }) => problem(nameProblem(value())));
-    validate(path.contact.email, ({ value }) => problem(emailProblem(value())));
-    validate(path.contact.phone, ({ value }) => problem(phoneProblem(value())));
+    validate(path.contact.name, ({ value }) => ruleError(nameProblem(value())));
+    validate(path.contact.email, ({ value }) => ruleError(emailProblem(value())));
+    validate(path.contact.phone, ({ value }) => ruleError(phoneProblem(value())));
     // An order picked up at the shop has no address to check.
     applyWhen(
       path.shipping,
       ({ valueOf }) => valueOf(path.delivery) === 'ship',
       (shipping) => {
-        validate(shipping.country, ({ value }) => problem(countryProblem(value())));
-        validate(shipping.line1, ({ value }) => problem(streetProblem(value())));
-        validate(shipping.city, ({ value }) => problem(cityProblem(value())));
+        validate(shipping.country, ({ value }) => ruleError(countryProblem(value())));
+        validate(shipping.line1, ({ value }) => ruleError(streetProblem(value())));
+        validate(shipping.city, ({ value }) => ruleError(cityProblem(value())));
         validate(shipping.region, ({ value, valueOf }) =>
-          problem(regionProblem(valueOf(shipping.country), value())),
+          ruleError(regionProblem(valueOf(shipping.country), value())),
         );
         validate(shipping.postalCode, ({ value, valueOf }) =>
-          problem(postalCodeProblem(valueOf(shipping.country), value())),
+          ruleError(postalCodeProblem(valueOf(shipping.country), value())),
         );
       },
     );
@@ -178,6 +173,17 @@ export class Checkout {
         })
       : translate(locale, 'For the carrier. Include the country code.');
   });
+
+  constructor() {
+    // A reload resumes the session after the first render, when this page is already built, so the
+    // account's name and email arrive late. They fill only what the shopper has not typed.
+    effect(() => {
+      const actor = this.session.current();
+      if (actor) {
+        untracked(() => this.fillContactFrom(actor));
+      }
+    });
+  }
 
   protected postalHint(example: string): string {
     return translate(this.language.locale(), 'Like {example}', { example });
@@ -235,6 +241,17 @@ export class Checkout {
 
   private updateShipping(change: (shipping: ShippingDetails) => ShippingDetails): void {
     this.model.update((model) => ({ ...model, shipping: change(model.shipping) }));
+  }
+
+  private fillContactFrom(actor: Pick<Actor, 'name' | 'email'>): void {
+    this.model.update((model) => ({
+      ...model,
+      contact: {
+        ...model.contact,
+        name: model.contact.name || actor.name,
+        email: model.contact.email || actor.email,
+      },
+    }));
   }
 
   private async sendOrder(): Promise<void> {

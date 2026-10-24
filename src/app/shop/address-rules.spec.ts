@@ -1,3 +1,4 @@
+import { SPANISH } from '../i18n/es';
 import {
   cityProblem,
   countryProblem,
@@ -273,6 +274,13 @@ describe('the country list', () => {
     expect(matchesCountry('United States', 'united st')).toBe(true);
     expect(matchesCountry('Hong Kong', 'hong')).toBe(true);
     expect(matchesCountry('China', 'hong')).toBe(false);
+  });
+
+  it('finds every country by the Spanish name its list shows', () => {
+    for (const country of COUNTRIES) {
+      const spanish = SPANISH[country.name] ?? country.name;
+      expect([country.name, matchesCountry(country.name, spanish)]).toEqual([country.name, true]);
+    }
   });
 });
 

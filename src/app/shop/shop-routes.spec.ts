@@ -11,6 +11,7 @@ import { provideRouter, Router, withComponentInputBinding } from '@angular/route
 import { of, throwError } from 'rxjs';
 import { App } from '../app';
 import { routes } from '../app.routes';
+import { Language } from '../i18n/language';
 import { Bag } from './bag';
 import { CatalogStore } from './catalog-store';
 import { formatMoney } from './money';
@@ -861,6 +862,96 @@ describe('shop routes', () => {
     expect(document.body.textContent).toContain('Every order');
     await go(fixture, '/owner/pieces');
     expect(document.getElementById('piece-price')).not.toBeNull();
+  });
+
+  it('shows only the stock note in the column of what the floor shows', async () => {
+    const { fixture } = await render('/');
+    adopt(fixture, JORDAN);
+    await go(fixture, '/desk/stock');
+
+    const cells = [...document.querySelectorAll('td')].filter((cell) => cell.querySelector('.note'));
+    expect(cells.length).toBeGreaterThan(0);
+    for (const cell of cells) {
+      expect(cell.textContent?.trim()).toBe(cell.querySelector('.note')?.textContent?.trim());
+    }
+  });
+
+  it('says why a new size’s stock is refused, before asking the server', async () => {
+    const { fixture } = await render('/');
+    adopt(fixture, SLOAN);
+    await go(fixture, '/owner/pieces?piece=oxford-shirt');
+    const sizesBefore = document.querySelectorAll('app-stock-field').length;
+
+    await typeInto(fixture, 'variant-size', 'XL');
+    await typeInto(fixture, 'variant-color', 'Navy');
+    for (const wrong of ['-1', '1.5']) {
+      await typeInto(fixture, 'variant-stock', wrong);
+      await clickButton(fixture, 'Add size');
+
+      const stock = document.getElementById('variant-stock');
+      expect(stock?.getAttribute('aria-invalid')).toBe('true');
+      expect(stock?.getAttribute('aria-describedby')).toBe('variant-stock-error');
+      expect(fieldError('variant-stock')).toBe('Stock is a whole number, 0 or more.');
+    }
+    expect(document.querySelectorAll('app-stock-field')).toHaveLength(sizesBefore);
+  });
+
+  it('asks for whole pieces of stock on a new piece', async () => {
+    const { fixture } = await render('/');
+    adopt(fixture, SLOAN);
+    await go(fixture, '/owner/new');
+
+    await typeInto(fixture, 'piece-stock', '1.5');
+    await settle(fixture);
+
+    expect(fieldError('piece-stock')).toBe('Stock is a whole number, 0 or more.');
+  });
+
+  it('fills in a signed-in shopper’s name and email once the session comes back, keeping what was typed', async () => {
+    const { fixture } = await checkoutWithAShirt();
+    await typeInto(fixture, 'contact-name', 'Ada Lovelace');
+
+    // On a reload the session resumes after the first render, so checkout is already on screen.
+    adopt(fixture, AVERY);
+    await settle(fixture);
+
+    expect((document.getElementById('contact-name') as HTMLInputElement).value).toBe(
+      'Ada Lovelace',
+    );
+    expect((document.getElementById('contact-email') as HTMLInputElement).value).toBe(
+      AVERY.email,
+    );
+  });
+
+  describe('in Spanish', () => {
+    afterEach(() => {
+      document.cookie = 'marlow.lang=; Path=/; Max-Age=0';
+      document.documentElement.lang = 'en';
+    });
+
+    it('shows the chosen country in Spanish and finds it by its Spanish name', async () => {
+      const { fixture } = await checkoutWithAShirt();
+      await TestBed.inject(Language).choose('es');
+      await settle(fixture);
+      const input = (): HTMLInputElement =>
+        document.getElementById('ship-country') as HTMLInputElement;
+      expect(input().value).toBe('Estados Unidos');
+
+      await typeInto(fixture, 'ship-country', 'Dinamarca');
+      await new Promise((resolve) => setTimeout(resolve, 400));
+      await settle(fixture);
+      const denmark = [...document.querySelectorAll<HTMLElement>('[data-slot="combobox-item"]')].find(
+        (item) => item.textContent?.trim() === 'Dinamarca' && !item.hasAttribute('data-hidden'),
+      );
+      expect(denmark).toBeDefined();
+      denmark?.click();
+      await settle(fixture);
+      expect(input().value).toBe('Dinamarca');
+
+      await TestBed.inject(Language).choose('en');
+      await settle(fixture);
+      expect(input().value).toBe('Denmark');
+    });
   });
 });
 

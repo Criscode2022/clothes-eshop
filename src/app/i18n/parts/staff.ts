@@ -83,6 +83,7 @@ export const STAFF: Record<string, string> = {
   Open: 'Abiertos',
   'Cancel order': 'Cancelar el pedido',
   Keep: 'Conservar',
+  'Added from the backoffice.': 'Añadida desde la administración.',
   '{name} picks it up at the counter, giving the reference {reference}.':
     '{name} lo recoge en el mostrador, con la referencia {reference}.',
 };

@@ -129,7 +129,17 @@
                 inputmode="numeric"
                 [formField]="variantForm.stock"
                 [attr.aria-invalid]="variantForm.stock().touched() && variantForm.stock().invalid()"
+                [attr.aria-describedby]="
+                  variantForm.stock().touched() && variantForm.stock().invalid()
+                    ? 'variant-stock-error'
+                    : null
+                "
               />
+              @if (variantForm.stock().touched() && variantForm.stock().invalid()) {
+                <p id="variant-stock-error" class="field__error">
+                  {{ variantForm.stock().errors()[0]?.message | t }}
+                </p>
+              }
             </div>
           </div>
           <div class="block__actions">

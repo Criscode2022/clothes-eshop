@@ -17,6 +17,7 @@ import { ShopClient } from '../../shop/shop-client';
 import { PiecePhoto } from '../../ui/piece-photo';
 import { ShopButtonImports } from '../../ui/shop-button';
 import { TextField } from '../../ui/text-field';
+import { wholeStock } from '../../ui/form-rules';
 import { StockField, stockControlLabel } from '../staff/stock-field';
 
 /** Every piece on one side, the chosen one's price, sizes, and stock on the other. */
@@ -71,7 +72,7 @@ export class OwnerPieces {
   protected readonly variantForm = form(this.variantModel, (path) => {
     required(path.size, { message: 'Enter a size, like 48 or M.' });
     required(path.color, { message: 'Enter a color, like Charcoal.' });
-    min(path.stock, 0, { message: 'Stock is a whole number, 0 or more.' });
+    wholeStock(path.stock);
   });
   protected readonly variantStatus = linkedSignal({
     source: this.selectedId,

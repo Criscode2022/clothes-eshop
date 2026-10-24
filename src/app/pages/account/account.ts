@@ -12,6 +12,7 @@ import { ShopClient } from '../../shop/shop-client';
 import { ShopSession } from '../../shop/shop-session';
 import { ShopButtonImports } from '../../ui/shop-button';
 import { TextField } from '../../ui/text-field';
+import { personName } from '../../ui/form-rules';
 
 /** Neon Auth accepts passwords of 8 to 128 characters. */
 const PASSWORD = { min: 8, max: 128 } as const;
@@ -45,9 +46,7 @@ export class AccountPage {
 
   protected readonly nameModel = linkedSignal(() => ({ name: this.person()?.name ?? '' }));
   protected readonly nameForm = form(this.nameModel, (path) => {
-    required(path.name, { message: 'Enter your name, at least 2 letters.' });
-    minLength(path.name, 2, { message: 'Enter your name, at least 2 letters.' });
-    maxLength(path.name, 80, { message: 'Keep the name under 80 letters.' });
+    personName(path.name);
   });
   protected readonly savingName = signal(false);
   protected readonly nameStatus = signal('');

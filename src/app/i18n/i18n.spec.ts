@@ -4,7 +4,7 @@ import { SPANISH } from './es';
 import { Language } from './language';
 import { localeFromHints, readLanguageCookie } from './locale';
 import { TranslatePipe } from './translate.pipe';
-import { placeholdersOf, translate } from './translate';
+import { placeholdersOf, translate, useSpanish } from './translate';
 
 describe('the language of a visit', () => {
   it('stays English unless the first browser language is Spanish', () => {
@@ -26,6 +26,8 @@ describe('the language of a visit', () => {
 });
 
 describe('Spanish copy', () => {
+  beforeAll(() => useSpanish(SPANISH));
+
   it('leaves English as written, and fills the same placeholders', () => {
     expect(translate('en', 'Your Marlow order {reference}', { reference: 'MR-1001' })).toBe(
       'Your Marlow order MR-1001',
@@ -47,6 +49,16 @@ describe('Spanish copy', () => {
       'Escribe un código ZIP como 02903: 5 dígitos, o ZIP+4.',
     );
     expect(translate('en', 'Choose the prefecture.')).toBe('Choose the prefecture.');
+  });
+
+  it('has Spanish for the fallbacks the shop writes itself', () => {
+    expect(translate('es', 'Added from the backoffice.')).toBe('Añadida desde la administración.');
+    expect(translate('es', 'The transfer did not go through.')).toBe(
+      'La transferencia no se completó.',
+    );
+    expect(translate('es', 'MR-1001 could not be cancelled.')).toBe(
+      'MR-1001 no se pudo cancelar.',
+    );
   });
 });
 

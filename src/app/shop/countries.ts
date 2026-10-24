@@ -199,7 +199,7 @@ export const COUNTRIES: readonly Country[] = [
     name: 'Denmark',
     continent: 'Europe',
     dial: '+45',
-    aliases: ['Danmark'],
+    aliases: ['Danmark', 'Dinamarca'],
     postal: fourDigits('1050'),
     division: null,
   },
@@ -208,7 +208,7 @@ export const COUNTRIES: readonly Country[] = [
     name: 'Finland',
     continent: 'Europe',
     dial: '+358',
-    aliases: ['Suomi'],
+    aliases: ['Suomi', 'Finlandia'],
     postal: fiveDigits('00100'),
     division: null,
   },
@@ -410,7 +410,7 @@ export const COUNTRIES: readonly Country[] = [
     name: 'Malaysia',
     continent: 'Asia',
     dial: '+60',
-    aliases: [],
+    aliases: ['Malasia'],
     postal: fiveDigits('50450'),
     division: null,
   },
@@ -419,7 +419,7 @@ export const COUNTRIES: readonly Country[] = [
     name: 'Philippines',
     continent: 'Asia',
     dial: '+63',
-    aliases: ['Pilipinas'],
+    aliases: ['Pilipinas', 'Filipinas'],
     postal: postal(/^(\d{4})$/, '1000', '4 digits'),
     division: null,
   },
@@ -428,7 +428,7 @@ export const COUNTRIES: readonly Country[] = [
     name: 'Singapore',
     continent: 'Asia',
     dial: '+65',
-    aliases: [],
+    aliases: ['Singapur'],
     postal: sixDigits('238859'),
     division: null,
   },
@@ -446,7 +446,7 @@ export const COUNTRIES: readonly Country[] = [
     name: 'Taiwan',
     continent: 'Asia',
     dial: '+886',
-    aliases: ['臺灣', '台灣'],
+    aliases: ['臺灣', '台灣', 'Taiwán'],
     postal: postal(/^(\d{3}(?:\d{2,3})?)$/, '10048', '3, 5, or 6 digits'),
     division: null,
   },
@@ -455,7 +455,7 @@ export const COUNTRIES: readonly Country[] = [
     name: 'Thailand',
     continent: 'Asia',
     dial: '+66',
-    aliases: [],
+    aliases: ['Tailandia'],
     postal: postal(/^([1-9]\d{4})$/, '10330', '5 digits'),
     division: null,
   },
@@ -473,7 +473,7 @@ export const COUNTRIES: readonly Country[] = [
     name: 'United Arab Emirates',
     continent: 'Asia',
     dial: '+971',
-    aliases: ['UAE', 'Emirates'],
+    aliases: ['UAE', 'Emirates', 'Emiratos Árabes Unidos'],
     postal: null,
     division: null,
   },
@@ -498,7 +498,10 @@ export function countryNamed(value: string | null | undefined): Country | null {
   }
   return (
     COUNTRIES.find(
-      (country) => folded(country.name) === wanted || country.code.toLowerCase() === wanted,
+      (country) =>
+        folded(country.name) === wanted ||
+        country.code.toLowerCase() === wanted ||
+        country.aliases.some((alias) => folded(alias) === wanted),
     ) ?? null
   );
 }

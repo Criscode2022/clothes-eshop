@@ -162,4 +162,5 @@ export const SHOP: Record<string, string> = {
   'Nothing to pay': 'Nada que pagar',
   'See order {reference}': 'Ver el pedido {reference}',
   'Opening the transfer.': 'Abriendo la transferencia.',
+  'The transfer did not go through.': 'La transferencia no se completó.',
 };
